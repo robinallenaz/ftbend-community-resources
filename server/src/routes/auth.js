@@ -78,7 +78,15 @@ router.post('/login', async (req, res, next) => {
 });
 
 router.post('/logout', (req, res) => {
-  res.clearCookie('token').status(204).send();
+  const isProd = process.env.NODE_ENV === 'production';
+  res
+    .clearCookie('token', {
+      httpOnly: true,
+      sameSite: isProd ? 'none' : 'lax',
+      secure: isProd
+    })
+    .status(204)
+    .send();
 });
 
 module.exports = router;
