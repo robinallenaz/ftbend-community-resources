@@ -7,8 +7,9 @@
 
 [[redirects]]
   from = "/api/*"
-  to = "/api/:splat"
-  status = 404
+  to = "https://ftbend-community-resources-api.onrender.com/api/:splat"
+  status = 200
+  force = true
 
 [[redirects]]
   from = "/*"
