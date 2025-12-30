@@ -10,7 +10,7 @@ const LOCATION_OPTIONS: { label: string; value: ResourceLocation }[] = [
   { label: 'Houston', value: 'Houston' },
   { label: 'Virtual', value: 'Virtual' },
   { label: 'South TX', value: 'South TX' },
-  { label: 'Other TX', value: 'Other TX' }
+  { label: 'TX', value: 'TX' }
 ];
 
 const TYPE_OPTIONS: { label: string; value: ResourceType }[] = [

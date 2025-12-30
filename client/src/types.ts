@@ -1,4 +1,4 @@
-export type ResourceLocation = 'Fort Bend' | 'Houston' | 'Virtual' | 'South TX' | 'Other TX';
+export type ResourceLocation = 'Fort Bend' | 'Houston' | 'Virtual' | 'South TX' | 'TX';
 
 export type ResourceType =
   | 'Mental Health'

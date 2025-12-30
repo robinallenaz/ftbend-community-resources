@@ -26,7 +26,7 @@ export const resources: Resource[] = [
     name: 'Trans Legal Aid Clinic TX',
     description: 'Legal aid clinic focused on trans Texans.',
     url: 'https://translegalaidtx.com',
-    locations: ['Other TX', 'Virtual'],
+    locations: ['TX', 'Virtual'],
     types: ['Legal'],
     audiences: ['Trans'],
     tags: ['name change', 'legal', 'clinic', 'trans']
@@ -36,7 +36,7 @@ export const resources: Resource[] = [
     name: 'Texas Trans Men Resistance',
     description: 'Support and resources for trans men in Texas.',
     url: 'https://www.ttmrhtx.org',
-    locations: ['Other TX', 'Virtual'],
+    locations: ['TX', 'Virtual'],
     types: ['Community'],
     audiences: ['Trans'],
     tags: ['trans men', 'support', 'community']
@@ -46,7 +46,7 @@ export const resources: Resource[] = [
     name: 'Trans Men Empowerment (TME)',
     description: 'Community and resources for trans men.',
     url: 'https://linktr.ee/transmenempowerment?fbclid=PAZXh0bgNhZW0CMTEAAadhXL5Hp9OUMk4oGTF254Tq-whU72RoAI5D4DgttEG6taSWJ83BqAJR9VSUGw_aem_sg17uLjLKZI9_kTwy8ejvQ',
-    locations: ['Other TX', 'Virtual'],
+    locations: ['TX', 'Virtual'],
     types: ['Community'],
     audiences: ['Trans'],
     tags: ['trans men', 'support', 'resources']
@@ -56,7 +56,7 @@ export const resources: Resource[] = [
     name: 'Trans Voices',
     description: 'Trans community resources and support.',
     url: 'https://linktr.ee/transvoices.us?fbclid=PAZXh0bgNhZW0CMTEAAaexu9rMcpS3U-QAmqElpNc1X4Ig_TWfRdPaDDJVcUQqiICCLyrAhtAQtF0-6g_aem_zl8_b7WFDvQoRfqm51eu_g',
-    locations: ['Other TX', 'Virtual'],
+    locations: ['TX', 'Virtual'],
     types: ['Community'],
     audiences: ['Trans'],
     tags: ['trans', 'support', 'community']
@@ -66,7 +66,7 @@ export const resources: Resource[] = [
     name: 'Parents of Trans Youth',
     description: 'Support and information for parents and families of trans youth.',
     url: 'https://linktr.ee/parentsoftransyouth?fbclid=PAZXh0bgNhZW0CMTEAAacBcuLIw0_LxhJVr3KqM5tu_bZhVRsOzHAzsqAxPKLO8yE_BjZCwfGd0lBfpg_aem_drzEg_nnw4-bZ-3Dug7haA',
-    locations: ['Other TX', 'Virtual'],
+    locations: ['TX', 'Virtual'],
     types: ['Family', 'Community'],
     audiences: ['Families', 'Youth', 'Trans'],
     tags: ['parents', 'families', 'trans youth', 'support']
@@ -216,7 +216,7 @@ export const resources: Resource[] = [
     name: 'The Woodlands Pride',
     description: 'Pride organization serving The Woodlands area.',
     url: 'https://www.thewoodlandspride.org',
-    locations: ['Other TX'],
+    locations: ['TX'],
     types: ['Pride Orgs', 'Events'],
     audiences: ['All'],
     tags: ['pride', 'montgomery', 'events']
