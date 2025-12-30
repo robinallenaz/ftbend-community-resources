@@ -6,7 +6,16 @@ export default function ResourceCard({ resource }: { resource: Resource }) {
     <article className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-5 shadow-soft">
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <h3 className="text-xl font-extrabold text-vanillaCustard">{resource.name}</h3>
+          <h3 className="text-xl font-extrabold text-vanillaCustard">
+            <a
+              href={resource.url}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-lg outline-none hover:underline focus-visible:underline"
+            >
+              {resource.name}
+            </a>
+          </h3>
           <a
             href={resource.url}
             target="_blank"
