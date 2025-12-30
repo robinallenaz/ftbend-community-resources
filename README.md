@@ -7,7 +7,7 @@ This is a **monorepo** (one repo with multiple apps):
 - **Client**: React + Vite (deployed to Netlify)
 - **Server**: Node.js + Express + MongoDB (deployed to Render)
 
-The public site is **database-driven**: resources live in MongoDB and are served by the API.
+The public site is **database-driven**: resources and events live in MongoDB and are served by the API.
 
 ---
 
@@ -92,10 +92,14 @@ npm run start      # start the server (production)
 ## Admin dashboard (content management)
 
 - Login: `/admin/login`
+- Manage:
+  - Resources: `/admin/resources`
+  - Events: `/admin/events`
+  - Submissions: `/admin/submissions`
 
 ### Roles
 
-- `admin`: can archive/unarchive resources
+- `admin`: can archive/unarchive resources and events
 - `editor`: cannot archive/unarchive
 
 ### Create or reset an admin account
@@ -110,10 +114,11 @@ SEED_ADMIN_EMAIL="you@example.com" SEED_ADMIN_PASSWORD="your-password" npm run s
 
 ## Data migration utilities
 
-### Import the original static resource list into MongoDB
+### Import the original static lists into MongoDB
 
 ```bash
 npm run migrate:resources --workspace server
+npm run migrate:events --workspace server
 ```
 
 ---
