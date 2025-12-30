@@ -14,6 +14,30 @@ const OPTIONS = {
   audiences: ['Trans', 'Youth', 'Seniors', 'Families', 'All']
 };
 
+function normalizeUrl(input) {
+  const trimmed = String(input || '').trim();
+  if (!trimmed) return trimmed;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+}
+
+const UrlSchema = z
+  .string()
+  .trim()
+  .max(500)
+  .transform((v) => normalizeUrl(v))
+  .refine(
+    (v) => {
+      try {
+        const u = new URL(v);
+        return u.protocol === 'http:' || u.protocol === 'https:';
+      } catch {
+        return false;
+      }
+    },
+    { message: 'Invalid url' }
+  );
+
 function normalizeList(value) {
   if (!value) return [];
   if (Array.isArray(value)) return value.flatMap((x) => String(x).split(',')).map((x) => x.trim()).filter(Boolean);
@@ -26,7 +50,7 @@ function normalizeList(value) {
 const ResourceInputSchema = z.object({
   name: z.string().min(2).max(140),
   description: z.string().min(10).max(2000),
-  url: z.string().url().max(500),
+  url: UrlSchema,
   locations: z.array(z.string().min(1)).min(1),
   types: z.array(z.string().min(1)).min(1),
   audiences: z.array(z.string().min(1)).min(1),
@@ -37,7 +61,7 @@ const ResourcePatchSchema = z
   .object({
     name: z.string().min(2).max(140).optional(),
     description: z.string().min(10).max(2000).optional(),
-    url: z.string().url().max(500).optional(),
+    url: UrlSchema.optional(),
     locations: z.array(z.string().min(1)).min(1).optional(),
     types: z.array(z.string().min(1)).min(1).optional(),
     audiences: z.array(z.string().min(1)).min(1).optional(),

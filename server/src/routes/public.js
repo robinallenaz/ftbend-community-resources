@@ -16,6 +16,30 @@ function normalizeList(value) {
     .filter(Boolean);
 }
 
+function normalizeUrl(input) {
+  const trimmed = String(input || '').trim();
+  if (!trimmed) return trimmed;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+}
+
+const UrlSchema = z
+  .string()
+  .trim()
+  .max(500)
+  .transform((v) => normalizeUrl(v))
+  .refine(
+    (v) => {
+      try {
+        const u = new URL(v);
+        return u.protocol === 'http:' || u.protocol === 'https:';
+      } catch {
+        return false;
+      }
+    },
+    { message: 'Invalid url' }
+  );
+
 router.get('/resources', async (req, res, next) => {
   try {
     const q = typeof req.query.q === 'string' ? req.query.q.trim() : '';
@@ -51,7 +75,7 @@ router.post('/submissions', async (req, res, next) => {
     const input = validate(
       z.object({
         name: z.string().min(2).max(140),
-        url: z.string().url().max(500),
+        url: UrlSchema,
         notes: z.string().max(2000).optional().default('')
       }),
       req.body
