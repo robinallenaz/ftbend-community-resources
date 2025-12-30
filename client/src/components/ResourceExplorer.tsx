@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { AudienceTag, Resource, ResourceLocation, ResourceType } from '../types';
-import { resources as fallbackResources } from '../data/resources';
-import { applyResourceFilters } from '../utils/resourceSearch';
 import FilterGroup from './FilterGroup';
 import ResourceCard from './ResourceCard';
 
@@ -36,10 +34,6 @@ const AUDIENCE_OPTIONS: { label: string; value: AudienceTag }[] = [
 
 function toSortedArray(set: Set<string>) {
   return Array.from(set.values()).sort((a, b) => a.localeCompare(b));
-}
-
-function normalizeUrlKey(url: string) {
-  return url.trim().toLowerCase().replace(/\/$/, '');
 }
 
 export default function ResourceExplorer(args: { initialQuery?: string }) {
@@ -133,29 +127,9 @@ export default function ResourceExplorer(args: { initialQuery?: string }) {
     };
   }, [query, selectedLocations, selectedTypes, selectedAudiences]);
 
-  const effectiveItems = useMemo(() => {
-    const map = new Map<string, Resource>();
-
-    for (const r of fallbackResources) {
-      map.set(normalizeUrlKey(r.url), r);
-    }
-
-    for (const r of items || []) {
-      map.set(normalizeUrlKey(r.url), r);
-    }
-
-    return Array.from(map.values());
-  }, [items]);
-
   const filtered = useMemo(() => {
-    return applyResourceFilters({
-      resources: effectiveItems,
-      query,
-      selectedLocations,
-      selectedTypes,
-      selectedAudiences
-    }).slice().sort((a, b) => a.name.localeCompare(b.name));
-  }, [effectiveItems, query, selectedLocations, selectedTypes, selectedAudiences]);
+    return (items || []).slice().sort((a, b) => a.name.localeCompare(b.name));
+  }, [items]);
 
   const activeFilters = useMemo(() => {
     return {
@@ -226,7 +200,7 @@ export default function ResourceExplorer(args: { initialQuery?: string }) {
 
           {loadError ? (
             <div className="rounded-2xl bg-graphite/70 p-4 text-sm text-vanillaCustard/90" role="status">
-              Live updates are temporarily unavailable. Showing the last saved list.
+              Live updates are temporarily unavailable. Please refresh in a moment.
             </div>
           ) : null}
 
