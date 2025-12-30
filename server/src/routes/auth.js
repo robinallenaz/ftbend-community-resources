@@ -55,11 +55,13 @@ router.post('/login', async (req, res, next) => {
 
     const token = signToken({ sub: String(user._id), role: user.role, email: user.email });
 
+    const isProd = process.env.NODE_ENV === 'production';
+
     res
       .cookie('token', token, {
         httpOnly: true,
-        sameSite: 'lax',
-        secure: false,
+        sameSite: isProd ? 'none' : 'lax',
+        secure: isProd,
         maxAge: 14 * 24 * 60 * 60 * 1000
       })
       .json({

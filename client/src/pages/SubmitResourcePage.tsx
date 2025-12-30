@@ -4,7 +4,7 @@ export default function SubmitResourcePage() {
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
   const [notes, setNotes] = useState('');
-  const [status, setStatus] = useState<'idle' | 'sent'>('idle');
+  const [status, setStatus] = useState<'idle' | 'sent' | 'error'>('idle');
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -14,14 +14,19 @@ export default function SubmitResourcePage() {
     const payload = { name, url, notes };
 
     try {
-      await fetch('/api/public/submissions', {
+      const res = await fetch('/api/public/submissions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
+      if (!res.ok) {
+        setStatus('error');
+        return;
+      }
       setStatus('sent');
     } catch {
-      setStatus('sent');
+      setStatus('error');
+      return;
     }
 
     setName('');
@@ -75,6 +80,12 @@ export default function SubmitResourcePage() {
         {status === 'sent' ? (
           <div className="rounded-2xl bg-graphite/70 p-4 text-base text-vanillaCustard">
             Thank you. We’ll review your submission.
+          </div>
+        ) : null}
+
+        {status === 'error' ? (
+          <div className="rounded-2xl bg-graphite/70 p-4 text-base text-vanillaCustard">
+            Sorry—your submission could not be sent right now. Please try again later, or message the admins on Facebook/Instagram.
           </div>
         ) : null}
       </form>
