@@ -2,10 +2,10 @@ services:
   - type: web
     name: ftbend-community-resources-api
     env: node
-    rootDir: server
+    rootDir: .
     plan: free
     buildCommand: npm ci
-    startCommand: npm run start
+    startCommand: npm run start --workspace server
     autoDeploy: true
     healthCheckPath: /api/health
     envVars:
