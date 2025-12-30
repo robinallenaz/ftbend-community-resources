@@ -36,7 +36,11 @@ app.use((err, _req, res, _next) => {
   if (status >= 500) {
     console.error(err);
   }
-  res.status(status).json({ error: message });
+  const payload = { error: message };
+  if (status === 400 && err && err.details) {
+    payload.details = err.details;
+  }
+  res.status(status).json(payload);
 });
 
 async function start() {
