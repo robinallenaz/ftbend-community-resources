@@ -8,13 +8,78 @@ const { validate } = require('../lib/validate');
 
 const router = express.Router();
 
+const OPTIONS = {
+  locations: ['Fort Bend', 'Houston', 'Virtual', 'South TX', 'TX'],
+  types: ['Mental Health', 'Legal', 'Self Care', 'Faith', 'Business', 'Community', 'Pride Orgs', 'Arts', 'Youth', 'Family', 'Events'],
+  audiences: ['Trans', 'Youth', 'Seniors', 'Families', 'All']
+};
+
+function normalizeList(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.flatMap((x) => String(x).split(',')).map((x) => x.trim()).filter(Boolean);
+  return String(value)
+    .split(',')
+    .map((x) => x.trim())
+    .filter(Boolean);
+}
+
+const ResourceInputSchema = z.object({
+  name: z.string().min(2).max(140),
+  description: z.string().min(10).max(2000),
+  url: z.string().url().max(500),
+  locations: z.array(z.string().min(1)).min(1),
+  types: z.array(z.string().min(1)).min(1),
+  audiences: z.array(z.string().min(1)).min(1),
+  tags: z.array(z.string().min(1)).min(1)
+});
+
+const ResourcePatchSchema = z
+  .object({
+    name: z.string().min(2).max(140).optional(),
+    description: z.string().min(10).max(2000).optional(),
+    url: z.string().url().max(500).optional(),
+    locations: z.array(z.string().min(1)).min(1).optional(),
+    types: z.array(z.string().min(1)).min(1).optional(),
+    audiences: z.array(z.string().min(1)).min(1).optional(),
+    tags: z.array(z.string().min(1)).min(1).optional(),
+    status: z.enum(['active', 'archived']).optional()
+  })
+  .refine((v) => Object.keys(v).length > 0, { message: 'No fields to update' });
+
 router.use(requireAuth);
 router.use(requireRole(['admin', 'editor']));
 
-router.get('/resources', async (_req, res, next) => {
+router.get('/options', async (_req, res) => {
+  res.json({ options: OPTIONS });
+});
+
+router.get('/resources', async (req, res, next) => {
   try {
-    const items = await Resource.find({ status: 'active' }).sort({ name: 1 }).lean();
+    const status = typeof req.query.status === 'string' ? req.query.status.trim() : 'active';
+    const statuses = normalizeList(status);
+
+    const filter = {};
+    if (statuses.length) {
+      filter.status = { $in: statuses };
+    }
+
+    const items = await Resource.find(filter).sort({ name: 1 }).lean();
     res.json({ items });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/resources/:id', async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const item = await Resource.findById(id).lean();
+    if (!item) {
+      const err = new Error('Resource not found');
+      err.status = 404;
+      throw err;
+    }
+    res.json({ item });
   } catch (e) {
     next(e);
   }
@@ -22,18 +87,7 @@ router.get('/resources', async (_req, res, next) => {
 
 router.post('/resources', async (req, res, next) => {
   try {
-    const input = validate(
-      z.object({
-        name: z.string().min(2).max(140),
-        description: z.string().min(10).max(2000),
-        url: z.string().url().max(500),
-        locations: z.array(z.string().min(1)).min(1),
-        types: z.array(z.string().min(1)).min(1),
-        audiences: z.array(z.string().min(1)).min(1),
-        tags: z.array(z.string().min(1)).min(1)
-      }),
-      req.body
-    );
+    const input = validate(ResourceInputSchema, req.body);
 
     const resource = await Resource.create({
       ...input,
@@ -46,7 +100,34 @@ router.post('/resources', async (req, res, next) => {
   }
 });
 
-router.post('/resources/:id/archive', async (req, res, next) => {
+router.patch('/resources/:id', async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const input = validate(ResourcePatchSchema, req.body);
+
+    if (input.status && req.auth.role !== 'admin') {
+      const err = new Error('Forbidden');
+      err.status = 403;
+      throw err;
+    }
+
+    const resource = await Resource.findById(id);
+    if (!resource) {
+      const err = new Error('Resource not found');
+      err.status = 404;
+      throw err;
+    }
+
+    Object.assign(resource, input);
+    await resource.save();
+
+    res.json({ id: resource._id });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post('/resources/:id/archive', requireRole(['admin']), async (req, res, next) => {
   try {
     const id = req.params.id;
 
@@ -66,9 +147,37 @@ router.post('/resources/:id/archive', async (req, res, next) => {
   }
 });
 
-router.get('/submissions', async (_req, res, next) => {
+router.post('/resources/:id/unarchive', requireRole(['admin']), async (req, res, next) => {
   try {
-    const items = await Submission.find({ status: 'pending' }).sort({ createdAt: -1 }).lean();
+    const id = req.params.id;
+
+    const resource = await Resource.findById(id);
+    if (!resource) {
+      const err = new Error('Resource not found');
+      err.status = 404;
+      throw err;
+    }
+
+    resource.status = 'active';
+    await resource.save();
+
+    res.status(204).send();
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/submissions', async (req, res, next) => {
+  try {
+    const status = typeof req.query.status === 'string' ? req.query.status.trim() : 'pending';
+    const statuses = normalizeList(status);
+
+    const filter = {};
+    if (statuses.length) {
+      filter.status = { $in: statuses };
+    }
+
+    const items = await Submission.find(filter).sort({ createdAt: -1 }).lean();
     res.json({ items });
   } catch (e) {
     next(e);
@@ -79,10 +188,34 @@ router.post('/submissions/:id/approve', async (req, res, next) => {
   try {
     const id = req.params.id;
 
+    const overrides = validate(
+      z
+        .object({
+          resource: z
+            .object({
+              description: z.string().min(10).max(2000).optional(),
+              locations: z.array(z.string().min(1)).min(1).optional(),
+              types: z.array(z.string().min(1)).min(1).optional(),
+              audiences: z.array(z.string().min(1)).min(1).optional(),
+              tags: z.array(z.string().min(1)).min(1).optional()
+            })
+            .optional()
+        })
+        .optional()
+        .default({}),
+      req.body
+    );
+
     const submission = await Submission.findById(id);
     if (!submission) {
       const err = new Error('Submission not found');
       err.status = 404;
+      throw err;
+    }
+
+    if (submission.status !== 'pending') {
+      const err = new Error('Submission already reviewed');
+      err.status = 409;
       throw err;
     }
 
@@ -91,14 +224,16 @@ router.post('/submissions/:id/approve', async (req, res, next) => {
     submission.reviewedAt = new Date();
     await submission.save();
 
+    const resourceOverrides = overrides.resource || {};
+
     const resource = await Resource.create({
       name: submission.name,
-      description: submission.notes || 'Submitted by community member.',
+      description: resourceOverrides.description || submission.notes || 'Submitted by community member.',
       url: submission.url,
-      locations: ['Fort Bend'],
-      types: ['Community'],
-      audiences: ['All'],
-      tags: ['submitted'],
+      locations: resourceOverrides.locations || ['Fort Bend'],
+      types: resourceOverrides.types || ['Community'],
+      audiences: resourceOverrides.audiences || ['All'],
+      tags: resourceOverrides.tags || ['submitted'],
       status: 'active'
     });
 
