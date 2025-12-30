@@ -38,6 +38,10 @@ function toSortedArray(set: Set<string>) {
   return Array.from(set.values()).sort((a, b) => a.localeCompare(b));
 }
 
+function normalizeUrlKey(url: string) {
+  return url.trim().toLowerCase().replace(/\/$/, '');
+}
+
 export default function ResourceExplorer(args: { initialQuery?: string }) {
   const [query, setQuery] = useState(args.initialQuery ?? '');
   const [selectedLocations, setSelectedLocations] = useState<Set<string>>(new Set());
@@ -129,7 +133,20 @@ export default function ResourceExplorer(args: { initialQuery?: string }) {
     };
   }, [query, selectedLocations, selectedTypes, selectedAudiences]);
 
-  const effectiveItems = items ?? fallbackResources;
+  const effectiveItems = useMemo(() => {
+    const map = new Map<string, Resource>();
+
+    for (const r of fallbackResources) {
+      map.set(normalizeUrlKey(r.url), r);
+    }
+
+    for (const r of items || []) {
+      map.set(normalizeUrlKey(r.url), r);
+    }
+
+    return Array.from(map.values());
+  }, [items]);
+
   const filtered = useMemo(() => {
     return applyResourceFilters({
       resources: effectiveItems,
