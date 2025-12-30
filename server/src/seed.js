@@ -15,9 +15,16 @@ async function seedAdmin() {
   }
 
   const existing = await User.findOne({ email });
-  if (existing) return;
 
   const passwordHash = await bcrypt.hash(password, 12);
+
+  if (existing) {
+    existing.passwordHash = passwordHash;
+    existing.role = 'admin';
+    await existing.save();
+    return;
+  }
+
   await User.create({ email, passwordHash, role: 'admin' });
 }
 
