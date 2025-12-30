@@ -23,6 +23,14 @@ export default function AdminDashboardPage() {
         </Link>
 
         <Link
+          to="/admin/events"
+          className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-5 shadow-soft hover:border-vanillaCustard/35"
+        >
+          <div className="text-lg font-extrabold text-vanillaCustard">Events</div>
+          <div className="text-sm text-vanillaCustard/75">Add/edit community event listings.</div>
+        </Link>
+
+        <Link
           to="/admin/submissions"
           className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-5 shadow-soft hover:border-vanillaCustard/35"
         >

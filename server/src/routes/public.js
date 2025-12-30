@@ -2,6 +2,7 @@ const express = require('express');
 const { z } = require('zod');
 
 const Resource = require('../models/Resource');
+const Event = require('../models/Event');
 const Submission = require('../models/Submission');
 const { validate } = require('../lib/validate');
 
@@ -64,6 +65,30 @@ router.get('/resources', async (req, res, next) => {
     }
 
     const items = await Resource.find(filter).sort({ name: 1 }).limit(200).lean();
+    return res.json({ items });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/events', async (req, res, next) => {
+  try {
+    const q = typeof req.query.q === 'string' ? req.query.q.trim() : '';
+
+    const filter = { status: 'active' };
+
+    if (q) {
+      filter.$text = { $search: q };
+
+      const items = await Event.find(filter, { score: { $meta: 'textScore' } })
+        .sort({ score: { $meta: 'textScore' }, name: 1 })
+        .limit(200)
+        .lean();
+
+      return res.json({ items });
+    }
+
+    const items = await Event.find(filter).sort({ name: 1 }).limit(200).lean();
     return res.json({ items });
   } catch (e) {
     next(e);

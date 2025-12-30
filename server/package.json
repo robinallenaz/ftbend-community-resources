@@ -7,7 +7,8 @@
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
     "seed": "node src/seed.js",
-    "migrate:resources": "node src/migrateResourcesFromClient.js"
+    "migrate:resources": "node src/migrateResourcesFromClient.js",
+    "migrate:events": "node src/migrateEventsFromClient.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

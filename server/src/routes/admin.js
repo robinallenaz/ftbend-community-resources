@@ -2,6 +2,7 @@ const express = require('express');
 const { z } = require('zod');
 
 const Resource = require('../models/Resource');
+const Event = require('../models/Event');
 const Submission = require('../models/Submission');
 const { requireAuth, requireRole } = require('../lib/auth');
 const { validate } = require('../lib/validate');
@@ -66,6 +67,23 @@ const ResourcePatchSchema = z
     types: z.array(z.string().min(1)).min(1).optional(),
     audiences: z.array(z.string().min(1)).min(1).optional(),
     tags: z.array(z.string().min(1)).min(1).optional(),
+    status: z.enum(['active', 'archived']).optional()
+  })
+  .refine((v) => Object.keys(v).length > 0, { message: 'No fields to update' });
+
+const EventInputSchema = z.object({
+  name: z.string().min(2).max(140),
+  schedule: z.string().min(2).max(200),
+  url: UrlSchema,
+  locationHint: z.string().min(2).max(200)
+});
+
+const EventPatchSchema = z
+  .object({
+    name: z.string().min(2).max(140).optional(),
+    schedule: z.string().min(2).max(200).optional(),
+    url: UrlSchema.optional(),
+    locationHint: z.string().min(2).max(200).optional(),
     status: z.enum(['active', 'archived']).optional()
   })
   .refine((v) => Object.keys(v).length > 0, { message: 'No fields to update' });
@@ -184,6 +202,120 @@ router.post('/resources/:id/unarchive', requireRole(['admin']), async (req, res,
 
     resource.status = 'active';
     await resource.save();
+
+    res.status(204).send();
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/events', async (req, res, next) => {
+  try {
+    const status = typeof req.query.status === 'string' ? req.query.status.trim() : 'active';
+    const statuses = normalizeList(status);
+
+    const filter = {};
+    if (statuses.length) {
+      filter.status = { $in: statuses };
+    }
+
+    const items = await Event.find(filter).sort({ name: 1 }).lean();
+    res.json({ items });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/events/:id', async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const item = await Event.findById(id).lean();
+    if (!item) {
+      const err = new Error('Event not found');
+      err.status = 404;
+      throw err;
+    }
+    res.json({ item });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post('/events', async (req, res, next) => {
+  try {
+    const input = validate(EventInputSchema, req.body);
+
+    const event = await Event.create({
+      ...input,
+      status: 'active'
+    });
+
+    res.status(201).json({ id: event._id });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.patch('/events/:id', async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const input = validate(EventPatchSchema, req.body);
+
+    if (input.status && req.auth.role !== 'admin') {
+      const err = new Error('Forbidden');
+      err.status = 403;
+      throw err;
+    }
+
+    const event = await Event.findById(id);
+    if (!event) {
+      const err = new Error('Event not found');
+      err.status = 404;
+      throw err;
+    }
+
+    Object.assign(event, input);
+    await event.save();
+
+    res.json({ id: event._id });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post('/events/:id/archive', requireRole(['admin']), async (req, res, next) => {
+  try {
+    const id = req.params.id;
+
+    const event = await Event.findById(id);
+    if (!event) {
+      const err = new Error('Event not found');
+      err.status = 404;
+      throw err;
+    }
+
+    event.status = 'archived';
+    await event.save();
+
+    res.status(204).send();
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post('/events/:id/unarchive', requireRole(['admin']), async (req, res, next) => {
+  try {
+    const id = req.params.id;
+
+    const event = await Event.findById(id);
+    if (!event) {
+      const err = new Error('Event not found');
+      err.status = 404;
+      throw err;
+    }
+
+    event.status = 'active';
+    await event.save();
 
     res.status(204).send();
   } catch (e) {

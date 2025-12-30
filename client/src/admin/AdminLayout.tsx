@@ -39,6 +39,7 @@ export default function AdminLayout() {
           <nav aria-label="Admin" className="flex flex-wrap items-center gap-1">
             <NavItem to="/admin" label="Overview" />
             <NavItem to="/admin/resources" label="Resources" />
+            <NavItem to="/admin/events" label="Events" />
             <NavItem to="/admin/submissions" label="Submissions" />
           </nav>
 

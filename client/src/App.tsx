@@ -4,6 +4,8 @@ import RequireAuth from './admin/RequireAuth';
 import Layout from './components/Layout';
 import AboutPage from './pages/AboutPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
+import AdminEventEditorPage from './pages/AdminEventEditorPage';
+import AdminEventsPage from './pages/AdminEventsPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import AdminResourceEditorPage from './pages/AdminResourceEditorPage';
 import AdminResourcesPage from './pages/AdminResourcesPage';
@@ -22,6 +24,8 @@ export default function App() {
           <Route index element={<AdminDashboardPage />} />
           <Route path="resources" element={<AdminResourcesPage />} />
           <Route path="resources/:id" element={<AdminResourceEditorPage />} />
+          <Route path="events" element={<AdminEventsPage />} />
+          <Route path="events/:id" element={<AdminEventEditorPage />} />
           <Route path="submissions" element={<AdminSubmissionsPage />} />
           <Route path="*" element={<Navigate to="/admin" replace />} />
         </Route>
