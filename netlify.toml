@@ -1,0 +1,11 @@
+[build]
+  command = "npm run build --workspace client"
+  publish = "client/dist"
+
+[build.environment]
+  BASE_PATH = "/"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
