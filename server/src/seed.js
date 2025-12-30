@@ -1,10 +1,12 @@
 const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
+const path = require('path');
 
 const { connectToDb } = require('./lib/db');
 const User = require('./models/User');
 
-dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 async function seedAdmin() {
   const email = (process.env.SEED_ADMIN_EMAIL || '').toLowerCase();

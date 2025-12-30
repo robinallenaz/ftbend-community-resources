@@ -2,6 +2,7 @@ const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const express = require('express');
+const path = require('path');
 
 const { connectToDb } = require('./lib/db');
 const { buildCorsOptions } = require('./lib/cors');
@@ -10,7 +11,8 @@ const publicRoutes = require('./routes/public');
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 
-dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const app = express();
 
