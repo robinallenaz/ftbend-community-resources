@@ -33,7 +33,7 @@ ftbend-community-resources/
 
 ### Setup
 
-From the repo root:
+From the repo root, run:
 
 ```bash
 npm install
