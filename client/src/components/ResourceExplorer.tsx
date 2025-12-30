@@ -1,7 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { AudienceTag, Resource, ResourceLocation, ResourceType } from '../types';
 import FilterGroup from './FilterGroup';
 import ResourceCard from './ResourceCard';
+
+const RESOURCE_CACHE_KEY = 'ftbend_resources_cache_v1';
+const RESOURCE_CACHE_TTL_MS = 1000 * 60 * 30;
 
 const LOCATION_OPTIONS: { label: string; value: ResourceLocation }[] = [
   { label: 'Fort Bend', value: 'Fort Bend' },
@@ -42,6 +45,8 @@ export default function ResourceExplorer(args: { initialQuery?: string }) {
   const [selectedTypes, setSelectedTypes] = useState<Set<string>>(new Set());
   const [selectedAudiences, setSelectedAudiences] = useState<Set<string>>(new Set());
 
+  const prevQueryRef = useRef<string | null>(null);
+
   const [items, setItems] = useState<Resource[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -55,8 +60,9 @@ export default function ResourceExplorer(args: { initialQuery?: string }) {
       setLoadError(null);
 
       try {
-        const params = new URLSearchParams();
         const q = query.trim();
+
+        const params = new URLSearchParams();
         if (q) params.set('q', q);
 
         const locations = Array.from(selectedLocations);
@@ -107,6 +113,18 @@ export default function ResourceExplorer(args: { initialQuery?: string }) {
 
         if (!cancelled) {
           setItems(mapped);
+
+          const shouldCache = !q && locations.length === 0 && types.length === 0 && audiences.length === 0;
+          if (shouldCache) {
+            try {
+              sessionStorage.setItem(
+                RESOURCE_CACHE_KEY,
+                JSON.stringify({ ts: Date.now(), items: mapped })
+              );
+            } catch {
+              // ignore cache failures
+            }
+          }
         }
       } catch (e) {
         if (cancelled) return;
@@ -118,7 +136,35 @@ export default function ResourceExplorer(args: { initialQuery?: string }) {
       }
     }
 
-    const t = window.setTimeout(load, 250);
+    const q = query.trim();
+    const locations = Array.from(selectedLocations);
+    const types = Array.from(selectedTypes);
+    const audiences = Array.from(selectedAudiences);
+
+    const shouldHydrateFromCache =
+      !q && locations.length === 0 && types.length === 0 && audiences.length === 0 && items === null;
+
+    if (shouldHydrateFromCache) {
+      try {
+        const raw = sessionStorage.getItem(RESOURCE_CACHE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw) as { ts?: unknown; items?: unknown };
+          if (
+            typeof parsed.ts === 'number' &&
+            Date.now() - parsed.ts < RESOURCE_CACHE_TTL_MS &&
+            Array.isArray(parsed.items)
+          ) {
+            setItems(parsed.items as Resource[]);
+          }
+        }
+      } catch {
+        // ignore cache failures
+      }
+    }
+
+    const debounceMs = prevQueryRef.current !== null && prevQueryRef.current !== q ? 250 : 0;
+    prevQueryRef.current = q;
+    const t = window.setTimeout(load, debounceMs);
 
     return () => {
       cancelled = true;
