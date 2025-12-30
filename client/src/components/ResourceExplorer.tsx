@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
-import type { AudienceTag, ResourceLocation, ResourceType } from '../types';
-import { resources } from '../data/resources';
+import { useEffect, useMemo, useState } from 'react';
+import type { AudienceTag, Resource, ResourceLocation, ResourceType } from '../types';
+import { resources as fallbackResources } from '../data/resources';
 import { applyResourceFilters } from '../utils/resourceSearch';
 import FilterGroup from './FilterGroup';
 import ResourceCard from './ResourceCard';
@@ -44,15 +44,101 @@ export default function ResourceExplorer(args: { initialQuery?: string }) {
   const [selectedTypes, setSelectedTypes] = useState<Set<string>>(new Set());
   const [selectedAudiences, setSelectedAudiences] = useState<Set<string>>(new Set());
 
+  const [items, setItems] = useState<Resource[] | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const controller = new AbortController();
+
+    async function load() {
+      setIsLoading(true);
+      setLoadError(null);
+
+      try {
+        const params = new URLSearchParams();
+        const q = query.trim();
+        if (q) params.set('q', q);
+
+        const locations = Array.from(selectedLocations);
+        const types = Array.from(selectedTypes);
+        const audiences = Array.from(selectedAudiences);
+
+        if (locations.length) params.set('locations', locations.join(','));
+        if (types.length) params.set('types', types.join(','));
+        if (audiences.length) params.set('audiences', audiences.join(','));
+
+        const url = `/api/public/resources${params.toString() ? `?${params.toString()}` : ''}`;
+        const res = await fetch(url, { signal: controller.signal });
+        if (!res.ok) {
+          throw new Error(`Failed to load resources (${res.status})`);
+        }
+
+        const json: unknown = await res.json();
+        const rawItems = (json as { items?: unknown[] }).items;
+        if (!Array.isArray(rawItems)) {
+          throw new Error('Unexpected response from server');
+        }
+
+        const mapped: Resource[] = rawItems
+          .map((r) => {
+            const item = r as {
+              _id?: string;
+              name?: string;
+              description?: string;
+              url?: string;
+              locations?: string[];
+              types?: string[];
+              audiences?: string[];
+              tags?: string[];
+            };
+
+            return {
+              id: item._id ? String(item._id) : '',
+              name: item.name || '',
+              description: item.description || '',
+              url: item.url || '',
+              locations: (item.locations || []) as ResourceLocation[],
+              types: (item.types || []) as ResourceType[],
+              audiences: (item.audiences || []) as AudienceTag[],
+              tags: item.tags || []
+            };
+          })
+          .filter((r) => Boolean(r.id) && Boolean(r.name) && Boolean(r.description) && Boolean(r.url));
+
+        if (!cancelled) {
+          setItems(mapped);
+        }
+      } catch (e) {
+        if (cancelled) return;
+        if (e instanceof DOMException && e.name === 'AbortError') return;
+        const message = e instanceof Error ? e.message : 'Failed to load resources';
+        setLoadError(message);
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    }
+
+    const t = window.setTimeout(load, 250);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(t);
+      controller.abort();
+    };
+  }, [query, selectedLocations, selectedTypes, selectedAudiences]);
+
+  const effectiveItems = items ?? fallbackResources;
   const filtered = useMemo(() => {
     return applyResourceFilters({
-      resources,
+      resources: effectiveItems,
       query,
       selectedLocations,
       selectedTypes,
       selectedAudiences
     }).slice().sort((a, b) => a.name.localeCompare(b.name));
-  }, [query, selectedLocations, selectedTypes, selectedAudiences]);
+  }, [effectiveItems, query, selectedLocations, selectedTypes, selectedAudiences]);
 
   const activeFilters = useMemo(() => {
     return {
@@ -114,6 +200,18 @@ export default function ResourceExplorer(args: { initialQuery?: string }) {
               Clear search & filters
             </button>
           </div>
+
+          {isLoading ? (
+            <div className="text-sm text-vanillaCustard/75" aria-live="polite">
+              Loading updated resources…
+            </div>
+          ) : null}
+
+          {loadError ? (
+            <div className="rounded-2xl bg-graphite/70 p-4 text-sm text-vanillaCustard/90" role="status">
+              Live updates are temporarily unavailable. Showing the last saved list.
+            </div>
+          ) : null}
 
           {hasActive ? (
             <div className="rounded-2xl bg-graphite/70 p-4 text-base text-vanillaCustard/90">
