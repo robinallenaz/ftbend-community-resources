@@ -12,5 +12,21 @@ export default defineConfig({
         changeOrigin: true
       }
     }
+  },
+  build: {
+    rollupOptions: {
+      input: {
+        main: './index.html',
+        server: './src/entry-server.tsx'
+      },
+      output: {
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]'
+      }
+    }
+  },
+  ssr: {
+    noExternal: ['react-router-dom', 'express', 'http-proxy-middleware']
   }
 });

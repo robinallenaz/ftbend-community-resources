@@ -26,7 +26,7 @@ export default function HomePage() {
                 There is no community without unity 🏳️‍⚧️🏳️‍🌈
               </p>
               <p className="mt-2 text-base text-vanillaCustard/85">
-                We host monthly events in Fort Bend County and share resources across South Texas.
+                Find healthcare providers, legal services, support groups, and inclusive events in Fort Bend County, Texas.
               </p>
             </div>
           </div>
@@ -35,24 +35,54 @@ export default function HomePage() {
               to="/resources"
               className="rounded-xl bg-powderBlush px-4 py-3 text-lg font-extrabold text-pitchBlack shadow-soft transition hover:brightness-95"
             >
-              Browse resources
+              Browse LGBTQIA+ Resources
             </Link>
             <Link
               to="/events"
               className="rounded-xl bg-paleAmber px-4 py-3 text-lg font-extrabold text-pitchBlack shadow-soft transition hover:brightness-95"
             >
-              View events
+              View Community Events
             </Link>
           </div>
         </div>
       </section>
 
-      <section className="grid gap-6" aria-label="Quick search">
-        <h2 className="text-2xl font-extrabold text-vanillaCustard">Search LGBTQIA+ Resources</h2>
+      <section className="grid gap-6" aria-label="Resource search">
+        <h2 className="text-2xl font-extrabold text-vanillaCustard">Search LGBTQIA+ Resources & Support Services</h2>
         <p className="text-base text-vanillaCustard/85">
-          Find healthcare providers, legal services, support groups, and community organizations in Fort Bend County and across Texas.
+          Find affirming healthcare providers, legal aid, mental health services, and community organizations in Fort Bend County and across Texas.
         </p>
         <ResourceExplorer />
+      </section>
+
+      <section className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-6 shadow-soft">
+        <h2 className="text-2xl font-extrabold text-vanillaCustard mb-4">Healthcare & Medical Services</h2>
+        <p className="text-base text-vanillaCustard/90 mb-4">
+          Connect with LGBTQIA+ affirming healthcare providers offering hormone therapy, mental health services, and specialized medical care.
+        </p>
+        <Link to="/resources" className="inline-flex rounded-xl bg-powderBlush px-4 py-2 text-base font-bold text-pitchBlack transition hover:brightness-95">
+          Find Healthcare Providers
+        </Link>
+      </section>
+
+      <section className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-6 shadow-soft">
+        <h2 className="text-2xl font-extrabold text-vanillaCustard mb-4">Legal Support & Advocacy</h2>
+        <p className="text-base text-vanillaCustard/90 mb-4">
+          Access legal assistance for name changes, discrimination cases, housing rights, and other LGBTQIA+ legal services in Texas.
+        </p>
+        <Link to="/resources" className="inline-flex rounded-xl bg-powderBlush px-4 py-2 text-base font-bold text-pitchBlack transition hover:brightness-95">
+          Find Legal Aid Services
+        </Link>
+      </section>
+
+      <section className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-6 shadow-soft">
+        <h2 className="text-2xl font-extrabold text-vanillaCustard mb-4">Community Events & Meetups</h2>
+        <p className="text-base text-vanillaCustard/90 mb-4">
+          Join inclusive LGBTQIA+ community events, support group meetings, and social gatherings in Fort Bend County and nearby areas.
+        </p>
+        <Link to="/events" className="inline-flex rounded-xl bg-paleAmber px-4 py-2 text-base font-bold text-pitchBlack transition hover:brightness-95">
+          View Upcoming Events
+        </Link>
       </section>
     </div>
   );

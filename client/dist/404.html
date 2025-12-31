@@ -1,0 +1,15 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fort Bend County LGBTQIA+ Community</title>
+  </head>
+  <body>
+    <script>
+      var l = window.location;
+      var base = l.pathname.split('/').slice(0, 2).join('/');
+      l.replace(l.protocol + '//' + l.host + base + '/#' + l.pathname.slice(base.length) + l.search + l.hash);
+    </script>
+  </body>
+</html>
