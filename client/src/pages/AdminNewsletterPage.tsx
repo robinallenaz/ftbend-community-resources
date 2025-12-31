@@ -14,7 +14,7 @@ export default function AdminNewsletterPage() {
   const [subscribers, setSubscribers] = useState<NewsletterSubscriber[]>([]);
   const [draft, setDraft] = useState<CampaignDraft>({ subject: '', htmlContent: '', textContent: '' });
   const [markdown, setMarkdown] = useState('');
-  const [useMarkdown, setUseMarkdown] = useState(false);
+  const [useMarkdown, setUseMarkdown] = useState(true);
   const [saving, setSaving] = useState(false);
   const [sending, setSending] = useState(false);
   const [testing, setTesting] = useState(false);
@@ -151,23 +151,40 @@ export default function AdminNewsletterPage() {
               {useMarkdown ? 'Switch to HTML' : 'Switch to Markdown'}
             </button>
           </div>
-          {useMarkdown ? (
-            <textarea
-              value={markdown}
-              onChange={(e) => setMarkdown(e.target.value)}
-              placeholder="Write your newsletter in Markdown..."
-              rows={12}
-              className="w-full rounded-2xl border border-vanillaCustard/20 bg-graphite px-4 py-3 text-base font-mono text-vanillaCustard"
-            />
-          ) : (
-            <textarea
-              value={draft.htmlContent}
-              onChange={(e) => setDraft({ ...draft, htmlContent: e.target.value })}
-              placeholder="HTML content (you can use basic HTML tags)"
-              rows={12}
-              className="w-full rounded-2xl border border-vanillaCustard/20 bg-graphite px-4 py-3 text-base font-mono text-vanillaCustard"
-            />
-          )}
+          <div className="grid gap-4 lg:grid-cols-2">
+            <div className="grid gap-2">
+              <span className="text-sm font-semibold text-vanillaCustard/85">
+                {useMarkdown ? 'Markdown' : 'HTML'}
+              </span>
+              {useMarkdown ? (
+                <textarea
+                  value={markdown}
+                  onChange={(e) => setMarkdown(e.target.value)}
+                  placeholder="Write your newsletter in Markdown..."
+                  rows={12}
+                  className="w-full rounded-2xl border border-vanillaCustard/20 bg-graphite px-4 py-3 text-base font-mono text-vanillaCustard"
+                />
+              ) : (
+                <textarea
+                  value={draft.htmlContent}
+                  onChange={(e) => setDraft({ ...draft, htmlContent: e.target.value })}
+                  placeholder="HTML content (you can use basic HTML tags)"
+                  rows={12}
+                  className="w-full rounded-2xl border border-vanillaCustard/20 bg-graphite px-4 py-3 text-base font-mono text-vanillaCustard"
+                />
+              )}
+            </div>
+            <div className="grid gap-2">
+              <span className="text-sm font-semibold text-vanillaCustard/85">Live Preview</span>
+              <div className="rounded-2xl border border-vanillaCustard/15 bg-graphite p-4 prose prose-invert max-w-none min-h-[12rem]">
+                {currentHtml ? (
+                  <div dangerouslySetInnerHTML={{ __html: currentHtml }} />
+                ) : (
+                  <div className="text-vanillaCustard/50 italic">Preview will appear here...</div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
 
         <label className="grid gap-2">
@@ -180,17 +197,6 @@ export default function AdminNewsletterPage() {
             className="w-full rounded-2xl border border-vanillaCustard/20 bg-graphite px-4 py-3 text-base font-mono text-vanillaCustard"
           />
         </label>
-
-        {currentHtml && (
-          <details className="grid gap-2">
-            <summary className="cursor-pointer text-base font-bold text-vanillaCustard hover:text-vanillaCustard/85">
-              Live Preview
-            </summary>
-            <div className="rounded-2xl border border-vanillaCustard/15 bg-graphite p-4 prose prose-invert max-w-none">
-              <div dangerouslySetInnerHTML={{ __html: currentHtml }} />
-            </div>
-          </details>
-        )}
 
         <div className="flex flex-wrap gap-2">
           <button
