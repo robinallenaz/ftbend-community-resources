@@ -22,6 +22,16 @@ export const resources: Resource[] = [
     tags: ['instagram', 'events', 'updates']
   },
   {
+    id: 'ftbend-discord',
+    name: 'Ft Bend LGBTQIA+ Community & Resources (Discord)',
+    description: 'Join the community Discord to chat, share resources, and stay connected.',
+    url: 'https://discord.gg/ARn6ReWT',
+    locations: ['Fort Bend', 'Virtual'],
+    types: ['Community'],
+    audiences: ['All'],
+    tags: ['discord', 'community', 'chat', 'resources']
+  },
+  {
     id: 'trans-legal-aid-tx',
     name: 'Trans Legal Aid Clinic TX',
     description: 'Legal aid clinic focused on trans Texans.',
