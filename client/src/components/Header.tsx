@@ -7,7 +7,7 @@ function NavItem({ to, label }: { to: string; label: string }) {
       to={to}
       className={({ isActive }: { isActive: boolean }) =>
         [
-          'rounded-xl px-3 py-2 text-base font-semibold transition',
+          'rounded-xl px-3 py-2 text-base font-semibold transition focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-2 focus:ring-offset-graphite',
           'hover:bg-pitchBlack/70 hover:text-vanillaCustard',
           isActive ? 'bg-pitchBlack text-vanillaCustard shadow-soft' : 'text-vanillaCustard/95'
         ].join(' ')
@@ -28,7 +28,7 @@ export default function Header() {
         <button
           type="button"
           onClick={() => navigate('/')}
-          className="flex items-center gap-3 rounded-xl px-2 py-2 text-left hover:bg-pitchBlack/60"
+          className="flex items-center gap-3 rounded-xl px-2 py-2 text-left hover:bg-pitchBlack/60 focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-2 focus:ring-offset-graphite transition"
           aria-label="Go to homepage"
         >
           <img
@@ -44,7 +44,7 @@ export default function Header() {
           </div>
         </button>
 
-        <nav aria-label="Primary" className="hidden items-center gap-1 md:flex">
+        <nav aria-label="Primary navigation" className="hidden items-center gap-1 md:flex">
           <NavItem to="/" label="Home" />
           <NavItem to="/resources" label="Resources" />
           <NavItem to="/events" label="Events" />
@@ -56,8 +56,9 @@ export default function Header() {
           <TextSizeToggle />
           <button
             type="button"
-            className="rounded-xl bg-powderBlush px-3 py-2 text-base font-bold text-pitchBlack shadow-soft transition hover:brightness-95"
+            className="rounded-xl bg-powderBlush px-3 py-2 text-base font-bold text-pitchBlack shadow-soft transition hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-2 focus:ring-offset-graphite"
             onClick={() => navigate(location.pathname === '/resources' ? '/' : '/resources')}
+            aria-label={location.pathname === '/resources' ? 'Go to homepage' : 'Search resources'}
           >
             Search
           </button>
@@ -65,7 +66,7 @@ export default function Header() {
       </div>
 
       <div className="mx-auto w-full max-w-6xl px-4 pb-3 md:hidden md:px-6">
-        <nav aria-label="Primary" className="flex flex-wrap gap-2">
+        <nav aria-label="Primary navigation (mobile)" className="flex flex-wrap gap-2">
           <NavItem to="/" label="Home" />
           <NavItem to="/resources" label="Resources" />
           <NavItem to="/events" label="Events" />

@@ -18,15 +18,16 @@ export default function TextSizeToggle() {
   }, [scale]);
 
   return (
-    <div className="flex items-center gap-1 rounded-xl bg-pitchBlack/60 p-1" aria-label="Text size">
-      {options.map((v) => (
+    <div className="flex items-center gap-1 rounded-xl bg-pitchBlack/60 p-1" role="group" aria-label="Text size adjustment">
+      {options.map((v, index) => (
         <button
           key={v}
           type="button"
           onClick={() => setScale(v)}
           aria-pressed={scale === v}
+          aria-label={`Text size ${v === 0.95 ? 'small' : v === 1 ? 'normal' : v === 1.15 ? 'large' : 'extra large'}`}
           className={[
-            'rounded-lg px-2 py-1 text-sm font-bold transition',
+            'rounded-lg px-2 py-1 text-sm font-bold transition focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-1 focus:ring-offset-pitchBlack',
             scale === v ? 'bg-paleAmber text-pitchBlack' : 'text-vanillaCustard hover:bg-pitchBlack'
           ].join(' ')}
         >

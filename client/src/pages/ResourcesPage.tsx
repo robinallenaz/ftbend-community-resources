@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import ResourceExplorer from '../components/ResourceExplorer';
 
 export default function ResourcesPage() {
   const [showShareMenu, setShowShareMenu] = useState(false);
+  const shareButtonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const shareUrl = (platform: string) => {
     const url = window.location.href;
@@ -27,6 +29,33 @@ export default function ResourcesPage() {
     }
   };
 
+  // Close menu when clicking outside or pressing Escape
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node) && 
+          shareButtonRef.current && !shareButtonRef.current.contains(event.target as Node)) {
+        setShowShareMenu(false);
+      }
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setShowShareMenu(false);
+        shareButtonRef.current?.focus();
+      }
+    }
+
+    if (showShareMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [showShareMenu]);
+
   return (
     <div className="grid gap-6">
       <header className="grid gap-2">
@@ -39,19 +68,27 @@ export default function ResourcesPage() {
           </div>
           <div className="relative">
             <button
-              className="rounded-xl border border-vanillaCustard/20 bg-graphite px-3 py-2 text-sm font-extrabold text-vanillaCustard shadow-soft transition hover:brightness-95"
+              ref={shareButtonRef}
+              className="rounded-xl border border-vanillaCustard/20 bg-graphite px-3 py-2 text-sm font-extrabold text-vanillaCustard shadow-soft transition hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-2 focus:ring-offset-graphite"
               onClick={() => setShowShareMenu(!showShareMenu)}
+              aria-expanded={showShareMenu}
+              aria-haspopup="true"
             >
               Share Resources
             </button>
             {showShareMenu && (
-              <div className="absolute right-0 top-full mt-2 w-48 rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-2 shadow-soft z-50">
+              <div 
+                ref={menuRef}
+                className="absolute right-0 top-full mt-2 w-48 rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-2 shadow-soft z-50"
+                role="menu"
+              >
                 <div className="grid gap-1">
                   <a
                     href={shareUrl('facebook')}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block rounded-xl px-3 py-2 text-sm text-vanillaCustard hover:bg-pitchBlack/70 transition"
+                    className="block rounded-xl px-3 py-2 text-sm text-vanillaCustard hover:bg-pitchBlack/70 transition focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-1 focus:ring-offset-pitchBlack"
+                    role="menuitem"
                   >
                     Facebook
                   </a>
@@ -59,7 +96,8 @@ export default function ResourcesPage() {
                     href={shareUrl('twitter')}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block rounded-xl px-3 py-2 text-sm text-vanillaCustard hover:bg-pitchBlack/70 transition"
+                    className="block rounded-xl px-3 py-2 text-sm text-vanillaCustard hover:bg-pitchBlack/70 transition focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-1 focus:ring-offset-pitchBlack"
+                    role="menuitem"
                   >
                     Twitter
                   </a>
@@ -67,13 +105,15 @@ export default function ResourcesPage() {
                     href={shareUrl('linkedin')}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block rounded-xl px-3 py-2 text-sm text-vanillaCustard hover:bg-pitchBlack/70 transition"
+                    className="block rounded-xl px-3 py-2 text-sm text-vanillaCustard hover:bg-pitchBlack/70 transition focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-1 focus:ring-offset-pitchBlack"
+                    role="menuitem"
                   >
                     LinkedIn
                   </a>
                   <a
                     href={shareUrl('email')}
-                    className="block rounded-xl px-3 py-2 text-sm text-vanillaCustard hover:bg-pitchBlack/70 transition"
+                    className="block rounded-xl px-3 py-2 text-sm text-vanillaCustard hover:bg-pitchBlack/70 transition focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-1 focus:ring-offset-pitchBlack"
+                    role="menuitem"
                   >
                     Email
                   </a>
