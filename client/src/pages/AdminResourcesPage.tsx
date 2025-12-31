@@ -63,7 +63,7 @@ export default function AdminResourcesPage() {
           <p className="text-base text-vanillaCustard/85">Add, edit, and archive resources.</p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-end gap-2">
           <label className="grid gap-1">
             <span className="text-sm font-bold text-vanillaCustard">Search</span>
             <input

@@ -61,7 +61,7 @@ export default function AdminEventsPage() {
           <p className="text-base text-vanillaCustard/85">Add, edit, and archive events.</p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-end gap-2">
           <label className="grid gap-1">
             <span className="text-sm font-bold text-vanillaCustard">Search</span>
             <input
