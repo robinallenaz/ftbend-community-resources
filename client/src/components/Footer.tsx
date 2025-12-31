@@ -21,7 +21,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="mt-8 text-sm text-vanillaCustard/70">
-          If you’re in danger or need urgent help, call The LGBT National Hotline: (888) 843-4564 and Trans Lifeline: (877) 565-8860.
+          If you need support right now, call The LGBT National Hotline: (888) 843-4564 or Trans Lifeline: (877) 565-8860.
         </div>
       </div>
     </footer>
