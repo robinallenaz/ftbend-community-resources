@@ -125,7 +125,16 @@ export default function AdminResourcesPage() {
             >
               <div className="grid gap-1">
                 <div className="text-lg font-extrabold text-vanillaCustard">{r.name}</div>
-                <div className="text-sm text-vanillaCustard/75 break-all">{r.url}</div>
+                <div className="text-sm text-vanillaCustard/75 break-all">
+                  <a
+                    href={r.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline underline-offset-4 hover:text-paleAmber"
+                  >
+                    {r.url}
+                  </a>
+                </div>
                 <div className="text-sm text-vanillaCustard/75">
                   Status: <span className="font-bold">{r.status}</span>
                 </div>
