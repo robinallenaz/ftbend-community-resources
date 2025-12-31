@@ -7,11 +7,13 @@ import AdminDashboardPage from './pages/AdminDashboardPage';
 import AdminEventEditorPage from './pages/AdminEventEditorPage';
 import AdminEventsPage from './pages/AdminEventsPage';
 import AdminLoginPage from './pages/AdminLoginPage';
+import AdminNewsletterPage from './pages/AdminNewsletterPage';
 import AdminResourceEditorPage from './pages/AdminResourceEditorPage';
 import AdminResourcesPage from './pages/AdminResourcesPage';
 import AdminSubmissionsPage from './pages/AdminSubmissionsPage';
 import EventsPage from './pages/EventsPage';
 import HomePage from './pages/HomePage';
+import NewsletterPage from './pages/NewsletterPage';
 import ResourcesPage from './pages/ResourcesPage';
 import SubmitResourcePage from './pages/SubmitResourcePage';
 
@@ -27,6 +29,7 @@ export default function App() {
           <Route path="events" element={<AdminEventsPage />} />
           <Route path="events/:id" element={<AdminEventEditorPage />} />
           <Route path="submissions" element={<AdminSubmissionsPage />} />
+          <Route path="newsletter" element={<AdminNewsletterPage />} />
           <Route path="*" element={<Navigate to="/admin" replace />} />
         </Route>
       </Route>
@@ -37,6 +40,7 @@ export default function App() {
         <Route path="/events" element={<EventsPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/submit" element={<SubmitResourcePage />} />
+        <Route path="/newsletter" element={<NewsletterPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

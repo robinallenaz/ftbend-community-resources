@@ -4,6 +4,7 @@ const { z } = require('zod');
 const Resource = require('../models/Resource');
 const Event = require('../models/Event');
 const Submission = require('../models/Submission');
+const NewsletterSubscriber = require('../models/NewsletterSubscriber');
 const { validate } = require('../lib/validate');
 const { sendEmail } = require('../lib/email');
 const { getOrCreateNotificationSettings } = require('../lib/notificationSettings');
@@ -154,6 +155,36 @@ router.post('/submissions', async (req, res, next) => {
       id: submission._id,
       status: submission.status
     });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post('/newsletter/subscribe', async (req, res, next) => {
+  try {
+    const input = validate(
+      z.object({
+        email: z.string().email().max(200)
+      }),
+      req.body
+    );
+
+    const existing = await NewsletterSubscriber.findOne({ email: input.email.toLowerCase().trim() });
+    if (existing) {
+      if (existing.status === 'unsubscribed') {
+        existing.status = 'active';
+        await existing.save();
+      }
+      return res.status(200).json({ status: 'subscribed' });
+    }
+
+    await NewsletterSubscriber.create({
+      email: input.email.toLowerCase().trim(),
+      source: 'public_signup',
+      status: 'active'
+    });
+
+    res.status(201).json({ status: 'subscribed' });
   } catch (e) {
     next(e);
   }

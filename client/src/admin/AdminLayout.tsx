@@ -41,6 +41,7 @@ export default function AdminLayout() {
             <NavItem to="/admin/resources" label="Resources" />
             <NavItem to="/admin/events" label="Events" />
             <NavItem to="/admin/submissions" label="Submissions" />
+            <NavItem to="/admin/newsletter" label="Newsletter" />
           </nav>
 
           <div className="flex items-center gap-2">

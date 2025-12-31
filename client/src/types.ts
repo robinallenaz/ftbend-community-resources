@@ -33,3 +33,27 @@ export type EventListing = {
   url: string;
   locationHint: string;
 };
+
+export type NewsletterSubscriber = {
+  _id: string;
+  email: string;
+  source: string;
+  status: 'active' | 'unsubscribed';
+  createdAt: string;
+};
+
+export type NewsletterCampaign = {
+  _id: string;
+  subject: string;
+  htmlContent: string;
+  textContent: string;
+  status: 'draft' | 'sending' | 'sent';
+  sentAt?: string;
+  sentCount: number;
+  error?: string;
+  createdByUserId: {
+    _id: string;
+    email: string;
+  };
+  createdAt: string;
+};

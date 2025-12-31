@@ -4,7 +4,10 @@ const { z } = require('zod');
 const Resource = require('../models/Resource');
 const Event = require('../models/Event');
 const Submission = require('../models/Submission');
+const NewsletterSubscriber = require('../models/NewsletterSubscriber');
+const NewsletterCampaign = require('../models/NewsletterCampaign');
 const { getOrCreateNotificationSettings } = require('../lib/notificationSettings');
+const { sendEmail } = require('../lib/email');
 const { requireAuth, requireRole } = require('../lib/auth');
 const { validate } = require('../lib/validate');
 
@@ -505,6 +508,125 @@ router.post('/submissions/:id/reject', async (req, res, next) => {
     await submission.save();
 
     res.status(204).send();
+  } catch (e) {
+    next(e);
+  }
+});
+
+// Newsletter admin endpoints
+router.get('/newsletter/subscribers', async (req, res, next) => {
+  try {
+    const items = await NewsletterSubscriber.find({ status: 'active' }).sort({ createdAt: -1 }).lean();
+    res.json({ items });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/newsletter/campaigns', async (req, res, next) => {
+  try {
+    const items = await NewsletterCampaign.find().sort({ createdAt: -1 }).populate('createdByUserId', 'email').lean();
+    res.json({ items });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post('/newsletter/campaigns', requireRole(['admin']), async (req, res, next) => {
+  try {
+    const input = validate(
+      z.object({
+        subject: z.string().min(1).max(200),
+        htmlContent: z.string().min(1),
+        textContent: z.string().min(1)
+      }),
+      req.body
+    );
+
+    const campaign = await NewsletterCampaign.create({
+      subject: input.subject,
+      htmlContent: input.htmlContent,
+      textContent: input.textContent,
+      status: 'draft',
+      createdByUserId: req.auth.sub
+    });
+
+    res.status(201).json({ campaign });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post('/newsletter/campaigns/:id/test', requireRole(['admin']), async (req, res, next) => {
+  try {
+    const input = validate(
+      z.object({
+        to: z.string().email().max(200)
+      }),
+      req.body
+    );
+
+    const campaign = await NewsletterCampaign.findById(req.params.id);
+    if (!campaign) {
+      const err = new Error('Campaign not found');
+      err.status = 404;
+      throw err;
+    }
+
+    await sendEmail({
+      to: input.to,
+      subject: `[TEST] ${campaign.subject}`,
+      html: campaign.htmlContent,
+      text: campaign.textContent
+    });
+
+    res.json({ status: 'sent' });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post('/newsletter/campaigns/:id/send', requireRole(['admin']), async (req, res, next) => {
+  try {
+    const campaign = await NewsletterCampaign.findById(req.params.id);
+    if (!campaign) {
+      const err = new Error('Campaign not found');
+      err.status = 404;
+      throw err;
+    }
+    if (campaign.status !== 'draft') {
+      const err = new Error('Campaign already sent or sending');
+      err.status = 409;
+      throw err;
+    }
+
+    campaign.status = 'sending';
+    await campaign.save();
+
+    const subscribers = await NewsletterSubscriber.find({ status: 'active' }).lean();
+    const emails = subscribers.map((s) => s.email);
+
+    let sentCount = 0;
+    for (const email of emails) {
+      try {
+        await sendEmail({
+          to: email,
+          subject: campaign.subject,
+          html: campaign.htmlContent,
+          text: campaign.textContent
+        });
+        sentCount++;
+      } catch (e) {
+        console.error('Failed to send newsletter to', email, e);
+      }
+    }
+
+    campaign.status = 'sent';
+    campaign.sentAt = new Date();
+    campaign.sentCount = sentCount;
+    await campaign.save();
+
+    res.json({ status: 'sent', sentCount });
   } catch (e) {
     next(e);
   }
