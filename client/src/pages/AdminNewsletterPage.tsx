@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { marked } from 'marked';
 import type { NewsletterCampaign, NewsletterSubscriber } from '../types';
 import { api } from '../admin/api';
 
@@ -12,12 +13,42 @@ export default function AdminNewsletterPage() {
   const [campaigns, setCampaigns] = useState<NewsletterCampaign[]>([]);
   const [subscribers, setSubscribers] = useState<NewsletterSubscriber[]>([]);
   const [draft, setDraft] = useState<CampaignDraft>({ subject: '', htmlContent: '', textContent: '' });
+  const [markdown, setMarkdown] = useState('');
+  const [useMarkdown, setUseMarkdown] = useState(false);
   const [saving, setSaving] = useState(false);
   const [sending, setSending] = useState(false);
   const [testing, setTesting] = useState(false);
   const [testEmail, setTestEmail] = useState('');
   const [message, setMessage] = useState('');
   const [previewHtml, setPreviewHtml] = useState(false);
+
+  // Sync markdown to htmlContent when toggled
+  useEffect(() => {
+    if (useMarkdown) {
+      const html = marked(markdown);
+      setDraft(prev => ({ ...prev, htmlContent: html }));
+    }
+  }, [markdown, useMarkdown]);
+
+  // Sync htmlContent back to markdown when switching from HTML to markdown
+  useEffect(() => {
+    if (!useMarkdown && draft.htmlContent) {
+      // Basic reverse conversion (not perfect but functional)
+      const md = draft.htmlContent
+        .replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1')
+        .replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1')
+        .replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1')
+        .replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**')
+        .replace(/<b[^>]*>(.*?)<\/b>/gi, '**$1**')
+        .replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*')
+        .replace(/<i[^>]*>(.*?)<\/i>/gi, '*$1*')
+        .replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)')
+        .replace(/<p[^>]*>(.*?)<\/p>/gi, '$1\n\n')
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<[^>]*>/g, '');
+      setMarkdown(md.trim());
+    }
+  }, [draft.htmlContent, useMarkdown]);
 
   async function load() {
     const [cRes, sRes] = await Promise.all([
@@ -34,9 +65,13 @@ export default function AdminNewsletterPage() {
     setSaving(true);
     setMessage('');
     try {
-      const res = await api.post<{ campaign: NewsletterCampaign }>('/api/admin/newsletter/campaigns', draft);
+      const finalDraft = useMarkdown
+        ? { ...draft, htmlContent: marked(markdown) }
+        : draft;
+      const res = await api.post<{ campaign: NewsletterCampaign }>('/api/admin/newsletter/campaigns', finalDraft);
       setCampaigns([res.campaign, ...campaigns]);
       setDraft({ subject: '', htmlContent: '', textContent: '' });
+      setMarkdown('');
       setMessage('Campaign saved as draft.');
     } catch (e: any) {
       setMessage(e?.message || 'Save failed.');
@@ -74,6 +109,8 @@ export default function AdminNewsletterPage() {
     }
   }
 
+  const currentHtml = useMarkdown ? marked(markdown) : draft.htmlContent;
+
   return (
     <main className="mx-auto max-w-4xl space-y-8 px-4 py-12">
       <header className="flex flex-wrap items-end justify-between gap-4">
@@ -103,16 +140,35 @@ export default function AdminNewsletterPage() {
           />
         </label>
 
-        <label className="grid gap-2">
-          <span className="text-base font-bold text-vanillaCustard">HTML Content</span>
-          <textarea
-            value={draft.htmlContent}
-            onChange={(e) => setDraft({ ...draft, htmlContent: e.target.value })}
-            placeholder="HTML content (you can use basic HTML tags)"
-            rows={8}
-            className="w-full rounded-2xl border border-vanillaCustard/20 bg-graphite px-4 py-3 text-base font-mono text-vanillaCustard"
-          />
-        </label>
+        <div className="grid gap-2">
+          <div className="flex items-center justify-between">
+            <span className="text-base font-bold text-vanillaCustard">Content</span>
+            <button
+              type="button"
+              onClick={() => setUseMarkdown(!useMarkdown)}
+              className="rounded-xl border border-vanillaCustard/20 bg-graphite px-3 py-2 text-sm font-extrabold text-vanillaCustard shadow-soft transition hover:brightness-95"
+            >
+              {useMarkdown ? 'Switch to HTML' : 'Switch to Markdown'}
+            </button>
+          </div>
+          {useMarkdown ? (
+            <textarea
+              value={markdown}
+              onChange={(e) => setMarkdown(e.target.value)}
+              placeholder="Write your newsletter in Markdown..."
+              rows={12}
+              className="w-full rounded-2xl border border-vanillaCustard/20 bg-graphite px-4 py-3 text-base font-mono text-vanillaCustard"
+            />
+          ) : (
+            <textarea
+              value={draft.htmlContent}
+              onChange={(e) => setDraft({ ...draft, htmlContent: e.target.value })}
+              placeholder="HTML content (you can use basic HTML tags)"
+              rows={12}
+              className="w-full rounded-2xl border border-vanillaCustard/20 bg-graphite px-4 py-3 text-base font-mono text-vanillaCustard"
+            />
+          )}
+        </div>
 
         <label className="grid gap-2">
           <span className="text-base font-bold text-vanillaCustard">Plain Text Content</span>
@@ -125,10 +181,21 @@ export default function AdminNewsletterPage() {
           />
         </label>
 
+        {currentHtml && (
+          <details className="grid gap-2">
+            <summary className="cursor-pointer text-base font-bold text-vanillaCustard hover:text-vanillaCustard/85">
+              Live Preview
+            </summary>
+            <div className="rounded-2xl border border-vanillaCustard/15 bg-graphite p-4 prose prose-invert max-w-none">
+              <div dangerouslySetInnerHTML={{ __html: currentHtml }} />
+            </div>
+          </details>
+        )}
+
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
-            disabled={saving || !draft.subject || !draft.htmlContent || !draft.textContent}
+            disabled={saving || !draft.subject || !currentHtml || !draft.textContent}
             onClick={handleSave}
             className="rounded-xl bg-powderBlush px-4 py-3 text-base font-extrabold text-pitchBlack shadow-soft transition hover:brightness-95 disabled:opacity-60"
           >
@@ -190,7 +257,7 @@ export default function AdminNewsletterPage() {
                   </div>
                 </div>
                 {previewHtml && (
-                  <div className="rounded-2xl border border-vanillaCustard/15 bg-graphite p-4">
+                  <div className="rounded-2xl border border-vanillaCustard/15 bg-graphite p-4 prose prose-invert max-w-none">
                     <div className="mb-2 text-sm font-bold text-vanillaCustard/70">HTML Preview:</div>
                     <div
                       className="text-vanillaCustard"
