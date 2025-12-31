@@ -1,61 +1,38 @@
-const nodemailer = require('nodemailer');
-
-let cached = null;
-
-function getTransport() {
-  if (cached) return cached;
-
-  const host = process.env.SMTP_HOST;
-  const portRaw = process.env.SMTP_PORT;
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-
-  if (!host || !portRaw || !user || !pass) return null;
-
-  const port = Number(portRaw);
-  const secure = port === 465;
-
-  cached = nodemailer.createTransport({
-    host,
-    port,
-    secure,
-    auth: { user, pass },
-    // Explicit TLS for port 587; increase timeout for Render
-    tls: { rejectUnauthorized: false },
-    connectionTimeout: 30000,
-    greetingTimeout: 15000,
-    socketTimeout: 30000
-  });
-
-  return cached;
-}
-
-function getFromAddress() {
-  return process.env.SMTP_FROM || process.env.SMTP_USER || '';
-}
+const axios = require('axios');
 
 async function sendEmail(args) {
-  const transport = getTransport();
-  const from = getFromAddress();
+  const apiKey = process.env.SMTP_PASS;
+  const from = process.env.SMTP_FROM || process.env.SMTP_USER || '';
 
-  console.log('[email] sendEmail: transport?', !!transport, 'from?', from, 'to?', args.to);
-  if (!transport || !from) return { ok: false, skipped: true };
+  console.log('[email] sendEmail: apiKey?', !!apiKey, 'from?', from, 'to?', args.to);
+  if (!apiKey || !from) return { ok: false, skipped: true };
 
   const toList = Array.isArray(args.to) ? args.to : [args.to];
   const to = toList.map((x) => String(x || '').trim()).filter(Boolean).join(',');
   if (!to) return { ok: false, skipped: true };
 
-  console.log('[email] Sending to', to);
-  await transport.sendMail({
-    from,
-    to,
-    subject: args.subject,
-    text: args.text,
-    html: args.html
-  });
-
-  console.log('[email] Sent successfully');
-  return { ok: true };
+  console.log('[email] Sending via Brevo API to', to);
+  try {
+    const response = await axios.post('https://api.brevo.com/v3/smtp/email', {
+      sender: { email: from },
+      to: to.split(',').map(email => ({ email })),
+      subject: args.subject,
+      htmlContent: args.html,
+      textContent: args.text
+    }, {
+      headers: {
+        'api-key': apiKey,
+        'Content-Type': 'application/json',
+        Accept: 'application/json'
+      },
+      timeout: 15000
+    });
+    console.log('[email] Sent successfully via Brevo API', response.status);
+    return { ok: true };
+  } catch (e) {
+    console.error('[email] Brevo API error', e.response?.status, e.response?.data || e.message);
+    throw e;
+  }
 }
 
 module.exports = {
