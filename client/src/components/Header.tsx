@@ -49,7 +49,6 @@ export default function Header() {
           <NavItem to="/resources" label="Resources" />
           <NavItem to="/events" label="Events" />
           <NavItem to="/about" label="About" />
-          <NavItem to="/newsletter" label="Newsletter" />
           <NavItem to="/submit" label="Submit a Resource" />
         </nav>
 
@@ -71,7 +70,6 @@ export default function Header() {
           <NavItem to="/resources" label="Resources" />
           <NavItem to="/events" label="Events" />
           <NavItem to="/about" label="About" />
-          <NavItem to="/newsletter" label="Newsletter" />
           <NavItem to="/submit" label="Submit" />
         </nav>
       </div>

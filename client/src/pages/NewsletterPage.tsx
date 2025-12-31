@@ -32,7 +32,7 @@ export default function NewsletterPage() {
       <section className="grid gap-4">
         <h1 className="text-4xl font-extrabold text-vanillaCustard">Newsletter</h1>
         <p className="text-lg text-vanillaCustard/85">
-          Stay up to date with new resources, events, and community news for Fort Bend County LGBTQIA+.
+          Stay up to date with new resources, events, and community news for the LGBTQIA+ Community in Fort Bend and Surrounding Counties.
         </p>
       </section>
 
