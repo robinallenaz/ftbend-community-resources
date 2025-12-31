@@ -136,9 +136,9 @@ router.post('/submissions', async (req, res, next) => {
         const adminUrl = `${base}/admin/submissions`;
 
         const subject = `New resource submission: ${submission.name}`;
-        const text = `A new resource was submitted.\n\nName: ${submission.name}\nURL: ${submission.url}\n\nReview in admin: ${adminUrl}`;
+        const text = `A new resource was submitted to the Fort Bend County LGBTQIA+ Community Resources website.\n\nName: ${submission.name}\nURL: ${submission.url}\n\nReview in admin: ${adminUrl}`;
         const html = `
-          <p>A new resource was submitted.</p>
+          <p>A new resource was submitted to the Fort Bend County LGBTQIA+ Community Resources website.</p>
           <p><strong>Name:</strong> ${submission.name}</p>
           <p><strong>URL:</strong> <a href="${submission.url}" target="_blank" rel="noreferrer">${submission.url}</a></p>
           <p><a href="${adminUrl}" target="_blank" rel="noreferrer">Review submissions</a></p>
