@@ -41,7 +41,7 @@ export default function AdminResourceEditorPage() {
   const [url, setUrl] = useState('');
   const [description, setDescription] = useState('');
   const [locations, setLocations] = useState<Set<string>>(toSet(['Fort Bend']));
-  const [types, setTypes] = useState<Set<string>>(toSet(['Community']));
+  const [types, setTypes] = useState<Set<string>>(toSet([]));
   const [audiences, setAudiences] = useState<Set<string>>(toSet(['All']));
   const [tags, setTags] = useState('');
   const [status, setStatus] = useState<'active' | 'archived'>('active');
