@@ -25,7 +25,7 @@ export const resources: Resource[] = [
     id: 'ftbend-discord',
     name: 'Ft Bend LGBTQIA+ Community & Resources (Discord)',
     description: 'Join the community Discord to chat, share resources, and stay connected.',
-    url: 'https://discord.gg/ARn6ReWT',
+    url: 'https://discord.gg/jgmjSGthwg',
     locations: ['Fort Bend', 'Virtual'],
     types: ['Community'],
     audiences: ['All'],
