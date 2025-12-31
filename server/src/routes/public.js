@@ -118,12 +118,19 @@ router.post('/submissions', async (req, res, next) => {
     void (async () => {
       try {
         const settings = await getOrCreateNotificationSettings();
-        if (!settings.submissionEmailEnabled) return;
+        console.log('[submission] notification settings loaded. enabled?', settings.submissionEmailEnabled, 'recipients?', settings.submissionEmailRecipients);
+        if (!settings.submissionEmailEnabled) {
+          console.log('[submission] notifications disabled; skipping email');
+          return;
+        }
 
         const recipients = Array.isArray(settings.submissionEmailRecipients)
           ? settings.submissionEmailRecipients.map((x) => String(x || '').trim()).filter(Boolean)
           : [];
-        if (!recipients.length) return;
+        if (!recipients.length) {
+          console.log('[submission] no recipients; skipping email');
+          return;
+        }
 
         const base = String(settings.publicSiteUrl || '').replace(/\/+$/, '');
         const adminUrl = `${base}/admin/submissions`;
