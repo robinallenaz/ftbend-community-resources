@@ -1,10 +1,59 @@
 import { useState, useEffect, useRef } from 'react';
 import ResourceExplorer from '../components/ResourceExplorer';
 
+// Add structured data for Resources page
+function addResourcesStructuredData() {
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    '@id': 'https://ftbend-community-resources.netlify.app/resources/#collectionpage',
+    name: 'LGBTQIA+ Resources - Fort Bend County',
+    description: 'Search LGBTQIA+ resources by location, type, and audience. Find support groups, healthcare providers, legal services, and more.',
+    url: 'https://ftbend-community-resources.netlify.app/resources',
+    isPartOf: {
+      '@type': 'WebSite',
+      '@id': 'https://ftbend-community-resources.netlify.app/#website'
+    },
+    mainEntity: {
+      '@type': 'ItemList',
+      name: 'Fort Bend County LGBTQIA+ Community Resources',
+      description: 'Comprehensive directory of LGBTQIA+ resources including healthcare, legal services, support groups, and community organizations.',
+      numberOfItems: 0, // This would be dynamically updated
+      itemListElement: [] // This would be populated with actual resources
+    },
+    about: [
+      'LGBTQIA+ Support',
+      'Community Resources',
+      'Healthcare Services',
+      'Legal Aid',
+      'Mental Health',
+      'Social Services'
+    ],
+    audience: 'LGBTQIA+ Community and Allies',
+    inLanguage: 'en-US'
+  };
+
+  // Remove existing structured data
+  const existing = document.querySelector('script[type="application/ld+json"][data-page="resources"]');
+  if (existing) existing.remove();
+
+  // Add new structured data
+  const script = document.createElement('script');
+  script.type = 'application/ld+json';
+  script.setAttribute('data-page', 'resources');
+  script.textContent = JSON.stringify(structuredData);
+  document.head.appendChild(script);
+}
+
 export default function ResourcesPage() {
   const [showShareMenu, setShowShareMenu] = useState(false);
   const shareButtonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Add structured data when component mounts
+  useEffect(() => {
+    addResourcesStructuredData();
+  }, []);
 
   const shareUrl = (platform: string) => {
     const url = window.location.href;

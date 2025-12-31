@@ -1,17 +1,77 @@
  import { useEffect, useState } from 'react';
- 
- type EventItem = {
-   _id: string;
-   name: string;
-   schedule: string;
-   url: string;
-   locationHint: string;
- };
+
+type EventItem = {
+  _id: string;
+  name: string;
+  schedule: string;
+  url: string;
+  locationHint: string;
+};
+
+// Add structured data for Events page
+function addEventsStructuredData() {
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'EventSeries',
+    '@id': 'https://ftbend-community-resources.netlify.app/events/#eventseries',
+    name: 'Fort Bend LGBTQIA+ Community Events',
+    description: 'Monthly community events, meetups, and support gatherings for the LGBTQIA+ community in Fort Bend County and surrounding areas.',
+    url: 'https://ftbend-community-resources.netlify.app/events',
+    organizer: {
+      '@type': 'Organization',
+      '@id': 'https://ftbend-community-resources.netlify.app/#organization',
+      name: 'Fort Bend County LGBTQIA+ Community'
+    },
+    location: {
+      '@type': 'Place',
+      name: 'Fort Bend County, Texas',
+      address: {
+        '@type': 'PostalAddress',
+        addressRegion: 'TX',
+        addressLocality: 'Fort Bend County'
+      }
+    },
+    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    eventStatus: 'https://schema.org/EventScheduled',
+    typicalAgeRange: '18-',
+    isAccessibleForFree: true,
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+      availability: 'https://schema.org/InStock'
+    },
+    about: [
+      'LGBTQIA+ Community',
+      'Social Events',
+      'Support Groups',
+      'Community Building',
+      'Fort Bend County'
+    ],
+    audience: 'LGBTQIA+ Community and Allies'
+  };
+
+  // Remove existing structured data
+  const existing = document.querySelector('script[type="application/ld+json"][data-page="events"]');
+  if (existing) existing.remove();
+
+  // Add new structured data
+  const script = document.createElement('script');
+  script.type = 'application/ld+json';
+  script.setAttribute('data-page', 'events');
+  script.textContent = JSON.stringify(structuredData);
+  document.head.appendChild(script);
+}
 
 export default function EventsPage() {
   const [items, setItems] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  // Add structured data when component mounts
+  useEffect(() => {
+    addEventsStructuredData();
+  }, []);
 
   useEffect(() => {
     let cancelled = false;

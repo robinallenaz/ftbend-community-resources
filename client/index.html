@@ -49,18 +49,111 @@
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "Fort Bend County LGBTQIA+ Community",
-      "description": "Community-maintained LGBTQIA+ resources and events for Fort Bend County and nearby areas.",
-      "url": "https://ftbend-community-resources.netlify.app",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://ftbend-community-resources.netlify.app/resources?q={search_term_string}",
-        "query-input": "required name=search_term_string"
-      },
-      "sameAs": [
-        "https://www.facebook.com/ftbendlgbtqia",
-        "https://www.instagram.com/ftbendlgbtqia"
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://ftbend-community-resources.netlify.app/#website",
+          "name": "Fort Bend County LGBTQIA+ Community",
+          "description": "Community-maintained LGBTQIA+ resources and events for Fort Bend County and nearby areas.",
+          "url": "https://ftbend-community-resources.netlify.app",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://ftbend-community-resources.netlify.app/resources?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          },
+          "publisher": {
+            "@id": "https://ftbend-community-resources.netlify.app/#organization"
+          }
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://ftbend-community-resources.netlify.app/#organization",
+          "name": "Fort Bend County LGBTQIA+ Community",
+          "alternateName": "FTBend LGBTQIA+ Resources",
+          "description": "A community-maintained directory of LGBTQIA+ resources, events, and support services for Fort Bend County and surrounding areas.",
+          "url": "https://ftbend-community-resources.netlify.app",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://ftbend-community-resources.netlify.app/ftbend-lgbtqia-logo.jpg",
+            "width": 1200,
+            "height": 630
+          },
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "community support",
+            "availableLanguage": ["en"]
+          },
+          "sameAs": [
+            "https://www.facebook.com/ftbendlgbtqia",
+            "https://www.instagram.com/ftbendlgbtqia"
+          ],
+          "areaServed": {
+            "@type": "Place",
+            "name": "Fort Bend County, Texas"
+          },
+          "knowsAbout": [
+            "LGBTQIA+ Resources",
+            "Community Support",
+            "Mental Health Services",
+            "Legal Resources",
+            "Healthcare Services",
+            "Social Events"
+          ]
+        },
+        {
+          "@type": "EventSeries",
+          "@id": "https://ftbend-community-resources.netlify.app/events/#eventseries",
+          "name": "Fort Bend LGBTQIA+ Community Events",
+          "description": "Monthly community events, meetups, and support gatherings for the LGBTQIA+ community in Fort Bend County and surrounding areas.",
+          "url": "https://ftbend-community-resources.netlify.app/events",
+          "organizer": {
+            "@id": "https://ftbend-community-resources.netlify.app/#organization"
+          },
+          "location": {
+            "@type": "Place",
+            "name": "Fort Bend County, Texas",
+            "address": {
+              "@type": "PostalAddress",
+              "addressRegion": "TX",
+              "addressLocality": "Fort Bend County"
+            }
+          },
+          "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+          "eventStatus": "https://schema.org/EventScheduled",
+          "typicalAgeRange": "18-",
+          "isAccessibleForFree": true
+        },
+        {
+          "@type": "Article",
+          "@id": "https://ftbend-community-resources.netlify.app/about/#article",
+          "headline": "About Fort Bend County LGBTQIA+ Community Resources",
+          "description": "Learn about our mission to connect and support the LGBTQIA+ community in Fort Bend County through comprehensive resources and events.",
+          "url": "https://ftbend-community-resources.netlify.app/about",
+          "datePublished": "2024-01-01",
+          "dateModified": "2024-12-31",
+          "author": {
+            "@type": "Organization",
+            "@id": "https://ftbend-community-resources.netlify.app/#organization"
+          },
+          "publisher": {
+            "@type": "Organization",
+            "@id": "https://ftbend-community-resources.netlify.app/#organization",
+            "name": "Fort Bend County LGBTQIA+ Community"
+          },
+          "image": {
+            "@type": "ImageObject",
+            "url": "https://ftbend-community-resources.netlify.app/ftbend-lgbtqia-logo.jpg",
+            "width": 1200,
+            "height": 630
+          },
+          "articleSection": "Community Information",
+          "keywords": ["LGBTQIA+", "Fort Bend County", "Community Resources", "Support Services", "Texas"],
+          "inLanguage": "en-US",
+          "isPartOf": {
+            "@type": "WebSite",
+            "@id": "https://ftbend-community-resources.netlify.app/#website"
+          }
+        }
       ]
     }
     </script>
