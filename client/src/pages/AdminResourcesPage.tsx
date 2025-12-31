@@ -11,10 +11,20 @@ type ResourceItem = {
   types: string[];
   audiences: string[];
   tags: string[];
+  updatedAt?: string;
 };
+
+const SORT_OPTIONS = [
+  { value: 'updated_desc', label: 'Recently updated' },
+  { value: 'name_asc', label: 'Name (A–Z)' },
+  { value: 'name_desc', label: 'Name (Z–A)' },
+  { value: 'created_desc', label: 'Recently created' }
+] as const;
 
 export default function AdminResourcesPage() {
   const [status, setStatus] = useState<'active' | 'archived' | 'all'>('active');
+  const [q, setQ] = useState('');
+  const [sort, setSort] = useState<(typeof SORT_OPTIONS)[number]['value']>('updated_desc');
   const [items, setItems] = useState<ResourceItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -25,14 +35,25 @@ export default function AdminResourcesPage() {
 
   async function load() {
     setLoading(true);
-    const res = await api.get<{ items: ResourceItem[] }>(`/api/admin/resources?status=${encodeURIComponent(query)}`);
+    const params = new URLSearchParams();
+    params.set('status', query);
+    if (q.trim()) params.set('q', q.trim());
+    if (sort) params.set('sort', sort);
+
+    const res = await api.get<{ items: ResourceItem[] }>(`/api/admin/resources?${params.toString()}`);
     setItems(res.items);
     setLoading(false);
   }
 
   useEffect(() => {
     load();
-  }, [query]);
+  }, [query, q, sort]);
+
+  const resultCount = items.length;
+
+  const sortLabel = useMemo(() => {
+    return SORT_OPTIONS.find((x) => x.value === sort)?.label ?? 'Sort';
+  }, [sort]);
 
   return (
     <div className="grid gap-6">
@@ -44,6 +65,17 @@ export default function AdminResourcesPage() {
 
         <div className="flex flex-wrap items-center gap-2">
           <label className="grid gap-1">
+            <span className="text-sm font-bold text-vanillaCustard">Search</span>
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search name, tags, etc…"
+              className="w-60 max-w-full rounded-xl border border-vanillaCustard/20 bg-graphite px-3 py-2 text-base font-semibold text-vanillaCustard placeholder:text-vanillaCustard/60"
+              inputMode="search"
+            />
+          </label>
+
+          <label className="grid gap-1">
             <span className="text-sm font-bold text-vanillaCustard">Show</span>
             <select
               value={status}
@@ -53,6 +85,22 @@ export default function AdminResourcesPage() {
               <option value="active">Active</option>
               <option value="archived">Archived</option>
               <option value="all">All</option>
+            </select>
+          </label>
+
+          <label className="grid gap-1">
+            <span className="text-sm font-bold text-vanillaCustard">Sort</span>
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as (typeof SORT_OPTIONS)[number]['value'])}
+              className="rounded-xl border border-vanillaCustard/20 bg-graphite px-3 py-2 text-base font-semibold text-vanillaCustard"
+              aria-label={`Sort resources (${sortLabel})`}
+            >
+              {SORT_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
             </select>
           </label>
 
@@ -69,6 +117,7 @@ export default function AdminResourcesPage() {
         <div className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-6">Loading…</div>
       ) : (
         <div className="grid gap-3">
+          <div className="text-sm text-vanillaCustard/75">Showing {resultCount} result{resultCount === 1 ? '' : 's'}.</div>
           {items.map((r) => (
             <div
               key={r._id}
@@ -80,6 +129,11 @@ export default function AdminResourcesPage() {
                 <div className="text-sm text-vanillaCustard/75">
                   Status: <span className="font-bold">{r.status}</span>
                 </div>
+                {r.updatedAt ? (
+                  <div className="text-sm text-vanillaCustard/75">
+                    Updated: <span className="font-bold">{new Date(r.updatedAt).toLocaleDateString()}</span>
+                  </div>
+                ) : null}
               </div>
 
               <div className="flex flex-wrap gap-2">

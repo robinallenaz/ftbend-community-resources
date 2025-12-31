@@ -100,12 +100,30 @@ router.get('/resources', async (req, res, next) => {
     const status = typeof req.query.status === 'string' ? req.query.status.trim() : 'active';
     const statuses = normalizeList(status);
 
+    const q = typeof req.query.q === 'string' ? req.query.q.trim() : '';
+    const sortKey = typeof req.query.sort === 'string' ? req.query.sort.trim() : '';
+
+    const sort =
+      sortKey === 'updated_desc'
+        ? { updatedAt: -1 }
+        : sortKey === 'updated_asc'
+          ? { updatedAt: 1 }
+          : sortKey === 'created_desc'
+            ? { createdAt: -1 }
+            : sortKey === 'name_desc'
+              ? { name: -1 }
+              : { name: 1 };
+
     const filter = {};
     if (statuses.length) {
       filter.status = { $in: statuses };
     }
 
-    const items = await Resource.find(filter).sort({ name: 1 }).lean();
+    if (q) {
+      filter.$text = { $search: q };
+    }
+
+    const items = await Resource.find(filter).sort(sort).lean();
     res.json({ items });
   } catch (e) {
     next(e);
@@ -214,12 +232,30 @@ router.get('/events', async (req, res, next) => {
     const status = typeof req.query.status === 'string' ? req.query.status.trim() : 'active';
     const statuses = normalizeList(status);
 
+    const q = typeof req.query.q === 'string' ? req.query.q.trim() : '';
+    const sortKey = typeof req.query.sort === 'string' ? req.query.sort.trim() : '';
+
+    const sort =
+      sortKey === 'updated_desc'
+        ? { updatedAt: -1 }
+        : sortKey === 'updated_asc'
+          ? { updatedAt: 1 }
+          : sortKey === 'created_desc'
+            ? { createdAt: -1 }
+            : sortKey === 'name_desc'
+              ? { name: -1 }
+              : { name: 1 };
+
     const filter = {};
     if (statuses.length) {
       filter.status = { $in: statuses };
     }
 
-    const items = await Event.find(filter).sort({ name: 1 }).lean();
+    if (q) {
+      filter.$text = { $search: q };
+    }
+
+    const items = await Event.find(filter).sort(sort).lean();
     res.json({ items });
   } catch (e) {
     next(e);
