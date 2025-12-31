@@ -15,6 +15,8 @@ export default function AdminNewsletterPage() {
   const [draft, setDraft] = useState<CampaignDraft>({ subject: '', htmlContent: '', textContent: '' });
   const [markdown, setMarkdown] = useState('');
   const [useMarkdown, setUseMarkdown] = useState(true);
+  const [imageUrl, setImageUrl] = useState('');
+  const [imageAlt, setImageAlt] = useState('');
   const [saving, setSaving] = useState(false);
   const [sending, setSending] = useState(false);
   const [testing, setTesting] = useState(false);
@@ -111,6 +113,15 @@ export default function AdminNewsletterPage() {
 
   const currentHtml = useMarkdown ? marked(markdown) : draft.htmlContent;
 
+  function insertImage() {
+    if (!imageUrl) return;
+    const imageMd = `![${imageAlt || 'image'}](${imageUrl})`;
+    const newMarkdown = markdown ? `${markdown}\n\n${imageMd}\n\n` : `${imageMd}\n\n`;
+    setMarkdown(newMarkdown);
+    setImageUrl('');
+    setImageAlt('');
+  }
+
   return (
     <main className="mx-auto max-w-4xl space-y-8 px-4 py-12">
       <header className="flex flex-wrap items-end justify-between gap-4">
@@ -151,6 +162,45 @@ export default function AdminNewsletterPage() {
               {useMarkdown ? 'Switch to HTML' : 'Switch to Markdown'}
             </button>
           </div>
+          {useMarkdown ? (
+            <div className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-4 shadow-soft">
+              <div className="mb-3 text-sm text-vanillaCustard/85">
+                <strong>Quick Markdown Guide:</strong> # Header | ## Header | **bold** | *italic* | [link text](https://example.com) | ![alt](image-url)
+              </div>
+              <div className="mb-3 text-sm">
+                <a
+                  href="https://www.markdownguide.org/basic-syntax/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-paleAmber underline underline-offset-2 hover:no-underline"
+                >
+                  <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                  Markdown Guide
+                </a>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-4 shadow-soft">
+              <div className="mb-3 text-sm text-vanillaCustard/85">
+                <strong>Basic HTML Tags:</strong> &lt;h1&gt;Title&lt;/h1&gt; | &lt;p&gt;Paragraph&lt;/p&gt; | &lt;strong&gt;Bold&lt;/strong&gt; | &lt;em&gt;Italic&lt;/em&gt; | &lt;a href="url"&gt;Link&lt;/a&gt; | &lt;img src="url" alt="text"&gt;
+              </div>
+              <div className="mb-3 text-sm">
+                <a
+                  href="https://developer.mozilla.org/en-US/docs/Learn/Getting_started_with_the_web/HTML_basics"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-paleAmber underline underline-offset-2 hover:no-underline"
+                >
+                  <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                  HTML Basics
+                </a>
+              </div>
+            </div>
+          )}
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="grid gap-2">
               <span className="text-sm font-semibold text-vanillaCustard/85">
@@ -186,6 +236,36 @@ export default function AdminNewsletterPage() {
             </div>
           </div>
         </div>
+
+        {useMarkdown && (
+          <div className="grid gap-3 rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-4 shadow-soft">
+            <div className="text-base font-bold text-vanillaCustard">Insert Image</div>
+            <div className="grid gap-3 sm:grid-cols-[1fr_auto_auto] sm:items-end">
+              <input
+                type="url"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                placeholder="Image URL (https://...)"
+                className="w-full rounded-xl border border-vanillaCustard/20 bg-graphite px-3 py-2 text-base text-vanillaCustard placeholder:text-vanillaCustard/50"
+              />
+              <input
+                type="text"
+                value={imageAlt}
+                onChange={(e) => setImageAlt(e.target.value)}
+                placeholder="Alt text (optional)"
+                className="w-full rounded-xl border border-vanillaCustard/20 bg-graphite px-3 py-2 text-base text-vanillaCustard placeholder:text-vanillaCustard/50 sm:w-auto"
+              />
+              <button
+                type="button"
+                disabled={!imageUrl}
+                onClick={insertImage}
+                className="rounded-xl bg-powderBlush px-4 py-2 text-base font-extrabold text-pitchBlack shadow-soft transition hover:brightness-95 disabled:opacity-60"
+              >
+                Insert
+              </button>
+            </div>
+          </div>
+        )}
 
         <label className="grid gap-2">
           <span className="text-base font-bold text-vanillaCustard">Plain Text Content</span>
