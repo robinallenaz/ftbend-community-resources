@@ -1,5 +1,6 @@
 import type { Resource } from '../types';
 import Tag from './Tag';
+import { getTagColor, type TagTone } from '../utils/tagColors';
 
 export default function ResourceCard({ resource }: { resource: Resource }) {
   return (
@@ -30,19 +31,19 @@ export default function ResourceCard({ resource }: { resource: Resource }) {
 
         <div className="flex flex-wrap gap-2" aria-label="Resource tags">
           {resource.locations.map((x) => (
-            <Tag key={`loc-${x}`} tone="accent">
+            <Tag key={`loc-${x}`} tone={getTagColor(x, 'location')}>
               {x}
             </Tag>
           ))}
           {resource.types.map((x) => (
-            <Tag key={`type-${x}`} tone="primary">
+            <Tag key={`type-${x}`} tone={getTagColor(x, 'type')}>
               {x}
             </Tag>
           ))}
           {resource.audiences
             .filter((x) => x !== 'All')
             .map((x) => (
-              <Tag key={`aud-${x}`} tone="accent">
+              <Tag key={`aud-${x}`} tone={getTagColor(x, 'audience')}>
                 {x}
               </Tag>
             ))}

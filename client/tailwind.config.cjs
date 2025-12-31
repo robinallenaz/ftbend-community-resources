@@ -7,7 +7,18 @@ module.exports = {
         pitchBlack: '#0C0805',
         vanillaCustard: '#D1DA9C',
         powderBlush: '#F7A3A1',
-        paleAmber: '#D2DC76'
+        paleAmber: '#D2DC76',
+        // Additional tag colors
+        lavenderMist: '#E6E6FA',
+        skyBlue: '#87CEEB',
+        mintGreen: '#98FF98',
+        coralPink: '#F88379',
+        periwinkle: '#CCCCFF',
+        peach: '#FFDAB9',
+        sage: '#B2AC88',
+        rose: '#E8B4B8',
+        teal: '#94D3D2',
+        mauve: '#E0B0FF'
       },
       borderRadius: {
         xl: '16px',
