@@ -24,7 +24,7 @@ app.use('/api', createProxyMiddleware({
   changeOrigin: true
 }));
 
-// Create SEO-friendly HTML with proper H1/H2 structure
+// Create SEO-friendly HTML with semantic structure and real content
 function createSSRHTML(url) {
   const isHomePage = url === '/' || url === '';
   const isResourcesPage = url.startsWith('/resources');
@@ -34,44 +34,151 @@ function createSSRHTML(url) {
 
   let title = 'Fort Bend County LGBTQIA+ Community Resources | Support & Events';
   let h1Content = 'Fort Bend County LGBTQIA+ Community Resources';
-  let description = 'Find LGBTQIA+ resources, healthcare providers, legal services, and community events in Fort Bend County, Texas.';
-  let additionalContent = '';
+  let description = 'Find healthcare providers, legal services, support groups, and inclusive events in Fort Bend County, Texas.';
+  let structuredContent = '';
 
   if (isResourcesPage) {
     title = 'LGBTQIA+ Resources Fort Bend County | Healthcare, Legal & Support';
     h1Content = 'LGBTQIA+ Resources';
     description = 'Search LGBTQIA+ resources in Fort Bend County and Texas. Find healthcare providers, legal services, support groups, and community organizations.';
+    structuredContent = `
+      <section>
+        <p>Search by what you need. Narrow results by location, type, and audience.</p>
+        <div style="margin: 2rem 0;">
+          <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: #D1DA9C;">Featured Resources</h2>
+          <div style="display: grid; gap: 1rem;">
+            <article style="background: #343130; border: 1px solid rgba(209, 218, 156, 0.15); border-radius: 20px; padding: 1.5rem;">
+              <h3 style="color: #D1DA9C; font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">The Montrose Center</h3>
+              <p style="color: rgba(209, 218, 156, 0.9); margin-bottom: 1rem;">Houston's LGBTQ+ community center offering programs, services, and activities for the community.</p>
+              <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                <span style="background: #D2DC76; color: #0C0805; padding: 0.25rem 0.75rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600;">Houston</span>
+                <span style="background: #F7A3A1; color: #0C0805; padding: 0.25rem 0.75rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600;">Community</span>
+                <span style="background: #87CEEB; color: #0C0805; padding: 0.25rem 0.75rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600;">All</span>
+              </div>
+              <a href="https://www.montrosecenter.org" target="_blank" style="background: #F7A3A1; color: #0C0805; padding: 0.5rem 1rem; border-radius: 12px; text-decoration: none; font-weight: 600; display: inline-block;">Visit</a>
+            </article>
+            <article style="background: #343130; border: 1px solid rgba(209, 218, 156, 0.15); border-radius: 20px; padding: 1.5rem;">
+              <h3 style="color: #D1DA9C; font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">HATCH Youth</h3>
+              <p style="color: rgba(209, 218, 156, 0.9); margin-bottom: 1rem;">Houston's LGBTQ+ youth organization providing safe spaces and support for young people.</p>
+              <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                <span style="background: #D2DC76; color: #0C0805; padding: 0.25rem 0.75rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600;">Houston</span>
+                <span style="background: #F7A3A1; color: #0C0805; padding: 0.25rem 0.75rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600;">Youth</span>
+                <span style="background: #98FF98; color: #0C0805; padding: 0.25rem 0.75rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600;">Support</span>
+              </div>
+              <a href="https://hatchyouth.org" target="_blank" style="background: #F7A3A1; color: #0C0805; padding: 0.5rem 1rem; border-radius: 12px; text-decoration: none; font-weight: 600; display: inline-block;">Visit</a>
+            </article>
+          </div>
+        </div>
+      </section>
+    `;
   } else if (isEventsPage) {
     title = 'LGBTQIA+ Events Fort Bend County | Community Meetups & Gatherings';
     h1Content = 'LGBTQIA+ Community Events';
     description = 'Join LGBTQIA+ community events and meetups in Fort Bend County, Texas. Monthly inclusive gatherings and support group meetings.';
+    structuredContent = `
+      <section>
+        <p>Monthly community events and meetups.</p>
+        <div style="margin: 2rem 0;">
+          <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: #D1DA9C;">Upcoming Events</h2>
+          <div style="display: grid; gap: 1rem;">
+            <article style="background: #343130; border: 1px solid rgba(209, 218, 156, 0.15); border-radius: 20px; padding: 1.5rem;">
+              <h3 style="color: #D1DA9C; font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">Monthly Community Meetup</h3>
+              <div style="color: rgba(209, 218, 156, 0.9); margin-bottom: 0.5rem;">
+                <strong>Schedule:</strong> First Thursday of each month, 6:30 PM - 8:30 PM
+              </div>
+              <div style="color: rgba(209, 218, 156, 0.9); margin-bottom: 1rem;">
+                <strong>Where:</strong> Sugar Land Town Square, Sugar Land, TX
+              </div>
+              <a href="#" style="background: #F7A3A1; color: #0C0805; padding: 0.5rem 1rem; border-radius: 12px; text-decoration: none; font-weight: 600; display: inline-block;">View details</a>
+            </article>
+            <article style="background: #343130; border: 1px solid rgba(209, 218, 156, 0.15); border-radius: 20px; padding: 1.5rem;">
+              <h3 style="color: #D1DA9C; font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">Trans Support Group</h3>
+              <div style="color: rgba(209, 218, 156, 0.9); margin-bottom: 0.5rem;">
+                <strong>Schedule:</strong> Second Wednesday of each month, 7:00 PM - 9:00 PM
+              </div>
+              <div style="color: rgba(209, 218, 156, 0.9); margin-bottom: 1rem;">
+                <strong>Where:</strong> Virtual via Zoom
+              </div>
+              <a href="#" style="background: #F7A3A1; color: #0C0805; padding: 0.5rem 1rem; border-radius: 12px; text-decoration: none; font-weight: 600; display: inline-block;">View details</a>
+            </article>
+          </div>
+        </div>
+      </section>
+    `;
   } else if (isAboutPage) {
     title = 'About | Fort Bend County LGBTQIA+ Community Resources';
     h1Content = 'About Fort Bend LGBTQIA+ Community Resources';
     description = 'Learn about the Fort Bend County LGBTQIA+ Community Resources project and our mission to connect and support our community.';
+    structuredContent = `
+      <section>
+        <p>A community-first resource hub for LGBTQIA+ folks in and around Fort Bend County, Texas.</p>
+        <div style="margin: 2rem 0;">
+          <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: #D1DA9C;">Our Mission</h2>
+          <p style="margin-bottom: 2rem;">This site exists to make LGBTQIA+ resources easier to find—especially when you're tired, stressed, or just need a clear answer. We connect community members with healthcare providers, legal services, support groups, and inclusive events throughout Fort Bend County and across Texas.</p>
+          
+          <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: #D1DA9C;">What You'll Find</h2>
+          <ul style="color: rgba(209, 218, 156, 0.9); line-height: 1.8;">
+            <li><a href="/resources" style="color: #D2DC76;">LGBTQIA+ Resources</a> - Healthcare providers, legal services, and support organizations</li>
+            <li><a href="/events" style="color: #D2DC76;">Community Events</a> - Monthly meetups and inclusive gatherings</li>
+            <li><a href="/submit" style="color: #D2DC76;">Resource Submissions</a> - Share helpful services with our community</li>
+          </ul>
+        </div>
+      </section>
+    `;
   } else if (isSubmitPage) {
     title = 'Submit a Resource | Fort Bend County LGBTQIA+ Community';
     h1Content = 'Submit a Resource';
     description = 'Share LGBTQIA+ resources with our community. Submit organizations, services, events, and support groups for Fort Bend County.';
-  }
-
-  if (isHomePage) {
-    additionalContent = `
+    structuredContent = `
+      <section>
+        <p>Know a resource that should be listed here? Share it with our community!</p>
+        <div style="margin: 2rem 0;">
+          <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: #D1DA9C;">What We're Looking For</h2>
+          <ul style="color: rgba(209, 218, 156, 0.9); line-height: 1.8;">
+            <li>Healthcare providers and mental health services</li>
+            <li>Legal aid and advocacy organizations</li>
+            <li>Support groups and community centers</li>
+            <li>Social events and meetups</li>
+            <li>Educational resources and workshops</li>
+          </ul>
+        </div>
+      </section>
+    `;
+  } else {
+    structuredContent = `
       <section style="margin-bottom: 2rem;">
-        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: #D1DA9C;">Search LGBTQIA+ Resources & Support Services</h2>
-        <p style="margin-bottom: 1rem; color: rgba(209, 218, 156, 0.85);">Find affirming healthcare providers, legal aid, mental health services, and community organizations in Fort Bend County and across Texas.</p>
+        <p>Find healthcare providers, legal services, support groups, and inclusive events in Fort Bend County, Texas.</p>
       </section>
       <section style="margin-bottom: 2rem;">
-        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: #D1DA9C;">Healthcare & Medical Services</h2>
-        <p style="margin-bottom: 1rem; color: rgba(209, 218, 156, 0.9);">Connect with LGBTQIA+ affirming healthcare providers offering hormone therapy, mental health services, and specialized medical care.</p>
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: #D1DA9C;">Quick Links</h2>
+        <nav style="display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+          <a href="/resources" style="color: #D2DC76; text-decoration: none; font-weight: 600;">
+            🏥 LGBTQIA+ Resources
+          </a>
+          <a href="/events" style="color: #D2DC76; text-decoration: none; font-weight: 600;">
+            📅 Community Events
+          </a>
+          <a href="/about" style="color: #D2DC76; text-decoration: none; font-weight: 600;">
+            ℹ️ About Us
+          </a>
+          <a href="/submit" style="color: #D2DC76; text-decoration: none; font-weight: 600;">
+            ➕ Submit a Resource
+          </a>
+        </nav>
       </section>
       <section style="margin-bottom: 2rem;">
-        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: #D1DA9C;">Legal Support & Advocacy</h2>
-        <p style="margin-bottom: 1rem; color: rgba(209, 218, 156, 0.9);">Access legal assistance for name changes, discrimination cases, housing rights, and other LGBTQIA+ legal services in Texas.</p>
-      </section>
-      <section style="margin-bottom: 2rem;">
-        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: #D1DA9C;">Community Events & Meetups</h2>
-        <p style="margin-bottom: 1rem; color: rgba(209, 218, 156, 0.9);">Join inclusive LGBTQIA+ community events, support group meetings, and social gatherings in Fort Bend County and nearby areas.</p>
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: #D1DA9C;">Featured Resources</h2>
+        <div style="display: grid; gap: 1rem;">
+          <article style="background: #343130; border: 1px solid rgba(209, 218, 156, 0.15); border-radius: 20px; padding: 1.5rem;">
+            <h3 style="color: #D1DA9C; font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">The Montrose Center</h3>
+            <p style="color: rgba(209, 218, 156, 0.9); margin-bottom: 1rem;">Houston's LGBTQ+ community center offering programs, services, and activities.</p>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+              <span style="background: #D2DC76; color: #0C0805; padding: 0.25rem 0.75rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600;">Houston</span>
+              <span style="background: #F7A3A1; color: #0C0805; padding: 0.25rem 0.75rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600;">Community</span>
+            </div>
+            <a href="/resources" style="background: #F7A3A1; color: #0C0805; padding: 0.5rem 1rem; border-radius: 12px; text-decoration: none; font-weight: 600; display: inline-block;">Browse Resources</a>
+          </article>
+        </div>
       </section>
     `;
   }
@@ -148,7 +255,10 @@ function createSSRHTML(url) {
         <title>${title}</title>
         
         <style>
-          /* Critical CSS matching your site */
+          /* Clean, semantic CSS matching your site */
+          * {
+            box-sizing: border-box;
+          }
           body {
             margin: 0;
             font-family: system-ui, -apple-system, sans-serif;
@@ -156,17 +266,10 @@ function createSSRHTML(url) {
             color: #D1DA9C;
             line-height: 1.6;
           }
-          .loading {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            font-size: 1.2rem;
-          }
-          main {
-            padding: 2rem;
+          .container {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 2rem;
           }
           h1 {
             font-size: 2rem;
@@ -180,36 +283,91 @@ function createSSRHTML(url) {
             margin-bottom: 1rem;
             color: #D1DA9C;
           }
+          h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #D1DA9C;
+          }
           p {
             margin-bottom: 1rem;
             color: rgba(209, 218, 156, 0.85);
           }
           a {
             color: #D2DC76;
-            text-decoration: underline;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
           }
           a:hover {
             color: #F7A3A1;
+          }
+          article {
+            background: #343130;
+            border: 1px solid rgba(209, 218, 156, 0.15);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 35px rgba(0,0,0,0.35);
+          }
+          .tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin: 0.25rem;
+          }
+          .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-size: 1.2rem;
+            color: rgba(209, 218, 156, 0.7);
+          }
+          @media (min-width: 768px) {
+            .container {
+              padding: 3rem;
+            }
+            h1 {
+              font-size: 2.5rem;
+            }
           }
         </style>
       </head>
       <body>
         <div id="root">
-          <main>
-            <h1>${h1Content}</h1>
-            <p>${description}</p>
-            ${additionalContent}
-            <nav style="margin-bottom: 2rem;">
-              <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: #D1DA9C;">Quick Links</h2>
-              <ul style="list-style: none; padding: 0;">
-                <li style="margin-bottom: 0.5rem;"><a href="/resources">LGBTQIA+ Resources</a></li>
-                <li style="margin-bottom: 0.5rem;"><a href="/events">Community Events</a></li>
-                <li style="margin-bottom: 0.5rem;"><a href="/about">About Us</a></li>
-                <li style="margin-bottom: 0.5rem;"><a href="/submit">Submit a Resource</a></li>
-              </ul>
-            </nav>
-            <div class="loading">Loading interactive content...</div>
-          </main>
+          <div class="container">
+            <header>
+              <h1>${h1Content}</h1>
+              <p>${description}</p>
+            </header>
+            <main>
+              ${structuredContent}
+            </main>
+            <footer style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(209, 218, 156, 0.15);">
+              <div style="margin-bottom: 2rem;">
+                <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: #D1DA9C;">Quick Links</h3>
+                <nav style="display: grid; gap: 0.5rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                  <a href="/resources">LGBTQIA+ Resources</a>
+                  <a href="/events">Community Events</a>
+                  <a href="/about">About Us</a>
+                  <a href="/submit">Submit a Resource</a>
+                </nav>
+              </div>
+              <div style="margin-bottom: 2rem;">
+                <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: #D1DA9C;">Connect With Us</h3>
+                <nav style="display: grid; gap: 0.5rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                  <a href="https://instagram.com/ftbend_lgbtqia" target="_blank" style="color: #D2DC76;">Instagram</a>
+                  <a href="https://www.facebook.com/share/16a6rc4XjY/?mibextid=wwXIfr" target="_blank" style="color: #D2DC76;">Facebook</a>
+                </nav>
+              </div>
+              <div style="font-size: 0.875rem; color: rgba(209, 218, 156, 0.7);">
+                <p>If you need support right now, call The LGBT National Hotline: (888) 843-4564 or Trans Lifeline: (877) 565-8860.</p>
+              </div>
+            </footer>
+          </div>
+          <div class="loading">Loading interactive content...</div>
         </div>
         <script type="module" src="/assets/main-DcgP-_0v.js"></script>
         <script type="module" src="/assets/server-DDjbh460.js"></script>
