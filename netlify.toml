@@ -6,6 +6,24 @@
   BASE_PATH = "/"
 
 [[redirects]]
+  from = "https://www.ftbend-community-resources.netlify.app/*"
+  to = "https://ftbend-community-resources.netlify.app/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://www.ftbend-community-resources.netlify.app/*"
+  to = "https://ftbend-community-resources.netlify.app/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://ftbend-community-resources.netlify.app/*"
+  to = "https://ftbend-community-resources.netlify.app/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
   from = "/api/*"
   to = "https://ftbend-community-resources-api.onrender.com/api/:splat"
   status = 200
