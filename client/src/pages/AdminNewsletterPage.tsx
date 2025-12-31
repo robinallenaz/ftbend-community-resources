@@ -165,7 +165,7 @@ export default function AdminNewsletterPage() {
           {useMarkdown ? (
             <div className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-4 shadow-soft">
               <div className="mb-3 text-sm text-vanillaCustard/85">
-                <strong>Quick Markdown Guide:</strong> # Header | ## Header | **bold** | *italic* | [link text](https://example.com) | ![alt](image-url)
+                <strong>Quick Markdown Guide:</strong> <code className="rounded border border-vanillaCustard/20 bg-graphite px-1 py-0.5 text-xs"># Header</code> | <code className="rounded border border-vanillaCustard/20 bg-graphite px-1 py-0.5 text-xs">## Header</code> | <code className="rounded border border-vanillaCustard/20 bg-graphite px-1 py-0.5 text-xs">**<strong>bold</strong>**</code> | <code className="rounded border border-vanillaCustard/20 bg-graphite px-1 py-0.5 text-xs">*<em>italic</em>*</code> | <code className="rounded border border-vanillaCustard/20 bg-graphite px-1 py-0.5 text-xs">[<a href="#" className="text-paleAmber underline">link text</a>](https://example.com)</code> | <code className="rounded border border-vanillaCustard/20 bg-graphite px-1 py-0.5 text-xs">![<em>alt</em>](image-url)</code>
               </div>
               <div className="mb-3 text-sm">
                 <a
@@ -184,7 +184,7 @@ export default function AdminNewsletterPage() {
           ) : (
             <div className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-4 shadow-soft">
               <div className="mb-3 text-sm text-vanillaCustard/85">
-                <strong>Basic HTML Tags:</strong> &lt;h1&gt;Title&lt;/h1&gt; | &lt;p&gt;Paragraph&lt;/p&gt; | &lt;strong&gt;Bold&lt;/strong&gt; | &lt;em&gt;Italic&lt;/em&gt; | &lt;a href="url"&gt;Link&lt;/a&gt; | &lt;img src="url" alt="text"&gt;
+                <strong>Basic HTML Tags:</strong> <code className="rounded border border-vanillaCustard/20 bg-graphite px-1 py-0.5 text-xs">&lt;h1&gt;Title&lt;/h1&gt;</code> | <code className="rounded border border-vanillaCustard/20 bg-graphite px-1 py-0.5 text-xs">&lt;p&gt;Paragraph&lt;/p&gt;</code> | <code className="rounded border border-vanillaCustard/20 bg-graphite px-1 py-0.5 text-xs">&lt;strong&gt;<strong>Bold</strong>&lt;/strong&gt;</code> | <code className="rounded border border-vanillaCustard/20 bg-graphite px-1 py-0.5 text-xs">&lt;em&gt;<em>Italic</em>&lt;/em&gt;</code> | <code className="rounded border border-vanillaCustard/20 bg-graphite px-1 py-0.5 text-xs">&lt;a href="url"&gt;<a href="#" className="text-paleAmber underline">Link</a>&lt;/a&gt;</code> | <code className="rounded border border-vanillaCustard/20 bg-graphite px-1 py-0.5 text-xs">&lt;img src="url" alt="text"&gt;</code>
               </div>
               <div className="mb-3 text-sm">
                 <a
