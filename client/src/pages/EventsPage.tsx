@@ -101,8 +101,9 @@ export default function EventsPage() {
   return (
     <div className="grid gap-6">
       <header className="grid gap-2">
-        <h1 className="text-3xl font-extrabold text-vanillaCustard">Events</h1>
-        <p className="text-base text-vanillaCustard/85">Monthly community events and meetups.</p>
+        <h1 className="text-3xl font-extrabold text-vanillaCustard">LGBTQIA+ Community Events</h1>
+        <p className="text-base text-vanillaCustard/85">Monthly community events and meetups in Fort Bend County and nearby areas.</p>
+        <h2 className="text-2xl font-extrabold text-vanillaCustard">Upcoming Events</h2>
       </header>
 
       <section className="grid gap-4" aria-label="Event listings">

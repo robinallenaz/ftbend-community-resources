@@ -110,7 +110,7 @@ export default function ResourcesPage() {
       <header className="grid gap-2">
         <div className="flex items-start justify-between gap-4">
           <div className="grid gap-2">
-            <h1 className="text-3xl font-extrabold text-vanillaCustard">Resources</h1>
+            <h1 className="text-3xl font-extrabold text-vanillaCustard">LGBTQIA+ Resources</h1>
             <p className="text-base text-vanillaCustard/85">
               Search by what you need. Narrow results by location, type, and audience.
             </p>

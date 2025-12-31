@@ -16,32 +16,27 @@ function getSeo(pathname: string): SeoConfig {
 
   if (path === '/') {
     return {
-      title: DEFAULT_TITLE,
-      description: DEFAULT_DESCRIPTION,
+      title: `Fort Bend County LGBTQIA+ Community Resources | Support & Events`,
+      description: 'Find LGBTQIA+ resources, healthcare providers, legal services, and community events in Fort Bend County, Texas. Connect with support groups and inclusive organizations.',
       structuredData: {
         '@context': 'https://schema.org',
         '@type': 'WebSite',
-        name: DEFAULT_TITLE,
-        description: DEFAULT_DESCRIPTION,
-        url: SITE_URL,
-        potentialAction: {
-          '@type': 'SearchAction',
-          target: `${SITE_URL}/resources?q={search_term_string}`,
-          'query-input': 'required name=search_term_string'
-        }
+        name: 'Fort Bend County LGBTQIA+ Community Resources',
+        description: 'LGBTQIA+ resources, healthcare, legal services, and community events in Fort Bend County, Texas',
+        url: SITE_URL
       }
     };
   }
 
   if (path === '/resources') {
     return {
-      title: `Resources | ${DEFAULT_TITLE}`,
-      description: 'Search LGBTQIA+ resources by location, type, audience, and tags. Find support groups, healthcare providers, legal services, and more.',
+      title: `LGBTQIA+ Resources Fort Bend County | Healthcare, Legal & Support`,
+      description: 'Search LGBTQIA+ resources in Fort Bend County and Texas. Find healthcare providers, legal services, support groups, and community organizations.',
       structuredData: {
         '@context': 'https://schema.org',
         '@type': 'CollectionPage',
-        name: 'LGBTQIA+ Resources',
-        description: 'Search LGBTQIA+ resources by location, type, audience, and tags.',
+        name: 'LGBTQIA+ Resources Fort Bend County',
+        description: 'Search LGBTQIA+ resources by location, type, audience, and tags in Fort Bend County, Texas.',
         url: `${SITE_URL}/resources`
       }
     };
@@ -49,13 +44,13 @@ function getSeo(pathname: string): SeoConfig {
 
   if (path === '/events') {
     return {
-      title: `Events | ${DEFAULT_TITLE}`,
-      description: 'Monthly community events and meetups in Fort Bend County and nearby areas. Join our inclusive LGBTQIA+ gatherings.',
+      title: `LGBTQIA+ Events Fort Bend County | Community Meetups & Gatherings`,
+      description: 'Join LGBTQIA+ community events and meetups in Fort Bend County, Texas. Monthly inclusive gatherings and support group meetings.',
       structuredData: {
         '@context': 'https://schema.org',
         '@type': 'EventSeries',
         name: 'Fort Bend LGBTQIA+ Community Events',
-        description: 'Monthly community events and meetups in Fort Bend County and nearby areas.',
+        description: 'Monthly LGBTQIA+ community events and meetups in Fort Bend County, Texas.',
         url: `${SITE_URL}/events`
       }
     };

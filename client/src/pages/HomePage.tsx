@@ -20,7 +20,7 @@ export default function HomePage() {
             />
             <div>
               <h1 className="text-3xl font-extrabold text-vanillaCustard md:text-4xl">
-                Fort Bend County LGBTQIA+ Community
+                Fort Bend County LGBTQIA+ Community Resources
               </h1>
               <p className="mt-2 text-lg text-vanillaCustard/90">
                 There is no community without unity 🏳️‍⚧️🏳️‍🌈
@@ -30,7 +30,6 @@ export default function HomePage() {
               </p>
             </div>
           </div>
-
           <div className="flex flex-wrap gap-3">
             <Link
               to="/resources"
@@ -39,16 +38,20 @@ export default function HomePage() {
               Browse resources
             </Link>
             <Link
-              to="/submit"
-              className="rounded-xl border border-vanillaCustard/25 bg-graphite px-4 py-3 text-lg font-extrabold text-vanillaCustard hover:border-vanillaCustard/45"
+              to="/events"
+              className="rounded-xl bg-paleAmber px-4 py-3 text-lg font-extrabold text-pitchBlack shadow-soft transition hover:brightness-95"
             >
-              Submit a resource
+              View events
             </Link>
           </div>
         </div>
       </section>
 
-      <section aria-label="Quick search">
+      <section className="grid gap-6" aria-label="Quick search">
+        <h2 className="text-2xl font-extrabold text-vanillaCustard">Search LGBTQIA+ Resources</h2>
+        <p className="text-base text-vanillaCustard/85">
+          Find healthcare providers, legal services, support groups, and community organizations in Fort Bend County and across Texas.
+        </p>
         <ResourceExplorer />
       </section>
     </div>

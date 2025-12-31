@@ -1,10 +1,11 @@
+import { Link } from 'react-router-dom';
 import NewsletterSignup from './NewsletterSignup';
 
 export default function Footer() {
   return (
     <footer className="border-t border-vanillaCustard/15 bg-graphite">
       <div className="mx-auto w-full max-w-6xl px-4 py-10 text-base text-vanillaCustard/85 md:px-6">
-        <div className="grid gap-8 lg:grid-cols-2">
+        <div className="grid gap-8 lg:grid-cols-3">
           <div className="space-y-6">
             <div className="space-y-2">
               <div className="text-lg font-extrabold text-vanillaCustard">There is no community without unity 🏳️‍⚧️🏳️‍🌈</div>
@@ -50,6 +51,17 @@ export default function Footer() {
               </div>
             </div>
           </div>
+          
+          <div className="space-y-4">
+            <h3 className="text-lg font-extrabold text-vanillaCustard">Quick Links</h3>
+            <ul className="space-y-2">
+              <li><Link to="/resources" className="hover:text-paleAmber underline-offset-4 hover:underline">LGBTQIA+ Resources</Link></li>
+              <li><Link to="/events" className="hover:text-paleAmber underline-offset-4 hover:underline">Community Events</Link></li>
+              <li><Link to="/submit" className="hover:text-paleAmber underline-offset-4 hover:underline">Submit a Resource</Link></li>
+              <li><Link to="/about" className="hover:text-paleAmber underline-offset-4 hover:underline">About Us</Link></li>
+            </ul>
+          </div>
+          
           <NewsletterSignup />
         </div>
         <div className="mt-8 text-sm text-vanillaCustard/70">
