@@ -16,6 +16,7 @@ export function getTagColor(tag: string, category: 'location' | 'type' | 'audien
   // Type colors - distribute colors more evenly
   if (category === 'type') {
     if (tag.includes('Healthcare')) return 'coral';
+    if (tag.includes('Medical')) return 'coral';
     if (tag.includes('Legal')) return 'sky';
     if (tag.includes('Support')) return 'sage'; // Changed from mint
     if (tag.includes('Community')) return 'lavender'; // Changed from rose

@@ -11,7 +11,8 @@ export type ResourceType =
   | 'Arts'
   | 'Youth'
   | 'Family'
-  | 'Events';
+  | 'Events'
+  | 'Medical';
 
 export type AudienceTag = 'Trans' | 'Youth' | 'Seniors' | 'Families' | 'All';
 

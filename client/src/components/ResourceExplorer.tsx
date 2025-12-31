@@ -25,7 +25,8 @@ const TYPE_OPTIONS: { label: string; value: ResourceType }[] = [
   { label: 'Arts', value: 'Arts' },
   { label: 'Youth', value: 'Youth' },
   { label: 'Family', value: 'Family' },
-  { label: 'Events', value: 'Events' }
+  { label: 'Events', value: 'Events' },
+  { label: 'Medical', value: 'Medical' }
 ];
 
 const AUDIENCE_OPTIONS: { label: string; value: AudienceTag }[] = [
