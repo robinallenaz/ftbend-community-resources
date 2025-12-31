@@ -5,6 +5,8 @@ const Resource = require('../models/Resource');
 const Event = require('../models/Event');
 const Submission = require('../models/Submission');
 const { validate } = require('../lib/validate');
+const { sendEmail } = require('../lib/email');
+const { getOrCreateNotificationSettings } = require('../lib/notificationSettings');
 
 const router = express.Router();
 
@@ -112,6 +114,34 @@ router.post('/submissions', async (req, res, next) => {
       notes: input.notes,
       status: 'pending'
     });
+
+    void (async () => {
+      try {
+        const settings = await getOrCreateNotificationSettings();
+        if (!settings.submissionEmailEnabled) return;
+
+        const recipients = Array.isArray(settings.submissionEmailRecipients)
+          ? settings.submissionEmailRecipients.map((x) => String(x || '').trim()).filter(Boolean)
+          : [];
+        if (!recipients.length) return;
+
+        const base = String(settings.publicSiteUrl || '').replace(/\/+$/, '');
+        const adminUrl = `${base}/admin/submissions`;
+
+        const subject = `New resource submission: ${submission.name}`;
+        const text = `A new resource was submitted.\n\nName: ${submission.name}\nURL: ${submission.url}\n\nReview in admin: ${adminUrl}`;
+        const html = `
+          <p>A new resource was submitted.</p>
+          <p><strong>Name:</strong> ${submission.name}</p>
+          <p><strong>URL:</strong> <a href="${submission.url}" target="_blank" rel="noreferrer">${submission.url}</a></p>
+          <p><a href="${adminUrl}" target="_blank" rel="noreferrer">Review submissions</a></p>
+        `;
+
+        await sendEmail({ to: recipients, subject, text, html });
+      } catch (e) {
+        console.error('Submission notification email failed', e);
+      }
+    })();
 
     res.status(201).json({
       id: submission._id,

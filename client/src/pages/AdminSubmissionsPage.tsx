@@ -13,6 +13,12 @@ type SubmissionItem = {
   createdAt: string;
 };
 
+type NotificationSettings = {
+  submissionEmailEnabled: boolean;
+  submissionEmailRecipients: string[];
+  publicSiteUrl: string;
+};
+
 function toSet(list: string[]) {
   return new Set(list);
 }
@@ -26,6 +32,13 @@ export default function AdminSubmissionsPage() {
   const [items, setItems] = useState<SubmissionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<'pending' | 'approved' | 'rejected' | 'all'>('pending');
+  const [notif, setNotif] = useState<NotificationSettings | null>(null);
+  const [notifRecipients, setNotifRecipients] = useState('');
+  const [notifEnabled, setNotifEnabled] = useState(false);
+  const [publicSiteUrl, setPublicSiteUrl] = useState('');
+  const [notifSaving, setNotifSaving] = useState(false);
+  const [notifError, setNotifError] = useState('');
+  const [notifSaved, setNotifSaved] = useState(false);
 
   const query = useMemo(() => {
     if (status === 'all') return 'pending,approved,rejected';
@@ -34,12 +47,17 @@ export default function AdminSubmissionsPage() {
 
   async function load() {
     setLoading(true);
-    const [opt, res] = await Promise.all([
+    const [opt, res, settings] = await Promise.all([
       api.get<{ options: Options }>('/api/admin/options'),
-      api.get<{ items: SubmissionItem[] }>(`/api/admin/submissions?status=${encodeURIComponent(query)}`)
+      api.get<{ items: SubmissionItem[] }>(`/api/admin/submissions?status=${encodeURIComponent(query)}`),
+      api.get<{ settings: NotificationSettings }>('/api/admin/notification-settings')
     ]);
     setOptions(opt.options);
     setItems(res.items);
+    setNotif(settings.settings);
+    setNotifEnabled(Boolean(settings.settings.submissionEmailEnabled));
+    setNotifRecipients((settings.settings.submissionEmailRecipients || []).join(', '));
+    setPublicSiteUrl(settings.settings.publicSiteUrl || '');
     setLoading(false);
   }
 
@@ -69,6 +87,87 @@ export default function AdminSubmissionsPage() {
           </select>
         </label>
       </header>
+
+      {notif ? (
+        <section className="grid gap-3 rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-6 shadow-soft" aria-label="Submission email notifications">
+          <div className="text-lg font-extrabold text-vanillaCustard">Email notifications</div>
+          <div className="text-base text-vanillaCustard/85">
+            Send an email when someone submits a resource. The email will link to the admin submissions page.
+          </div>
+
+          <label className="flex flex-wrap items-center gap-3">
+            <input
+              type="checkbox"
+              checked={notifEnabled}
+              onChange={(e) => setNotifEnabled(e.target.checked)}
+              className="h-5 w-5"
+            />
+            <span className="text-base font-bold text-vanillaCustard">Enable notifications</span>
+          </label>
+
+          <label className="grid gap-2">
+            <span className="text-base font-bold text-vanillaCustard">Recipient emails (comma-separated)</span>
+            <input
+              value={notifRecipients}
+              onChange={(e) => setNotifRecipients(e.target.value)}
+              placeholder="admin1@example.com, admin2@example.com"
+              className="w-full rounded-2xl border border-vanillaCustard/20 bg-graphite px-4 py-3 text-lg font-semibold text-vanillaCustard"
+            />
+          </label>
+
+          <label className="grid gap-2">
+            <span className="text-base font-bold text-vanillaCustard">Public site URL</span>
+            <input
+              value={publicSiteUrl}
+              onChange={(e) => setPublicSiteUrl(e.target.value)}
+              placeholder="https://ftbend-community-resources.netlify.app"
+              className="w-full rounded-2xl border border-vanillaCustard/20 bg-graphite px-4 py-3 text-lg font-semibold text-vanillaCustard"
+              inputMode="url"
+            />
+          </label>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              className="rounded-xl bg-powderBlush px-4 py-3 text-base font-extrabold text-pitchBlack shadow-soft transition hover:brightness-95 disabled:opacity-60"
+              disabled={notifSaving}
+              onClick={async () => {
+                setNotifSaving(true);
+                setNotifError('');
+                setNotifSaved(false);
+                try {
+                  const emails = notifRecipients
+                    .split(',')
+                    .map((x) => x.trim())
+                    .filter(Boolean);
+
+                  const res = await api.patch<{ settings: NotificationSettings }>('/api/admin/notification-settings', {
+                    submissionEmailEnabled: notifEnabled,
+                    submissionEmailRecipients: emails,
+                    publicSiteUrl: publicSiteUrl.trim()
+                  });
+
+                  setNotif(res.settings);
+                  setNotifEnabled(Boolean(res.settings.submissionEmailEnabled));
+                  setNotifRecipients((res.settings.submissionEmailRecipients || []).join(', '));
+                  setPublicSiteUrl(res.settings.publicSiteUrl || '');
+                  setNotifSaved(true);
+                } catch (e: any) {
+                  setNotifError(e?.status === 403 ? 'Only admins can change notification settings.' : 'Save failed.');
+                } finally {
+                  setNotifSaving(false);
+                }
+              }}
+            >
+              Save notification settings
+            </button>
+
+            {notifSaved ? <div className="text-sm font-bold text-vanillaCustard/85">Saved.</div> : null}
+          </div>
+
+          {notifError ? <div className="rounded-2xl bg-graphite/70 p-4 text-base text-vanillaCustard">{notifError}</div> : null}
+        </section>
+      ) : null}
 
       {loading ? (
         <div className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-6">Loading…</div>

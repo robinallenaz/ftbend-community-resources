@@ -4,6 +4,7 @@ const { z } = require('zod');
 const Resource = require('../models/Resource');
 const Event = require('../models/Event');
 const Submission = require('../models/Submission');
+const { getOrCreateNotificationSettings } = require('../lib/notificationSettings');
 const { requireAuth, requireRole } = require('../lib/auth');
 const { validate } = require('../lib/validate');
 
@@ -93,6 +94,58 @@ router.use(requireRole(['admin', 'editor']));
 
 router.get('/options', async (_req, res) => {
   res.json({ options: OPTIONS });
+});
+
+router.get('/notification-settings', async (_req, res, next) => {
+  try {
+    const settings = await getOrCreateNotificationSettings();
+    res.json({
+      settings: {
+        submissionEmailEnabled: Boolean(settings.submissionEmailEnabled),
+        submissionEmailRecipients: Array.isArray(settings.submissionEmailRecipients) ? settings.submissionEmailRecipients : [],
+        publicSiteUrl: settings.publicSiteUrl || ''
+      }
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.patch('/notification-settings', requireRole(['admin']), async (req, res, next) => {
+  try {
+    const input = validate(
+      z
+        .object({
+          submissionEmailEnabled: z.boolean().optional(),
+          submissionEmailRecipients: z.array(z.string().email().max(200)).max(50).optional(),
+          publicSiteUrl: z.string().trim().max(500).optional()
+        })
+        .refine((v) => Object.keys(v).length > 0, { message: 'No fields to update' }),
+      req.body
+    );
+
+    const settings = await getOrCreateNotificationSettings();
+    if (typeof input.submissionEmailEnabled === 'boolean') {
+      settings.submissionEmailEnabled = input.submissionEmailEnabled;
+    }
+    if (Array.isArray(input.submissionEmailRecipients)) {
+      settings.submissionEmailRecipients = input.submissionEmailRecipients;
+    }
+    if (typeof input.publicSiteUrl === 'string') {
+      settings.publicSiteUrl = input.publicSiteUrl;
+    }
+    await settings.save();
+
+    res.json({
+      settings: {
+        submissionEmailEnabled: Boolean(settings.submissionEmailEnabled),
+        submissionEmailRecipients: Array.isArray(settings.submissionEmailRecipients) ? settings.submissionEmailRecipients : [],
+        publicSiteUrl: settings.publicSiteUrl || ''
+      }
+    });
+  } catch (e) {
+    next(e);
+  }
 });
 
 router.get('/resources', async (req, res, next) => {
