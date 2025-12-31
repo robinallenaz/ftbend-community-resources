@@ -5,7 +5,7 @@ import fs from 'fs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
-const port = 3001;
+const port = process.env.PORT || 3001;
 
 // Serve static files
 app.use('/assets', express.static(path.resolve(__dirname, 'dist/assets')));
