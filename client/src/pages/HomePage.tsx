@@ -39,11 +39,17 @@ export default function HomePage() {
         "contactPoint": {
           "@type": "ContactPoint",
           "contactType": "community support",
-          "availableLanguage": "English"
+          "availableLanguage": "English",
+          "email": "ryancreates94@gmail.com"
         },
         "areaServed": {
           "@type": "Place",
-          "name": "Fort Bend County, Texas and surrounding areas"
+          "name": "Fort Bend County, Texas and surrounding areas",
+          "address": {
+            "@type": "PostalAddress",
+            "addressRegion": "TX",
+            "addressLocality": "Fort Bend County"
+          }
         }
       },
       {

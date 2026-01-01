@@ -51,9 +51,9 @@ function createSSRHTML(url) {
     }
   };
 
-  let title = 'Fort Bend County LGBTQIA+ Community Resources | Support & Events';
+  let title = 'Fort Bend County LGBTQIA+ Community Resources - Support & Events';
   let h1Content = 'Fort Bend County LGBTQIA+ Community Resources';
-  let description = 'Find healthcare providers, legal services, support groups, and inclusive events in Fort Bend County, Texas and surrounding areas.';
+  let description = 'Find LGBTQIA+ resources, healthcare providers, legal services, and community events in Fort Bend County, Texas and surrounding areas. Connect with inclusive support organizations and attend local meetups.';
   let structuredContent = '';
 
   if (isResourcesPage) {
@@ -256,6 +256,7 @@ function createSSRHTML(url) {
         
         <!-- SEO Meta Tags -->
         <meta name="description" content="${description}" />
+        <link rel="canonical" href="https://ftbend-lgbtqia-community.org${url}" />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Fort Bend County LGBTQIA+ Community" />
         <meta property="og:title" content="${title}" />

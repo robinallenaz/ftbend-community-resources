@@ -12,29 +12,53 @@ export default function Footer() {
               <div>We host monthly events in Fort Bend County and share resources across South Texas.</div>
             </div>
             <div className="space-y-2 md:text-left">
-              <div>
-                <a
-                  className="underline underline-offset-4 hover:text-paleAmber"
-                  href="https://instagram.com/ftbend_lgbtqia"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Instagram
-                </a>
-              </div>
-              <div>
-                <a
-                  className="underline underline-offset-4 hover:text-paleAmber"
-                  href="https://www.facebook.com/share/16a6rc4XjY/?mibextid=wwXIfr"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Facebook
-                </a>
+              <div className="space-y-4">
+                <h3 className="text-lg font-extrabold text-vanillaCustard">Connect With Us</h3>
+                <div className="flex flex-wrap gap-3">
+                  <a
+                    href="https://instagram.com/ftbend_lgbtqia"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 rounded-xl border border-vanillaCustard/15 bg-graphite/60 px-3 py-2 text-base font-semibold text-vanillaCustard hover:border-vanillaCustard/35 focus-within:ring-2 focus-within:ring-paleAmber focus-within:ring-offset-2 focus-within:ring-offset-pitchBlack transition"
+                  >
+                    Instagram
+                  </a>
+                  <a
+                    href="https://www.facebook.com/share/16a6rc4XjY/?mibextid=wwXIfr"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 rounded-xl border border-vanillaCustard/15 bg-graphite/60 px-3 py-2 text-base font-semibold text-vanillaCustard hover:border-vanillaCustard/35 focus-within:ring-2 focus-within:ring-paleAmber focus-within:ring-offset-2 focus-within:ring-offset-pitchBlack transition"
+                  >
+                    Facebook
+                  </a>
+                  <a
+                    href="https://twitter.com/ftbend_lgbtqia"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 rounded-xl border border-vanillaCustard/15 bg-graphite/60 px-3 py-2 text-base font-semibold text-vanillaCustard hover:border-vanillaCustard/35 focus-within:ring-2 focus-within:ring-paleAmber focus-within:ring-offset-2 focus-within:ring-offset-pitchBlack transition"
+                  >
+                    X (Twitter)
+                  </a>
+                  <a
+                    href="https://linkedin.com/company/ftbend-lgbtqia-community"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 rounded-xl border border-vanillaCustard/15 bg-graphite/60 px-3 py-2 text-base font-semibold text-vanillaCustard hover:border-vanillaCustard/35 focus-within:ring-2 focus-within:ring-paleAmber focus-within:ring-offset-2 focus-within:ring-offset-pitchBlack transition"
+                  >
+                    LinkedIn
+                  </a>
+                  <a
+                    href="https://youtube.com/@ftbend_lgbtqia"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 rounded-xl border border-vanillaCustard/15 bg-graphite/60 px-3 py-2 text-base font-semibold text-vanillaCustard hover:border-vanillaCustard/35 focus-within:ring-2 focus-within:ring-paleAmber focus-within:ring-offset-2 focus-within:ring-offset-pitchBlack transition"
+                  >
+                    YouTube
+                  </a>
+                </div>
               </div>
             </div>
           </div>
-          
           <div className="space-y-4">
             <h3 className="text-lg font-extrabold text-vanillaCustard">Quick Links</h3>
             <ul className="space-y-2">
