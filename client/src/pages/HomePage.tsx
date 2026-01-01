@@ -48,31 +48,7 @@ export default function HomePage() {
       </section>
 
       <section className="grid gap-6" aria-label="Resource search">
-        <h2 className="text-2xl font-extrabold text-vanillaCustard">Search LGBTQIA+ Resources & Support Services</h2>
-        <p className="text-base text-vanillaCustard/85">
-          Find affirming healthcare providers, legal aid, mental health services, and community organizations in Fort Bend County and across Texas.
-        </p>
         <ResourceExplorer />
-      </section>
-
-      <section className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-6 shadow-soft">
-        <h2 className="text-2xl font-extrabold text-vanillaCustard mb-4">Healthcare & Medical Services</h2>
-        <p className="text-base text-vanillaCustard/90 mb-4">
-          Connect with LGBTQIA+ affirming healthcare providers offering hormone therapy, mental health services, and specialized medical care.
-        </p>
-        <Link to="/resources" className="inline-flex rounded-xl bg-powderBlush px-4 py-2 text-base font-bold text-pitchBlack transition hover:brightness-95">
-          Find Healthcare Providers
-        </Link>
-      </section>
-
-      <section className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-6 shadow-soft">
-        <h2 className="text-2xl font-extrabold text-vanillaCustard mb-4">Legal Support & Advocacy</h2>
-        <p className="text-base text-vanillaCustard/90 mb-4">
-          Access legal assistance for name changes, discrimination cases, housing rights, and other LGBTQIA+ legal services in Texas.
-        </p>
-        <Link to="/resources" className="inline-flex rounded-xl bg-powderBlush px-4 py-2 text-base font-bold text-pitchBlack transition hover:brightness-95">
-          Find Legal Aid Services
-        </Link>
       </section>
 
       <section className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-6 shadow-soft">
