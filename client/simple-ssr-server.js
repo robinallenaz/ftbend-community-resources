@@ -308,6 +308,19 @@ function createSSRHTML(url) {
         
         <title>${title}</title>
         
+        <!-- Critical CSS for above-the-fold content -->
+        <style>
+          /* Critical CSS for faster rendering */
+          *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#0C0805;color:#D1DA9C;line-height:1.6}.container{max-width:1200px;margin:0 auto;padding:2rem}h1{font-size:2rem;font-weight:800;margin-bottom:1rem;color:#D1DA9C}h2{font-size:1.5rem;font-weight:700;margin-bottom:1rem;color:#D1DA9C}p{margin-bottom:1rem;color:rgba(209,218,156,.85)}a{color:#D2DC76;text-decoration:none;font-weight:600;transition:color .2s}a:hover{color:#F7A3A1}article{background:#343130;border:1px solid rgba(209,218,156,.15);border-radius:20px;padding:1.5rem;box-shadow:0 10px 35px rgba(0,0,0,.35)}.loading{display:flex;justify-content:center;align-items:center;min-height:100vh;font-size:1.2rem;color:rgba(209,218,156,.7)}@media (min-width:768px){.container{padding:3rem}h1{font-size:2.5rem}}
+        </style>
+        
+        <!-- Resource hints for performance -->
+        <link rel="preload" href="/ftbend-lgbtqia-logo.jpg" as="image">
+        <link rel="preload" href="/pride-flag-banner.jpg" as="image">
+        <link rel="dns-prefetch" href="//ftbend-community-resources-api.onrender.com">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        
         <style>
           /* Clean, semantic CSS matching your site */
           * {
@@ -423,8 +436,8 @@ function createSSRHTML(url) {
           </div>
           <div class="loading">Loading interactive content...</div>
         </div>
-        <script type="module" src="/assets/main-DcgP-_0v.js"></script>
-        <script type="module" src="/assets/server-DDjbh460.js"></script>
+        <script type="module" defer src="/assets/main-DcgP-_0v.js"></script>
+        <script type="module" defer src="/assets/server-DDjbh460.js"></script>
       </body>
     </html>
   `;

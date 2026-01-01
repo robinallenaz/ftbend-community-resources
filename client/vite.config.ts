@@ -22,13 +22,21 @@ export default defineConfig({
       output: {
         entryFileNames: 'assets/[name]-[hash].js',
         chunkFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash].[ext]'
+        assetFileNames: 'assets/[name]-[hash].[ext]',
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom']
+        }
       }
     },
     minify: 'terser',
     sourcemap: false,
     chunkSizeWarningLimit: 1000,
-    target: 'es2015'
+    target: 'es2015',
+    cssCodeSplit: true,
+    modulePreload: {
+      polyfill: false
+    }
   },
   ssr: {
     noExternal: ['react-router-dom', 'express', 'http-proxy-middleware']
