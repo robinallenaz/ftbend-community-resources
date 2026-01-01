@@ -1,167 +1,228 @@
-# Fort Bend LGBTQIA+ Community Resources
+# 🌈 Fort Bend County LGBTQIA+ Community Resources
 
-A community-maintained website for sharing **LGBTQIA+ resources, events, and support** in Fort Bend County and nearby areas.
+A community-maintained website connecting people with **LGBTQIA+ resources, events, and support** in Fort Bend County and surrounding areas.
 
-This is a **monorepo** (one repo with multiple apps):
+## 🚀 Live Site
 
-- **Client**: React + Vite (deployed to Netlify)
-- **Server**: Node.js + Express + MongoDB (deployed to Render)
-
-The public site is **database-driven**: resources and events live in MongoDB and are served by the API.
+**🌐 [ftbend-lgbtqia-community.org](https://ftbend-lgbtqia-community.org)**
 
 ---
 
-## Project structure
+## 📋 What This Project Does
 
-```text
-ftbend-community-resources/
-  client/               # Frontend (React + Vite)
-  server/               # Backend (Express + MongoDB)
-  client/public/        # Static files served at the site root (favicons, images)
-  netlify.toml          # Netlify build + proxy config
-  render.yaml           # Render service config (optional)
+- **🏥 Find Resources** - Healthcare providers, legal services, support groups
+- **📅 Discover Events** - Community meetups, support groups, social gatherings  
+- **📝 Submit Content** - Community members can add new resources and events
+- **🔐 Admin Dashboard** - Manage and moderate all content
+
+---
+
+## 🏗️ Architecture
+
+This is a **monorepo** with two main applications:
+
+```
+📁 client/     # Frontend (React + Vite) → Deployed to Netlify
+📁 server/     # Backend (Express + MongoDB) → Deployed to Render
 ```
 
+### 🌐 Live URLs
+- **Frontend:** https://ftbend-lgbtqia-community.org
+- **Backend API:** https://ftbend-lgbtqia-community-api.onrender.com
+- **Admin Panel:** https://ftbend-lgbtqia-community.org/admin
+
 ---
 
-## Quick start (local development)
+## 🛠️ Tech Stack
+
+### Frontend
+- **React 18** with TypeScript
+- **Vite** for build tooling
+- **React Router** for navigation
+- **Tailwind CSS** for styling
+
+### Backend  
+- **Node.js + Express**
+- **MongoDB** (Atlas)
+- **JWT** authentication
+- **Mongoose** ODM
+
+### Deployment
+- **Netlify** (frontend)
+- **Render** (backend API)
+- **MongoDB Atlas** (database)
+
+---
+
+## 🚀 Quick Start (Local Development)
 
 ### Prerequisites
+- **Node.js** (LTS version)
+- **MongoDB** connection string (Atlas recommended)
 
-- **Node.js** (current LTS recommended)
-- A **MongoDB** connection string (Atlas is fine)
+### Setup Process
 
-### Setup
-
-From the repo root, run:
-
+1. **Clone and install:**
 ```bash
+git clone <your-repo-url>
+cd ftbend-community-resources
 npm install
 ```
 
-Create a root `.env` (you can copy `.env.example`):
+2. **Environment setup:**
+```bash
+cp .env.example .env
+# Edit .env with your MongoDB URI and JWT secret
+```
 
+3. **Start development:**
 ```bash
 npm run dev
 ```
 
-This starts:
-
-- Client: http://localhost:5173
-- Server API: http://localhost:8080
-
-In dev, the client proxies `/api/*` to the local server.
+**🌐 Development URLs:**
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:8080
+- Admin: http://localhost:5173/admin
 
 ---
 
-## Environment variables
+## ⚙️ Environment Variables
 
-These are read by the **server** (from the repo root `.env`).
+Create a `.env` file in the root:
 
-### Required
-
-- `MONGODB_URI` (recommended to include a database name like `ftbend`)
-
-```text
-mongodb+srv://<user>:<pass>@<cluster-host>/ftbend?retryWrites=true&w=majority&authSource=admin
+### Required Variables
+```env
+MONGODB_URI=mongodb+srv://<user>:<pass>@<cluster>/ftbend?retryWrites=true&w=majority
+JWT_SECRET=<your-long-random-string>
 ```
 
-- `JWT_SECRET` (a long random string)
-
-### Optional
-
-- `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` (used by the seed script)
+### Optional Variables
+```env
+SEED_ADMIN_EMAIL=admin@example.com
+SEED_ADMIN_PASSWORD=your-secure-password
+```
 
 ---
 
-## Common commands
-
-Run all commands from the **repo root** unless noted.
+## 🎛️ Common Commands
 
 ```bash
-npm run dev        # start client + server
-npm run dev:client # start client only
-npm run dev:server # start server only
+# Development
+npm run dev           # Start both frontend and backend
+npm run dev:client    # Frontend only
+npm run dev:server    # Backend only
 
-npm run build      # build the client (Netlify runs this)
-npm run start      # start the server (production)
+# Production
+npm run build         # Build frontend for deployment
+npm run start         # Start production server
+
+# Database
+npm run seed --workspace server          # Create admin account
+npm run migrate:resources --workspace server  # Import resources
+npm run migrate:events --workspace server     # Import events
 ```
 
 ---
 
-## Admin dashboard (content management)
+## 🔐 Admin Dashboard
 
-- Login: `/admin/login`
-- Manage:
-  - Resources: `/admin/resources`
-  - Events: `/admin/events`
-  - Submissions: `/admin/submissions`
+### Access
+- **Login:** `/admin/login`
+- **Resources:** `/admin/resources`
+- **Events:** `/admin/events`
+- **Submissions:** `/admin/submissions`
 
-### Roles
+### User Roles
+- **👑 Admin:** Full access (can archive/unarchive)
+- **✏️ Editor:** Basic access (cannot archive)
 
-- `admin`: can archive/unarchive resources and events
-- `editor`: cannot archive/unarchive
-
-### Create or reset an admin account
-
-This repo includes a seed script that **upserts** an admin user:
-
+### Create Admin Account
 ```bash
-SEED_ADMIN_EMAIL="you@example.com" SEED_ADMIN_PASSWORD="your-password" npm run seed --workspace server
+SEED_ADMIN_EMAIL="your-email@example.com" \
+SEED_ADMIN_PASSWORD="secure-password" \
+npm run seed --workspace server
 ```
 
 ---
 
-## Data migration utilities
+## 🚀 Deployment Guide
 
-### Import the original static lists into MongoDB
-
+### Frontend (Netlify)
 ```bash
-npm run migrate:resources --workspace server
-npm run migrate:events --workspace server
+# Build command
+npm run build --workspace client
+
+# Publish directory  
+client/dist
 ```
 
----
+### Backend (Render)
+- **Build Command:** `npm run build --workspace server`
+- **Start Command:** `npm run start`
+- **Environment:** Add `MONGODB_URI` and `JWT_SECRET`
 
-## Deployments
-
-### Frontend: Netlify
-
-- Builds with: `npm run build --workspace client`
-- Publishes: `client/dist`
-
-Netlify also proxies API requests:
-
-- `/api/*` → Render backend `/api/:splat`
-
-See `netlify.toml`.
-
-### Backend: Render
-
-- Runs the Express server
-- Connects to MongoDB using `MONGODB_URI`
-
-**Important:** Make sure Render’s `MONGODB_URI` includes the correct database name (for example `/ftbend`).
+### Important Notes
+- Netlify proxies `/api/*` to Render backend
+- SSL certificates are automatic
+- Environment variables must match between services
 
 ---
 
-## Troubleshooting
+## 📧 Email Configuration
 
-### “401 Unauthorized” on admin login
-
-- Your deployed server is likely pointing at a different database than the one you seeded.
-- Confirm Render `MONGODB_URI` matches your local one (including the database name).
-
-### “400 Bad Request” when submitting a resource
-
-- The API validates:
-  - `name` (2–140 chars)
-  - `url` (server will add `https://` if missing)
+### Newsletter
+- **Current:** Sends from `robin@transvoices.us` (verified domain)
+- **Alternative:** Set up Zoho Mail for custom domain emails
+- **Cost:** Zoho Mail has free tier for up to 5 users
 
 ---
 
-## Contributing
+## 🔧 Troubleshooting
 
-Non-technical help is welcome: submit links, report broken/outdated resources, and share feedback.
+### Common Issues
+
+**❌ "401 Unauthorized" on admin login**
+- Check that `MONGODB_URI` matches between local and production
+- Verify admin account was created with seed script
+
+**❌ "400 Bad Request" when submitting**
+- Resource name must be 2-140 characters
+- URL will be auto-formatted with `https://`
+
+**❌ API not responding**
+- Check backend is running on Render
+- Verify API proxy in `netlify.toml`
 
 ---
+
+## 🤝 Contributing
+
+### For Community Members
+- **Submit resources** and events through the website
+- **Report broken links** or outdated information
+- **Share feedback** and suggestions
+
+### For Developers
+- **Fork the repository**
+- **Create a feature branch**
+- **Submit a pull request**
+- **Follow existing code style**
+
+---
+
+## 📄 License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+---
+
+## 🌟 Acknowledgments
+
+- Built for the Fort Bend County LGBTQIA+ community
+- Community-maintained and volunteer-run
+- All resources are verified and community-sourced
+
+---
+
+**There is no community without unity 🏳️‍⚧️🏳️‍🌈**
