@@ -300,7 +300,7 @@ function createSSRHTML(url) {
               "url": "https://ftbend-lgbtqia-community.org",
               "logo": {
                 "@type": "ImageObject",
-                "url": "https://ftbend-lgbtqia-community.org/ftbend-lgbtqia-logo.jpg",
+                "url": "https://ftbend-lgbtqia-community.org/ftbend-lgbtqia-logo.webp",
                 "width": 1200,
                 "height": 630
               },
@@ -360,6 +360,8 @@ function createSSRHTML(url) {
         </style>
         
         <!-- Resource hints for performance -->
+        <link rel="preload" href="/ftbend-lgbtqia-logo.webp" as="image" type="image/webp">
+        <link rel="preload" href="/pride-flag-banner.webp" as="image" type="image/webp">
         <link rel="preload" href="/ftbend-lgbtqia-logo.jpg" as="image">
         <link rel="preload" href="/pride-flag-banner.jpg" as="image">
         <link rel="dns-prefetch" href="//ftbend-community-resources-api.onrender.com">

@@ -27,7 +27,7 @@ export default function HomePage() {
         "url": "https://ftbend-lgbtqia-community.org",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://ftbend-lgbtqia-community.org/ftbend-lgbtqia-logo.jpg",
+          "url": "https://ftbend-lgbtqia-community.org/ftbend-lgbtqia-logo.webp",
           "width": 1200,
           "height": 630
         },
@@ -81,16 +81,22 @@ export default function HomePage() {
         aria-label="Welcome"
       >
         <div className="absolute inset-0 opacity-25">
-          <img src="/pride-flag-banner.jpg" alt="Pride flag banner with rainbow colors representing LGBTQIA+ community" className="h-full w-full object-cover" />
+          <picture>
+            <source type="image/webp" srcSet="/pride-flag-banner.webp" />
+            <img src="/pride-flag-banner.jpg" alt="Pride flag banner with rainbow colors representing LGBTQIA+ community" className="h-full w-full object-cover" />
+          </picture>
         </div>
         <div className="relative grid gap-5 p-6 md:p-10">
           <div className="flex flex-col items-start gap-4 md:flex-row md:items-center">
-            <img 
-              src="/ftbend-lgbtqia-logo.jpg"
-              alt="Fort Bend County LGBTQIA+ Community logo"
-              className="h-16 w-16 rounded-2xl object-cover"
-              loading="lazy"
-            />
+            <picture>
+              <source type="image/webp" srcSet="/ftbend-lgbtqia-logo.webp" />
+              <img 
+                src="/ftbend-lgbtqia-logo.jpg"
+                alt="Fort Bend County LGBTQIA+ Community logo"
+                className="h-16 w-16 rounded-2xl object-cover"
+                loading="lazy"
+              />
+            </picture>
             <div>
               <h1 className="text-3xl font-extrabold text-vanillaCustard md:text-4xl">
                 Fort Bend County LGBTQIA+ Community Resources
