@@ -49,7 +49,7 @@ export default function HomePage() {
                 There is no community without unity 🏳️‍⚧️🏳️‍🌈
               </p>
               <p className="mt-2 text-base text-vanillaCustard/85">
-                Find healthcare providers, legal services, support groups, and inclusive events in Fort Bend County, Texas.
+                Find healthcare providers, legal services, support groups, and inclusive events in Fort Bend County, Texas and surrounding areas.
               </p>
             </div>
           </div>
