@@ -40,9 +40,35 @@ export default function Footer() {
             <ul className="space-y-2">
               <li><Link to="/resources" className="hover:text-paleAmber underline-offset-4 hover:underline">LGBTQIA+ Resources</Link></li>
               <li><Link to="/events" className="hover:text-paleAmber underline-offset-4 hover:underline">Community Events</Link></li>
-              <li><Link to="/submit" className="hover:text-paleAmber underline-offset-4 hover:underline">Submit a Resource</Link></li>
               <li><Link to="/about" className="hover:text-paleAmber underline-offset-4 hover:underline">About Us</Link></li>
+              <li><Link to="/submit" className="hover:text-paleAmber underline-offset-4 hover:underline">Submit a Resource</Link></li>
             </ul>
+          </div>
+          
+          <div className="space-y-4">
+            <h3 className="text-lg font-extrabold text-vanillaCustard">Website Developer</h3>
+            <div className="space-y-2">
+              <div>
+                <a
+                  className="underline underline-offset-4 hover:text-paleAmber"
+                  href="https://github.com/robinallenaz"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  GitHub
+                </a>
+              </div>
+              <div>
+                <a
+                  className="underline underline-offset-4 hover:text-paleAmber"
+                  href="https://www.linkedin.com/in/robin-allen-software-engineer/"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  LinkedIn
+                </a>
+              </div>
+            </div>
           </div>
           
           <NewsletterSignup />
