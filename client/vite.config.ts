@@ -24,7 +24,11 @@ export default defineConfig({
         chunkFileNames: 'assets/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash].[ext]'
       }
-    }
+    },
+    minify: 'terser',
+    sourcemap: false,
+    chunkSizeWarningLimit: 1000,
+    target: 'es2015'
   },
   ssr: {
     noExternal: ['react-router-dom', 'express', 'http-proxy-middleware']

@@ -159,6 +159,21 @@
     </script>
     
     <title>Fort Bend County LGBTQIA+ Community</title>
+    
+    <!-- Critical CSS for faster rendering -->
+    <style>
+      /* Critical CSS for above-the-fold content */
+      *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,sans-serif;background-color:#0C0805;color:#D1DA9C;line-height:1.6}header{border-bottom:1px solid rgba(209,218,156,.15);background-color:#0C0805}main{min-height:100vh}.hero{position:relative;overflow:hidden;border-radius:1rem;border:1px solid rgba(209,218,156,.15);background-color:#0C0805}.logo{height:4rem;width:4rem;border-radius:.5rem;object-fit:cover}.title{font-size:2rem;font-weight:800;color:#D1DA9C;margin:0}.subtitle{color:rgba(209,218,156,.85);margin:0}.btn{display:inline-flex;align-items:center;border-radius:.75rem;padding:.75rem 1rem;font-size:1rem;font-weight:700;text-decoration:none;transition:filter .2s;cursor:pointer;border:none}.btn-primary{background-color:#F4E4C1;color:#0C0805}.btn-secondary{background-color:#D2DC76;color:#0C0805}.btn:hover{filter:brightness(.95)}section{margin-bottom:2.5rem}.section-title{font-size:1.5rem;font-weight:700;color:#D1DA9C;margin-bottom:1rem}.card{border-radius:1rem;border:1px solid rgba(209,218,156,.15);background-color:#0C0805;padding:1.5rem;box-shadow:0 4px 6px rgba(0,0,0,.1)}@media (max-width:768px){.title{font-size:1.5rem}.logo{height:3rem;width:3rem}}
+    </style>
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="/ftbend-lgbtqia-logo.jpg" as="image">
+    <link rel="preload" href="/pride-flag-banner.jpg" as="image">
+    <link rel="dns-prefetch" href="//ftbend-community-resources-api.onrender.com">
+    
+    <!-- Resource hints -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   </head>
   <body>
     <div id="root">

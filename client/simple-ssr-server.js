@@ -32,6 +32,24 @@ function createSSRHTML(url) {
   const isAboutPage = url.startsWith('/about');
   const isSubmitPage = url.startsWith('/submit');
 
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Fort Bend County LGBTQIA+ Community Resources",
+    "url": "https://ftbend-community-resources.netlify.app",
+    "logo": "https://ftbend-community-resources.netlify.app/ftbend-lgbtqia-logo.jpg",
+    "description": "Community-maintained LGBTQIA+ resources and events for Fort Bend County and nearby areas.",
+    "sameAs": [
+      "https://instagram.com/ftbend_lgbtqia",
+      "https://www.facebook.com/share/16a6rc4XjY/?mibextid=wwXIfr"
+    ],
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "contactType": "community support",
+      "availableLanguage": "English"
+    }
+  };
+
   let title = 'Fort Bend County LGBTQIA+ Community Resources | Support & Events';
   let h1Content = 'Fort Bend County LGBTQIA+ Community Resources';
   let description = 'Find healthcare providers, legal services, support groups, and inclusive events in Fort Bend County, Texas.';
@@ -233,9 +251,19 @@ function createSSRHTML(url) {
             {
               "@type": "Organization",
               "@id": "https://ftbend-community-resources.netlify.app/#organization",
-              "name": "Fort Bend County LGBTQIA+ Community",
-              "description": "A community-maintained directory of LGBTQIA+ resources, events, and support services for Fort Bend County and surrounding areas.",
+              "name": "Fort Bend County LGBTQIA+ Community Resources",
+              "description": "Community-maintained LGBTQIA+ resources and events for Fort Bend County and nearby areas.",
               "url": "https://ftbend-community-resources.netlify.app",
+              "logo": "https://ftbend-community-resources.netlify.app/ftbend-lgbtqia-logo.jpg",
+              "sameAs": [
+                "https://instagram.com/ftbend_lgbtqia",
+                "https://www.facebook.com/share/16a6rc4XjY/?mibextid=wwXIfr"
+              ],
+              "contactPoint": {
+                "@type": "ContactPoint",
+                "contactType": "community support",
+                "availableLanguage": "English"
+              },
               "areaServed": {
                 "@type": "Place",
                 "name": "Fort Bend County, Texas"

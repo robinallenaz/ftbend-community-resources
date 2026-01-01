@@ -2,21 +2,44 @@ import { Link } from 'react-router-dom';
 import ResourceExplorer from '../components/ResourceExplorer';
 
 export default function HomePage() {
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Fort Bend County LGBTQIA+ Community Resources",
+    "url": "https://ftbend-community-resources.netlify.app",
+    "logo": "https://ftbend-community-resources.netlify.app/ftbend-lgbtqia-logo.jpg",
+    "description": "Community-maintained LGBTQIA+ resources and events for Fort Bend County and nearby areas.",
+    "sameAs": [
+      "https://instagram.com/ftbend_lgbtqia",
+      "https://www.facebook.com/share/16a6rc4XjY/?mibextid=wwXIfr"
+    ],
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "contactType": "community support",
+      "availableLanguage": "English"
+    }
+  };
   return (
-    <div className="grid gap-10">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+      />
+      <div className="grid gap-10">
       <section
         className="relative overflow-hidden rounded-2xl border border-vanillaCustard/15 bg-pitchBlack shadow-soft"
         aria-label="Welcome"
       >
         <div className="absolute inset-0 opacity-25">
-          <img src="/pride-flag-banner.jpg" alt="" className="h-full w-full object-cover" />
+          <img src="/pride-flag-banner.jpg" alt="Pride flag banner with rainbow colors representing LGBTQIA+ community" className="h-full w-full object-cover" />
         </div>
         <div className="relative grid gap-5 p-6 md:p-10">
           <div className="flex flex-col items-start gap-4 md:flex-row md:items-center">
-            <img
+            <img 
               src="/ftbend-lgbtqia-logo.jpg"
               alt="Fort Bend County LGBTQIA+ Community logo"
               className="h-16 w-16 rounded-2xl object-cover"
+              loading="lazy"
             />
             <div>
               <h1 className="text-3xl font-extrabold text-vanillaCustard md:text-4xl">
@@ -60,6 +83,7 @@ export default function HomePage() {
           View Upcoming Events
         </Link>
       </section>
-    </div>
+      </div>
+    </>
   );
 }
