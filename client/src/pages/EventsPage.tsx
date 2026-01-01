@@ -118,7 +118,7 @@ export default function EventsPage() {
         {items.map((e) => (
           <article key={e._id} className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-5 shadow-soft">
             <div className="flex flex-col gap-2">
-              <h2 className="text-2xl font-extrabold text-vanillaCustard">{e.name}</h2>
+              <h3 className="text-2xl font-extrabold text-vanillaCustard">{e.name}</h3>
               <div className="text-base text-vanillaCustard/90">
                 <span className="font-bold">Schedule:</span> {e.schedule}
               </div>

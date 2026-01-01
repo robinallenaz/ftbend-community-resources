@@ -209,9 +209,9 @@ export default function ResourceExplorer(args: { initialQuery?: string }) {
       <section className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-5 shadow-soft">
         <div className="grid gap-3">
           <label className="grid gap-2" htmlFor="resource-search">
-            <span className="text-lg font-extrabold text-vanillaCustard">Search resources</span>
+            <h2 className="text-lg font-extrabold text-vanillaCustard">Search resources</h2>
             <span className="text-sm text-vanillaCustard/75">
-              Type what you need. Results update as you type. Example: “trans”, “Fort Bend”, “counseling”, “youth”.
+              Type what you need. Results update as you type. Example: "trans", "Fort Bend", "counseling", "youth".
             </span>
           </label>
 

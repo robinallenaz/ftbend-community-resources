@@ -169,7 +169,7 @@ function createSSRHTML(url) {
     description = 'The page you\'re looking for doesn\'t exist. Find LGBTQIA+ resources, healthcare providers, legal services, and community events in Fort Bend County, Texas.';
     structuredContent = `
       <section style="text-align: center; max-width: 600px; margin: 0 auto;">
-        <div style="font-size: 6rem; font-weight: 800; color: #D1DA9C; margin-bottom: 1rem;">404</div>
+        <h1 style="font-size: 6rem; font-weight: 800; color: #D1DA9C; margin-bottom: 1rem;">404</h1>
         <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 1rem; color: #D1DA9C;">Page Not Found</h2>
         <p style="font-size: 1.1rem; margin-bottom: 2rem; color: rgba(209, 218, 156, 0.9);">
           Oops! The page you're looking for doesn't exist or has been moved. 
