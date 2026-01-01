@@ -167,13 +167,17 @@
     </style>
     
     <!-- Preload critical resources -->
+    <link rel="preload" href="/ftbend-lgbtqia-logo.webp" as="image" type="image/webp">
     <link rel="preload" href="/ftbend-lgbtqia-logo.jpg" as="image">
+    <link rel="preload" href="/pride-flag-banner.webp" as="image" type="image/webp">
     <link rel="preload" href="/pride-flag-banner.jpg" as="image">
     <link rel="dns-prefetch" href="//ftbend-community-resources-api.onrender.com">
-    
-    <!-- Resource hints -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Optimize font loading -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" as="style">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
   </head>
   <body>
     <div id="root">
@@ -205,6 +209,6 @@
         </div>
       </noscript>
     </div>
-    <script type="module" defer src="/src/main.tsx"></script>
+    <script type="module" async src="/src/main.tsx"></script>
   </body>
 </html>

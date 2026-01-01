@@ -483,8 +483,8 @@ function createSSRHTML(url) {
           </div>
           <div class="loading">Loading interactive content...</div>
         </div>
-        <script type="module" defer src="/assets/main-DcgP-_0v.js"></script>
-        <script type="module" defer src="/assets/server-DDjbh460.js"></script>
+        <script type="module" async src="/assets/main-DcgP-_0v.js"></script>
+        <script type="module" async src="/assets/server-DDjbh460.js"></script>
       </body>
     </html>
   `;

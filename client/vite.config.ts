@@ -25,7 +25,8 @@ export default defineConfig({
         assetFileNames: 'assets/[name]-[hash].[ext]',
         manualChunks: {
           vendor: ['react', 'react-dom'],
-          router: ['react-router-dom']
+          router: ['react-router-dom'],
+          ui: ['@headlessui/react', '@heroicons/react']
         }
       }
     },
@@ -36,6 +37,12 @@ export default defineConfig({
     cssCodeSplit: true,
     modulePreload: {
       polyfill: false
+    },
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
     }
   },
   ssr: {

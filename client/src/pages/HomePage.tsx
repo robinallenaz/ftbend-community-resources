@@ -94,7 +94,6 @@ export default function HomePage() {
                 src="/ftbend-lgbtqia-logo.jpg"
                 alt="Fort Bend County LGBTQIA+ Community logo"
                 className="h-16 w-16 rounded-2xl object-cover"
-                loading="lazy"
               />
             </picture>
             <div>
