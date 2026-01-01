@@ -1,0 +1,10 @@
+Fort Bend County LGBTQIA+ Community Resources
+
+Find local LGBTQIA+ resources, events, and support in Fort Bend County and surrounding areas.
+
+🌐 Website: http://localhost:5173
+📚 Resources: http://localhost:5173/resources
+📅 Events: http://localhost:5173/events
+📝 Submit resources: http://localhost:5173/submit
+
+#LGBTQIA #FortBend #Texas #CommunityResources
