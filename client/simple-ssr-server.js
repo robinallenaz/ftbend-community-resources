@@ -36,8 +36,8 @@ function createSSRHTML(url) {
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "Fort Bend County LGBTQIA+ Community Resources",
-    "url": "https://ftbend-community-resources.netlify.app",
-    "logo": "https://ftbend-community-resources.netlify.app/ftbend-lgbtqia-logo.jpg",
+    "url": "https://ftbend-lgbtqia-community.org",
+    "logo": "https://ftbend-lgbtqia-community.org/ftbend-lgbtqia-logo.jpg",
     "description": "Community-maintained LGBTQIA+ resources and events for Fort Bend County and nearby areas.",
     "sameAs": [
       "https://instagram.com/ftbend_lgbtqia",

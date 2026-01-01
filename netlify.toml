@@ -6,26 +6,26 @@
   BASE_PATH = "/"
 
 [[redirects]]
-  from = "https://www.ftbend-community-resources.netlify.app/*"
-  to = "https://ftbend-community-resources.netlify.app/:splat"
+  from = "https://www.ftbend-lgbtqia-community.org/*"
+  to = "https://ftbend-lgbtqia-community.org/:splat"
   status = 301
   force = true
 
 [[redirects]]
-  from = "http://www.ftbend-community-resources.netlify.app/*"
-  to = "https://ftbend-community-resources.netlify.app/:splat"
+  from = "http://www.ftbend-lgbtqia-community.org/*"
+  to = "https://ftbend-lgbtqia-community.org/:splat"
   status = 301
   force = true
 
 [[redirects]]
-  from = "http://ftbend-community-resources.netlify.app/*"
-  to = "https://ftbend-community-resources.netlify.app/:splat"
+  from = "http://ftbend-lgbtqia-community.org/*"
+  to = "https://ftbend-lgbtqia-community.org/:splat"
   status = 301
   force = true
 
 [[redirects]]
   from = "/api/*"
-  to = "https://ftbend-community-resources-api.onrender.com/api/:splat"
+  to = "https://ftbend-lgbtqia-community-api.onrender.com/api/:splat"
   status = 200
   force = true
 
