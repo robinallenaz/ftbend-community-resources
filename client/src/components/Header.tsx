@@ -40,7 +40,6 @@ export default function Header() {
             <div className="text-base font-extrabold leading-tight text-vanillaCustard">
               Fort Bend County LGBTQIA+ Community
             </div>
-            <div className="text-sm text-vanillaCustard/80">Resources, events, and support</div>
           </div>
         </button>
 
