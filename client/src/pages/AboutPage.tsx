@@ -33,6 +33,35 @@ export default function AboutPage() {
               You can increase text size in the top right. Everything should work with keyboard navigation and screen readers for full accessibility.
             </p>
           </div>
+
+          <div className="rounded-2xl bg-graphite/70 p-4">
+            <h3 className="text-lg font-extrabold text-vanillaCustard">Website Developer</h3>
+            <p className="mt-2">
+              This website was developed to serve the Fort Bend County LGBTQIA+ community. Connect with the developer:
+            </p>
+            <div className="mt-3 space-y-2">
+              <div>
+                <a
+                  className="underline underline-offset-4 hover:text-paleAmber"
+                  href="https://github.com/robinallenaz"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  GitHub
+                </a>
+              </div>
+              <div>
+                <a
+                  className="underline underline-offset-4 hover:text-paleAmber"
+                  href="https://www.linkedin.com/in/robin-allen-software-engineer/"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  LinkedIn
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </div>

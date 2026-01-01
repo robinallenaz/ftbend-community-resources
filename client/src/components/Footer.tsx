@@ -45,32 +45,6 @@ export default function Footer() {
             </ul>
           </div>
           
-          <div className="space-y-4">
-            <h3 className="text-lg font-extrabold text-vanillaCustard">Website Developer</h3>
-            <div className="space-y-2">
-              <div>
-                <a
-                  className="underline underline-offset-4 hover:text-paleAmber"
-                  href="https://github.com/robinallenaz"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  GitHub
-                </a>
-              </div>
-              <div>
-                <a
-                  className="underline underline-offset-4 hover:text-paleAmber"
-                  href="https://www.linkedin.com/in/robin-allen-software-engineer/"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  LinkedIn
-                </a>
-              </div>
-            </div>
-          </div>
-          
           <NewsletterSignup />
         </div>
         <div className="mt-8 text-sm text-vanillaCustard/70">

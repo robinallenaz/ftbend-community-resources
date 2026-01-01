@@ -362,13 +362,6 @@ function createSSRHTML(url) {
                   <a href="https://www.facebook.com/share/16a6rc4XjY/?mibextid=wwXIfr" target="_blank" style="color: #D2DC76;">Facebook</a>
                 </nav>
               </div>
-              <div style="margin-bottom: 2rem;">
-                <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: #D1DA9C;">Website Developer</h3>
-                <nav style="display: grid; gap: 0.5rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
-                  <a href="https://github.com/robinallenaz" target="_blank" style="color: #D2DC76;">GitHub</a>
-                  <a href="https://www.linkedin.com/in/robin-allen-software-engineer/" target="_blank" style="color: #D2DC76;">LinkedIn</a>
-                </nav>
-              </div>
               <div style="font-size: 0.875rem; color: rgba(209, 218, 156, 0.7);">
                 <p>If you need support right now, call The LGBT National Hotline: (888) 843-4564 or Trans Lifeline: (877) 565-8860.</p>
               </div>
