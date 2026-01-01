@@ -31,6 +31,7 @@ function createSSRHTML(url) {
   const isEventsPage = url.startsWith('/events');
   const isAboutPage = url.startsWith('/about');
   const isSubmitPage = url.startsWith('/submit');
+  const isNotFoundPage = !isHomePage && !isResourcesPage && !isEventsPage && !isAboutPage && !isSubmitPage;
 
   const organizationSchema = {
     "@context": "https://schema.org",
@@ -159,6 +160,50 @@ function createSSRHTML(url) {
             <li>Social events and meetups</li>
             <li>Educational resources and workshops</li>
           </ul>
+        </div>
+      </section>
+    `;
+  } else if (isNotFoundPage) {
+    title = 'Page Not Found | Fort Bend County LGBTQIA+ Community Resources';
+    h1Content = 'Page Not Found';
+    description = 'The page you\'re looking for doesn\'t exist. Find LGBTQIA+ resources, healthcare providers, legal services, and community events in Fort Bend County, Texas.';
+    structuredContent = `
+      <section style="text-align: center; max-width: 600px; margin: 0 auto;">
+        <div style="font-size: 6rem; font-weight: 800; color: #D1DA9C; margin-bottom: 1rem;">404</div>
+        <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 1rem; color: #D1DA9C;">Page Not Found</h2>
+        <p style="font-size: 1.1rem; margin-bottom: 2rem; color: rgba(209, 218, 156, 0.9);">
+          Oops! The page you're looking for doesn't exist or has been moved. 
+          Don't worry - our community resources are still here to help.
+        </p>
+        <div style="margin-bottom: 2rem;">
+          <a href="/" style="background: #F7A3A1; color: #0C0805; padding: 0.75rem 1.5rem; border-radius: 12px; text-decoration: none; font-weight: 700; display: inline-block; margin-right: 1rem;">
+            🏠 Go Home
+          </a>
+          <a href="/resources" style="background: #343130; border: 1px solid rgba(209, 218, 156, 0.15); color: #D1DA9C; padding: 0.75rem 1.5rem; border-radius: 12px; text-decoration: none; font-weight: 700; display: inline-block;">
+            🏥 Browse Resources
+          </a>
+        </div>
+        <div style="margin-bottom: 2rem;">
+          <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: #D1DA9C;">Looking for something specific?</h3>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; text-align: left;">
+            <a href="/resources" style="color: #D2DC76;">🏥 Healthcare</a>
+            <a href="/resources" style="color: #D2DC76;">⚖️ Legal Support</a>
+            <a href="/events" style="color: #D2DC76;">📅 Events</a>
+            <a href="/about" style="color: #D2DC76;">ℹ️ About Us</a>
+          </div>
+        </div>
+        <div style="padding: 1rem; border-radius: 12px; border: 1px solid rgba(209, 218, 156, 0.15); background: #343130;">
+          <p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: rgba(209, 218, 156, 0.9);">
+            Still can't find what you need?
+          </p>
+          <a href="mailto:robin.allen.az@gmail.com" style="color: #F7A3A1; font-weight: 600;">
+            Contact Support
+          </a>
+        </div>
+        <div style="margin-top: 2rem; font-size: 0.8rem; color: rgba(209, 218, 156, 0.7);">
+          <p style="font-weight: 600; margin-bottom: 0.5rem;">🆘 Need immediate help?</p>
+          <p>LGBT National Hotline: (888) 843-4564</p>
+          <p>Trans Lifeline: (877) 565-8860</p>
         </div>
       </section>
     `;

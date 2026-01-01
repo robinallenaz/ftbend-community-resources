@@ -13,6 +13,7 @@ import AdminResourcesPage from './pages/AdminResourcesPage';
 import AdminSubmissionsPage from './pages/AdminSubmissionsPage';
 import EventsPage from './pages/EventsPage';
 import HomePage from './pages/HomePage';
+import NotFoundPage from './pages/NotFoundPage';
 import ResourcesPage from './pages/ResourcesPage';
 import SubmitResourcePage from './pages/SubmitResourcePage';
 
@@ -39,7 +40,7 @@ export default function App() {
         <Route path="/events" element={<EventsPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/submit" element={<SubmitResourcePage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
   );
