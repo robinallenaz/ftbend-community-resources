@@ -8,6 +8,7 @@ const NewsletterSubscriber = require('../models/NewsletterSubscriber');
 const { validate } = require('../lib/validate');
 const { sendEmail } = require('../lib/email');
 const { getOrCreateNotificationSettings } = require('../lib/notificationSettings');
+const emailService = require('../services/emailService');
 
 const router = express.Router();
 
@@ -183,6 +184,14 @@ router.post('/newsletter/subscribe', async (req, res, next) => {
       source: 'public_signup',
       status: 'active'
     });
+
+    // Send welcome email using ZeptoMail
+    try {
+      await emailService.sendNewsletterWelcome(input.email, input.email.split('@')[0]);
+    } catch (emailError) {
+      console.error('Failed to send welcome email:', emailError);
+      // Don't fail the subscription if email fails
+    }
 
     res.status(201).json({ status: 'subscribed' });
   } catch (e) {

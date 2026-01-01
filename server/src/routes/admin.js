@@ -10,6 +10,7 @@ const { getOrCreateNotificationSettings } = require('../lib/notificationSettings
 const { sendEmail } = require('../lib/email');
 const { requireAuth, requireRole } = require('../lib/auth');
 const { validate } = require('../lib/validate');
+const emailService = require('../services/emailService');
 
 const router = express.Router();
 
@@ -607,17 +608,20 @@ router.post('/newsletter/campaigns/:id/send', requireRole(['admin']), async (req
     const emails = subscribers.map((s) => s.email);
 
     let sentCount = 0;
-    for (const email of emails) {
-      try {
-        await sendEmail({
-          to: email,
-          subject: campaign.subject,
-          html: campaign.htmlContent,
-          text: campaign.textContent
-        });
-        sentCount++;
-      } catch (e) {
-        console.error('Failed to send newsletter to', email, e);
+    try {
+      // Send using ZeptoMail (can handle multiple recipients at once)
+      await emailService.sendNewsletterCampaign(emails, campaign.subject, campaign.htmlContent);
+      sentCount = emails.length;
+    } catch (e) {
+      console.error('Failed to send newsletter campaign:', e);
+      // Fallback to individual emails
+      for (const email of emails) {
+        try {
+          await emailService.sendNewsletterCampaign([email], campaign.subject, campaign.htmlContent);
+          sentCount++;
+        } catch (individualError) {
+          console.error('Failed to send newsletter to', email, individualError);
+        }
       }
     }
 
