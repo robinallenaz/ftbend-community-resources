@@ -1,27 +1,14 @@
-const nodemailer = require('nodemailer');
+const { sendEmail } = require('../lib/email');
 
 class EmailService {
   constructor() {
-    this.transporter = nodemailer.createTransport({
-      host: "smtp.zeptomail.com",
-      port: 587,
-      auth: {
-        user: "emailapikey",
-        pass: process.env.ZEPTOMAIL_TOKEN
-      }
-    });
-    
-    this.fromEmail = process.env.ZEPTOMAIL_FROM_EMAIL || "noreply@ftbend-lgbtqia-community.org";
-    this.fromName = process.env.ZEPTOMAIL_FROM_NAME || "Fort Bend LGBTQIA+ Community";
+    this.fromEmail = process.env.SMTP_FROM || process.env.SMTP_USER || 'robin@transvoices.us';
+    this.fromName = process.env.SMTP_FROM_NAME || 'Fort Bend LGBTQIA+ Community';
   }
 
   async sendNewsletterWelcome(toEmail, toName) {
     try {
-      const result = await this.transporter.sendMail({
-        from: `"${this.fromName}" <${this.fromEmail}>`,
-        to: toEmail,
-        subject: "Welcome to Fort Bend LGBTQIA+ Community Newsletter!",
-        html: `
+      const html = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #D1DA9C;">🌈 Welcome to Our Community!</h2>
             <p>Thank you for joining the Fort Bend County LGBTQIA+ Community newsletter!</p>
@@ -40,7 +27,13 @@ class EmailService {
               <a href="https://ftbend-lgbtqia-community.org">ftbend-lgbtqia-community.org</a>
             </p>
           </div>
-        `
+        `;
+
+      const result = await sendEmail({
+        to: toEmail,
+        subject: 'Welcome to Fort Bend LGBTQIA+ Community Newsletter!',
+        html,
+        text: `Welcome to Fort Bend LGBTQIA+ Community Newsletter, ${toName || ''}!`
       });
       
       console.log("Newsletter welcome email sent successfully");
@@ -53,11 +46,11 @@ class EmailService {
 
   async sendNewsletterCampaign(toEmails, subject, htmlContent) {
     try {
-      const result = await this.transporter.sendMail({
-        from: `"${this.fromName}" <${this.fromEmail}>`,
-        to: toEmails.join(", "), // Send to multiple recipients
-        subject: subject,
-        html: htmlContent
+      const result = await sendEmail({
+        to: toEmails,
+        subject,
+        html: htmlContent,
+        text: ''
       });
       
       console.log(`Newsletter campaign sent to ${toEmails.length} recipients`);
@@ -70,11 +63,7 @@ class EmailService {
 
   async sendContactNotification(contactData) {
     try {
-      const result = await this.transporter.sendMail({
-        from: `"${this.fromName}" <${this.fromEmail}>`,
-        to: "robin.allen.az@gmail.com",
-        subject: "New Contact Form Submission",
-        html: `
+      const html = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #D1DA9C;">New Contact Form Submission</h2>
             <p><strong>Name:</strong> ${contactData.name}</p>
@@ -86,7 +75,14 @@ class EmailService {
               Sent from Fort Bend LGBTQIA+ Community Website
             </p>
           </div>
-        `
+        `;
+
+      const to = process.env.CONTACT_NOTIFY_EMAIL || 'robin.allen.az@gmail.com';
+      const result = await sendEmail({
+        to,
+        subject: 'New Contact Form Submission',
+        html,
+        text: `New contact form submission from ${contactData.name} (${contactData.email}).`
       });
       
       console.log("Contact notification sent successfully");
