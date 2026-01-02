@@ -14,12 +14,12 @@ export default function Footer() {
             <div className="space-y-2 md:text-left">
               <div className="space-y-4">
                 <h3 className="text-lg font-extrabold text-vanillaCustard">Connect With Us</h3>
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-wrap gap-4">
                   <a
                     href="https://instagram.com/ftbend_lgbtqia"
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl border border-vanillaCustard/15 bg-graphite/60 px-3 py-2 text-base font-semibold text-vanillaCustard hover:border-vanillaCustard/35 focus-within:ring-2 focus-within:ring-paleAmber focus-within:ring-offset-2 focus-within:ring-offset-pitchBlack transition"
+                    className="inline-flex items-center gap-2 rounded-xl border border-vanillaCustard/15 bg-graphite/60 px-4 py-3 text-base font-semibold text-vanillaCustard hover:border-vanillaCustard/35 focus-within:ring-2 focus-within:ring-paleAmber focus-within:ring-offset-2 focus-within:ring-offset-pitchBlack transition min-h-[48px] min-w-[48px]"
                   >
                     Instagram
                   </a>
@@ -27,7 +27,7 @@ export default function Footer() {
                     href="https://www.facebook.com/share/16a6rc4XjY/?mibextid=wwXIfr"
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl border border-vanillaCustard/15 bg-graphite/60 px-3 py-2 text-base font-semibold text-vanillaCustard hover:border-vanillaCustard/35 focus-within:ring-2 focus-within:ring-paleAmber focus-within:ring-offset-2 focus-within:ring-offset-pitchBlack transition"
+                    className="inline-flex items-center gap-2 rounded-xl border border-vanillaCustard/15 bg-graphite/60 px-4 py-3 text-base font-semibold text-vanillaCustard hover:border-vanillaCustard/35 focus-within:ring-2 focus-within:ring-paleAmber focus-within:ring-offset-2 focus-within:ring-offset-pitchBlack transition min-h-[48px] min-w-[48px]"
                   >
                     Facebook
                   </a>
@@ -35,7 +35,7 @@ export default function Footer() {
                     href="https://twitter.com/ftbend_lgbtqia"
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl border border-vanillaCustard/15 bg-graphite/60 px-3 py-2 text-base font-semibold text-vanillaCustard hover:border-vanillaCustard/35 focus-within:ring-2 focus-within:ring-paleAmber focus-within:ring-offset-2 focus-within:ring-offset-pitchBlack transition"
+                    className="inline-flex items-center gap-2 rounded-xl border border-vanillaCustard/15 bg-graphite/60 px-4 py-3 text-base font-semibold text-vanillaCustard hover:border-vanillaCustard/35 focus-within:ring-2 focus-within:ring-paleAmber focus-within:ring-offset-2 focus-within:ring-offset-pitchBlack transition min-h-[48px] min-w-[48px]"
                   >
                     X (Twitter)
                   </a>
@@ -43,7 +43,7 @@ export default function Footer() {
                     href="https://linkedin.com/company/ftbend-lgbtqia-community"
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl border border-vanillaCustard/15 bg-graphite/60 px-3 py-2 text-base font-semibold text-vanillaCustard hover:border-vanillaCustard/35 focus-within:ring-2 focus-within:ring-paleAmber focus-within:ring-offset-2 focus-within:ring-offset-pitchBlack transition"
+                    className="inline-flex items-center gap-2 rounded-xl border border-vanillaCustard/15 bg-graphite/60 px-4 py-3 text-base font-semibold text-vanillaCustard hover:border-vanillaCustard/35 focus-within:ring-2 focus-within:ring-paleAmber focus-within:ring-offset-2 focus-within:ring-offset-pitchBlack transition min-h-[48px] min-w-[48px]"
                   >
                     LinkedIn
                   </a>
@@ -51,7 +51,7 @@ export default function Footer() {
                     href="https://youtube.com/@ftbend_lgbtqia"
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl border border-vanillaCustard/15 bg-graphite/60 px-3 py-2 text-base font-semibold text-vanillaCustard hover:border-vanillaCustard/35 focus-within:ring-2 focus-within:ring-paleAmber focus-within:ring-offset-2 focus-within:ring-offset-pitchBlack transition"
+                    className="inline-flex items-center gap-2 rounded-xl border border-vanillaCustard/15 bg-graphite/60 px-4 py-3 text-base font-semibold text-vanillaCustard hover:border-vanillaCustard/35 focus-within:ring-2 focus-within:ring-paleAmber focus-within:ring-offset-2 focus-within:ring-offset-pitchBlack transition min-h-[48px] min-w-[48px]"
                   >
                     YouTube
                   </a>

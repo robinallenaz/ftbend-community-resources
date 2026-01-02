@@ -114,16 +114,16 @@ export default function HomePage() {
               </p>
             </div>
           </div>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-col gap-4 sm:flex-row sm:gap-3">
             <Link
               to="/resources"
-              className="rounded-xl bg-powderBlush px-4 py-3 text-lg font-extrabold text-pitchBlack shadow-soft transition hover:brightness-95"
+              className="rounded-xl bg-powderBlush px-6 py-4 text-lg font-extrabold text-pitchBlack shadow-soft transition hover:brightness-95 min-h-[48px] min-w-[48px] flex items-center justify-center"
             >
               Browse LGBTQIA+ Resources
             </Link>
             <Link
               to="/events"
-              className="rounded-xl bg-paleAmber px-4 py-3 text-lg font-extrabold text-pitchBlack shadow-soft transition hover:brightness-95"
+              className="rounded-xl bg-paleAmber px-6 py-4 text-lg font-extrabold text-pitchBlack shadow-soft transition hover:brightness-95 min-h-[48px] min-w-[48px] flex items-center justify-center"
             >
               View Community Events
             </Link>
@@ -140,7 +140,7 @@ export default function HomePage() {
         <p className="text-base text-vanillaCustard/90 mb-4">
           Join inclusive LGBTQIA+ community events, support group meetings, and social gatherings in Fort Bend County and nearby areas.
         </p>
-        <Link to="/events" className="inline-flex rounded-xl bg-paleAmber px-4 py-2 text-base font-bold text-pitchBlack transition hover:brightness-95">
+        <Link to="/events" className="inline-flex rounded-xl bg-paleAmber px-6 py-4 text-lg font-bold text-pitchBlack shadow-soft transition hover:brightness-95 min-h-[48px] min-w-[48px] items-center justify-center">
           View Upcoming Events
         </Link>
       </section>
