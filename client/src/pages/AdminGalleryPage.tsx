@@ -20,6 +20,7 @@ export default function AdminGalleryPage() {
   const [dragActive, setDragActive] = useState(false);
   const [editingCaptions, setEditingCaptions] = useState<Record<string, string>>({});
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<GalleryItem | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function load() {
@@ -182,7 +183,8 @@ export default function AdminGalleryPage() {
                 <img
                   src={item.filename.startsWith('http') ? item.filename : `/api/public/gallery/${item.filename}`}
                   alt={item.caption || item.originalName}
-                  className="mb-3 h-40 w-full rounded-xl object-cover"
+                  className="mb-3 h-40 w-full rounded-xl object-cover cursor-pointer"
+                  onClick={() => setSelectedImage(item)}
                 />
                 <div className="mb-2">
                   <textarea
@@ -235,6 +237,34 @@ export default function AdminGalleryPage() {
           </div>
         )}
       </section>
+
+      {/* Lightbox */}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-pitchBlack/95 p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <img
+            src={selectedImage.filename.startsWith('http') ? selectedImage.filename : `/api/public/gallery/${selectedImage.filename}`}
+            alt={selectedImage.caption || selectedImage.originalName}
+            className="max-h-full max-w-full rounded-xl object-contain"
+          />
+          {selectedImage.caption && (
+            <p className="absolute bottom-4 left-4 right-4 text-center text-vanillaCustard/90">
+              {selectedImage.caption}
+            </p>
+          )}
+          <button
+            type="button"
+            onClick={() => setSelectedImage(null)}
+            className="absolute top-4 right-4 rounded-lg bg-graphite/80 p-2 text-vanillaCustard hover:bg-graphite"
+          >
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
