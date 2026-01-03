@@ -1,12 +1,54 @@
 import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+
+type GalleryItem = {
+  _id: string;
+  filename: string;
+  caption: string;
+  order: number;
+};
 
 export default function AboutPage() {
+  const [gallery, setGallery] = useState<GalleryItem[]>([]);
+  const [selectedImage, setSelectedImage] = useState<GalleryItem | null>(null);
+
+  useEffect(() => {
+    fetch('/api/public/gallery')
+      .then(r => r.json())
+      .then((data: { items: GalleryItem[] }) => setGallery(data.items))
+      .catch(console.error);
+  }, []);
+
   return (
     <div className="grid gap-6">
       <header className="grid gap-2">
         <h1 className="text-3xl font-extrabold text-vanillaCustard">About Fort Bend LGBTQIA+ Community Resources</h1>
         <p className="text-base text-vanillaCustard/85">A community-first resource hub for LGBTQIA+ folks in and around Fort Bend County, Texas.</p>
       </header>
+
+      {gallery.length > 0 && (
+        <section className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-6 shadow-soft">
+          <h2 className="mb-4 text-2xl font-extrabold text-vanillaCustard">Community Gallery</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {gallery.map(item => (
+              <div
+                key={item._id}
+                className="group cursor-pointer overflow-hidden rounded-xl border border-vanillaCustard/15 bg-graphite transition hover:border-paleAmber/50"
+                onClick={() => setSelectedImage(item)}
+              >
+                <img
+                  src={`/api/public/gallery/${item.filename}`}
+                  alt={item.caption || 'Gallery image'}
+                  className="h-48 w-full object-cover transition group-hover:scale-105"
+                />
+                {item.caption && (
+                  <p className="p-3 text-sm text-vanillaCustard/90">{item.caption}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-6 text-base text-vanillaCustard/90 shadow-soft">
         <div className="grid gap-4">
@@ -77,6 +119,34 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+
+      {/* Lightbox */}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-pitchBlack/95 p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <img
+            src={`/api/public/gallery/${selectedImage.filename}`}
+            alt={selectedImage.caption || 'Gallery image'}
+            className="max-h-full max-w-full rounded-xl object-contain"
+          />
+          {selectedImage.caption && (
+            <p className="absolute bottom-4 left-4 right-4 text-center text-vanillaCustard/90">
+              {selectedImage.caption}
+            </p>
+          )}
+          <button
+            type="button"
+            onClick={() => setSelectedImage(null)}
+            className="absolute top-4 right-4 rounded-lg bg-graphite/80 p-2 text-vanillaCustard hover:bg-graphite"
+          >
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

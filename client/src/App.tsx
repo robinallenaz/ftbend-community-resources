@@ -6,6 +6,7 @@ import AboutPage from './pages/AboutPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import AdminEventEditorPage from './pages/AdminEventEditorPage';
 import AdminEventsPage from './pages/AdminEventsPage';
+import AdminGalleryPage from './pages/AdminGalleryPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import AdminNewsletterPage from './pages/AdminNewsletterPage';
 import AdminResourceEditorPage from './pages/AdminResourceEditorPage';
@@ -28,6 +29,7 @@ export default function App() {
           <Route path="resources/:id" element={<AdminResourceEditorPage />} />
           <Route path="events" element={<AdminEventsPage />} />
           <Route path="events/:id" element={<AdminEventEditorPage />} />
+          <Route path="gallery" element={<AdminGalleryPage />} />
           <Route path="submissions" element={<AdminSubmissionsPage />} />
           <Route path="newsletter" element={<AdminNewsletterPage />} />
           <Route path="*" element={<Navigate to="/admin" replace />} />

@@ -6,6 +6,7 @@ const Event = require('../models/Event');
 const Submission = require('../models/Submission');
 const NewsletterSubscriber = require('../models/NewsletterSubscriber');
 const NewsletterCampaign = require('../models/NewsletterCampaign');
+const GalleryImage = require('../models/GalleryImage');
 const { getOrCreateNotificationSettings } = require('../lib/notificationSettings');
 const { sendEmail } = require('../lib/email');
 const { requireAuth, requireRole } = require('../lib/auth');
@@ -631,6 +632,117 @@ router.post('/newsletter/campaigns/:id/send', requireRole(['admin']), async (req
     await campaign.save();
 
     res.json({ status: 'sent', sentCount });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// Gallery images
+router.get('/gallery', requireAuth, async (req, res, next) => {
+  try {
+    const items = await GalleryImage.find({ status: 'active' }).sort({ order: 1 }).lean();
+    res.json({ items });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post('/gallery', requireRole(['admin']), async (req, res, next) => {
+  try {
+    const input = validate(
+      z.object({
+        filename: z.string().trim().min(1).max(200),
+        originalName: z.string().trim().min(1).max(200),
+        caption: z.string().trim().max(500).optional().default('')
+      }),
+      req.body
+    );
+
+    // Find the highest current order and increment
+    const maxOrder = await GalleryImage.findOne({ status: 'active' }).sort({ order: -1 }).lean();
+    const newOrder = (maxOrder?.order ?? 0) + 1;
+
+    const item = await GalleryImage.create({
+      ...input,
+      order: newOrder,
+      uploadedBy: req.user.id
+    });
+
+    res.status(201).json(item);
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.patch('/gallery/:id/order', requireRole(['admin']), async (req, res, next) => {
+  try {
+    const input = validate(
+      z.object({
+        order: z.number().int().min(0)
+      }),
+      req.body
+    );
+
+    const item = await GalleryImage.findByIdAndUpdate(
+      req.params.id,
+      { order: input.order },
+      { new: true, runValidators: true }
+    );
+
+    if (!item) {
+      const err = new Error('Gallery image not found');
+      err.status = 404;
+      throw err;
+    }
+
+    res.json(item);
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.patch('/gallery/:id/caption', requireRole(['admin']), async (req, res, next) => {
+  try {
+    const input = validate(
+      z.object({
+        caption: z.string().trim().max(500)
+      }),
+      req.body
+    );
+
+    const item = await GalleryImage.findByIdAndUpdate(
+      req.params.id,
+      { caption: input.caption },
+      { new: true, runValidators: true }
+    );
+
+    if (!item) {
+      const err = new Error('Gallery image not found');
+      err.status = 404;
+      throw err;
+    }
+
+    res.json(item);
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.delete('/gallery/:id', requireRole(['admin']), async (req, res, next) => {
+  try {
+    const item = await GalleryImage.findByIdAndUpdate(
+      req.params.id,
+      { status: 'archived' },
+      { new: true }
+    );
+
+    if (!item) {
+      const err = new Error('Gallery image not found');
+      err.status = 404;
+      throw err;
+    }
+
+    res.json({ status: 'archived' });
   } catch (e) {
     next(e);
   }

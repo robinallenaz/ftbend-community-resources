@@ -5,6 +5,7 @@ const Resource = require('../models/Resource');
 const Event = require('../models/Event');
 const Submission = require('../models/Submission');
 const NewsletterSubscriber = require('../models/NewsletterSubscriber');
+const GalleryImage = require('../models/GalleryImage');
 const { validate } = require('../lib/validate');
 const { sendEmail } = require('../lib/email');
 const { getOrCreateNotificationSettings } = require('../lib/notificationSettings');
@@ -194,6 +195,16 @@ router.post('/newsletter/subscribe', async (req, res, next) => {
     }
 
     res.status(201).json({ status: 'subscribed' });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// Public gallery list
+router.get('/gallery', async (req, res, next) => {
+  try {
+    const items = await GalleryImage.find({ status: 'active' }).sort({ order: 1 }).lean();
+    res.json({ items });
   } catch (e) {
     next(e);
   }

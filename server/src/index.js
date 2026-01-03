@@ -10,6 +10,7 @@ const { buildCorsOptions } = require('./lib/cors');
 const publicRoutes = require('./routes/public');
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
+const galleryRoutes = require('./routes/gallery');
 
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
@@ -29,6 +30,8 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/public', publicRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin/gallery', galleryRoutes);
+app.use('/api/public/gallery', galleryRoutes);
 
 app.use((err, _req, res, _next) => {
   const status = Number(err.status) || 500;
