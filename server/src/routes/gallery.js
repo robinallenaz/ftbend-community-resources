@@ -55,7 +55,7 @@ router.post('/upload', requireRole(['admin']), upload.single('file'), async (req
       originalName: req.file.originalname,
       caption: req.body.caption || '',
       order: newOrder,
-      uploadedBy: req.user.id
+      uploadedBy: req.auth.sub
     });
 
     res.status(201).json(item);
