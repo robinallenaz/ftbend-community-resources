@@ -11,6 +11,15 @@ type GalleryItem = {
 export default function AboutPage() {
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [selectedImage, setSelectedImage] = useState<GalleryItem | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  function nextImage() {
+    setCurrentImageIndex((prev) => (prev + 1) % gallery.length);
+  }
+
+  function previousImage() {
+    setCurrentImageIndex((prev) => (prev - 1 + gallery.length) % gallery.length);
+  }
 
   useEffect(() => {
     fetch('/api/public/gallery')
@@ -28,24 +37,65 @@ export default function AboutPage() {
 
       {gallery.length > 0 && (
         <section className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-6 shadow-soft">
-          <h2 className="mb-4 text-2xl font-extrabold text-vanillaCustard">Community Gallery</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {gallery.map(item => (
-              <div
-                key={item._id}
-                className="group cursor-pointer overflow-hidden rounded-xl border border-vanillaCustard/15 bg-graphite transition hover:border-paleAmber/50"
-                onClick={() => setSelectedImage(item)}
-              >
-                <img
-                  src={`/api/public/gallery/${item.filename}`}
-                  alt={item.caption || 'Gallery image'}
-                  className="h-48 w-full object-cover transition group-hover:scale-105"
-                />
-                {item.caption && (
-                  <p className="p-3 text-sm text-vanillaCustard/90">{item.caption}</p>
-                )}
+          <h2 className="text-xl font-extrabold text-vanillaCustard mb-6">Community Moments</h2>
+          <div className="relative group">
+            <div className="aspect-video overflow-hidden rounded-xl bg-graphite shadow-inner">
+              <img
+                src={gallery[currentImageIndex].filename.startsWith('http') ? gallery[currentImageIndex].filename : `/api/public/gallery/${gallery[currentImageIndex].filename}`}
+                alt={gallery[currentImageIndex].caption || 'Gallery image'}
+                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              />
+            </div>
+            
+            {/* Navigation buttons */}
+            {gallery.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={previousImage}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-pitchBlack/90 backdrop-blur-sm p-3 text-vanillaCustard transition-all hover:bg-pitchBlack hover:scale-110 opacity-0 group-hover:opacity-100"
+                  aria-label="Previous image"
+                >
+                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={nextImage}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-pitchBlack/90 backdrop-blur-sm p-3 text-vanillaCustard transition-all hover:bg-pitchBlack hover:scale-110 opacity-0 group-hover:opacity-100"
+                  aria-label="Next image"
+                >
+                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </>
+            )}
+
+            {/* Caption */}
+            {gallery[currentImageIndex].caption && (
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-pitchBlack via-pitchBlack/95 to-transparent p-6">
+                <p className="text-base font-medium text-vanillaCustard drop-shadow-lg leading-relaxed">{gallery[currentImageIndex].caption}</p>
               </div>
-            ))}
+            )}
+
+            {/* Image indicators */}
+            {gallery.length > 1 && (
+              <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
+                {gallery.map((_, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => setCurrentImageIndex(index)}
+                    className={`h-2 w-2 rounded-full transition-all ${
+                      index === currentImageIndex ? 'bg-paleAmber w-8' : 'bg-vanillaCustard/40 hover:bg-vanillaCustard/60'
+                    }`}
+                    aria-label={`Go to image ${index + 1}`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </section>
       )}
