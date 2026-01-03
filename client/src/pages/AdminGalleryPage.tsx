@@ -42,7 +42,7 @@ export default function AdminGalleryPage() {
 
       const uploadRes = await fetch('/api/admin/gallery/upload', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` },
         body: formData
       });
       if (!uploadRes.ok) throw new Error('Upload failed');
