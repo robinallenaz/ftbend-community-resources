@@ -19,6 +19,7 @@ export default function AdminGalleryPage() {
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [editingCaptions, setEditingCaptions] = useState<Record<string, string>>({});
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function load() {
@@ -68,6 +69,10 @@ export default function AdminGalleryPage() {
       await api.patch(`/api/admin/gallery/${id}/caption`, { caption });
       setItems(prev => prev.map(item => item._id === id ? { ...item, caption } : item));
       setEditingCaptions(prev => ({ ...prev, [id]: '' }));
+      
+      // Show success message
+      setSaveMessage('Caption saved successfully!');
+      setTimeout(() => setSaveMessage(null), 2000);
     } catch (e) {
       console.error('Failed to update caption', e);
       alert('Failed to update caption.');
@@ -116,9 +121,16 @@ export default function AdminGalleryPage() {
   return (
     <div className="grid gap-6 p-6">
       <header className="grid gap-2">
-        <h1 className="text-3xl font-extrabold text-vanillaCustard">Gallery</h1>
-        <p className="text-base text-vanillaCustard/85">Manage photos displayed on the About Us page.</p>
+        <h1 className="text-3xl font-extrabold text-vanillaCustard">Gallery Management</h1>
+        <p className="text-base text-vanillaCustard/85">Upload and manage community photos for the website.</p>
       </header>
+
+      {/* Success Message */}
+      {saveMessage && (
+        <div className="rounded-lg bg-green-500/20 border border-green-500/30 p-3 text-center">
+          <p className="text-sm font-medium text-green-300">{saveMessage}</p>
+        </div>
+      )}
 
       {/* Upload area */}
       <section
