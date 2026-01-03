@@ -168,7 +168,7 @@ export default function AdminGalleryPage() {
             {items.map((item, idx) => (
               <div key={item._id} className="group relative rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-4 shadow-soft">
                 <img
-                  src={`/api/public/gallery/${item.filename}`}
+                  src={item.filename.startsWith('http') ? item.filename : `/api/public/gallery/${item.filename}`}
                   alt={item.caption || item.originalName}
                   className="mb-3 h-40 w-full rounded-xl object-cover"
                 />

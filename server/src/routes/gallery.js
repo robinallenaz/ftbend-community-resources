@@ -1,42 +1,28 @@
 const express = require('express');
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const { requireRole } = require('../lib/auth');
 const GalleryImage = require('../models/GalleryImage');
 
-const router = express.Router();
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
-// Ensure uploads directory exists
-const uploadDir = path.join(__dirname, '../../uploads/gallery');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// Multer config for image uploads
-const storage = multer.diskStorage({
-  destination: uploadDir,
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    const ext = path.extname(file.originalname);
-    cb(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
+// Configure Cloudinary storage for multer
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'ftbend-community-gallery',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+    public_id: (req, file) => `gallery-${Date.now()}-${file.originalname}`
   }
 });
 
-const upload = multer({
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
-  fileFilter: (req, file, cb) => {
-    const allowed = /jpeg|jpg|png|webp/i;
-    const extname = allowed.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowed.test(file.mimetype);
-    if (mimetype && extname) {
-      return cb(null, true);
-    } else {
-      cb(new Error('Only image files are allowed'));
-    }
-  }
-});
+const upload = multer({ storage });
 
 // Upload endpoint (admin only)
 router.post('/upload', requireRole(['admin']), upload.single('file'), async (req, res, next) => {
@@ -64,17 +50,7 @@ router.post('/upload', requireRole(['admin']), upload.single('file'), async (req
   }
 });
 
-// Serve uploaded images publicly
-router.get('/:filename', (req, res, next) => {
-  const filePath = path.join(uploadDir, req.params.filename);
-  fs.stat(filePath, (err, stat) => {
-    if (err || !stat.isFile()) {
-      const notFound = new Error('Image not found');
-      notFound.status = 404;
-      return next(notFound);
-    }
-    res.sendFile(filePath);
-  });
-});
+// Note: Images are served directly from Cloudinary URLs
+// No local file serving needed
 
 module.exports = router;

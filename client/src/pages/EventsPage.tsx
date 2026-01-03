@@ -146,7 +146,7 @@ export default function EventsPage() {
           <div className="relative">
             <div className="aspect-video overflow-hidden rounded-xl bg-graphite">
               <img
-                src={`/api/public/gallery/${galleryItems[currentImageIndex].filename}`}
+                src={galleryItems[currentImageIndex].filename.startsWith('http') ? galleryItems[currentImageIndex].filename : `/api/public/gallery/${galleryItems[currentImageIndex].filename}`}
                 alt={galleryItems[currentImageIndex].caption || galleryItems[currentImageIndex].originalName}
                 className="h-full w-full object-cover"
               />
