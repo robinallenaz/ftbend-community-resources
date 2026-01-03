@@ -343,10 +343,10 @@ export default function AdminNewsletterPage() {
                   </div>
                 </div>
                 {previewHtml && (
-                  <div className="rounded-2xl border border-vanillaCustard/15 bg-graphite p-4 prose prose-invert max-w-none">
-                    <div className="mb-2 text-sm font-bold text-vanillaCustard/70">HTML Preview:</div>
+                  <div className="rounded-2xl border border-vanillaCustard/15 bg-white p-4">
+                    <div className="mb-2 text-sm font-bold text-gray-600">HTML Preview (Gmail-style):</div>
                     <div
-                      className="text-vanillaCustard"
+                      className="text-black"
                       dangerouslySetInnerHTML={{ __html: c.htmlContent }}
                     />
                   </div>
