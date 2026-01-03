@@ -29,12 +29,14 @@ export default function NewsletterPage() {
 
   return (
     <main className="mx-auto max-w-2xl space-y-8 px-4 py-12">
-      <section className="grid gap-4">
-        <h1 className="text-4xl font-extrabold text-vanillaCustard">Newsletter</h1>
-        <p className="text-lg text-vanillaCustard/85">
-          Stay up to date with new resources, events, and community news for the LGBTQIA+ Community in Fort Bend and Surrounding Counties.
-        </p>
-      </section>
+      <header className="rounded-2xl border border-vanillaCustard/10 bg-gradient-to-br from-pitchBlack/60 via-pitchBlack/40 to-pitchBlack/30 backdrop-blur-sm p-8 shadow-soft">
+        <div className="grid gap-3">
+          <h1 className="text-4xl font-extrabold text-vanillaCustard">Newsletter</h1>
+          <p className="text-lg text-vanillaCustard/90">
+            Stay up to date with new resources, events, and community news for the LGBTQIA+ Community in Fort Bend and Surrounding Counties.
+          </p>
+        </div>
+      </header>
 
       <section className="grid gap-6 rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-8 shadow-soft">
         <h2 className="text-2xl font-extrabold text-vanillaCustard">Subscribe</h2>

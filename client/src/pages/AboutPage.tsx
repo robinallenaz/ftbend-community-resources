@@ -30,9 +30,11 @@ export default function AboutPage() {
 
   return (
     <div className="grid gap-6">
-      <header className="grid gap-2">
-        <h1 className="text-3xl font-extrabold text-vanillaCustard">About Fort Bend LGBTQIA+ Community Resources</h1>
-        <p className="text-base text-vanillaCustard/85">A community-first resource hub for LGBTQIA+ folks in and around Fort Bend County, Texas.</p>
+      <header className="rounded-2xl border border-vanillaCustard/10 bg-gradient-to-br from-pitchBlack/60 via-pitchBlack/40 to-pitchBlack/30 backdrop-blur-sm p-8 shadow-soft">
+        <div className="grid gap-3">
+          <h1 className="text-3xl font-extrabold text-vanillaCustard">About Fort Bend LGBTQIA+ Community Resources</h1>
+          <p className="text-base text-vanillaCustard/90">A community-first resource hub for LGBTQIA+ folks in and around Fort Bend County, Texas.</p>
+        </div>
       </header>
 
       {gallery.length > 0 && (

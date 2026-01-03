@@ -241,23 +241,27 @@ export default function AdminGalleryPage() {
       {/* Lightbox */}
       {selectedImage && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-pitchBlack/95 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-pitchBlack/90 via-pitchBlack/85 to-pitchBlack/80 backdrop-blur-sm p-4"
           onClick={() => setSelectedImage(null)}
         >
-          <img
-            src={selectedImage.filename.startsWith('http') ? selectedImage.filename : `/api/public/gallery/${selectedImage.filename}`}
-            alt={selectedImage.caption || selectedImage.originalName}
-            className="max-h-full max-w-full rounded-xl object-contain"
-          />
-          {selectedImage.caption && (
-            <p className="absolute bottom-4 left-4 right-4 text-center text-vanillaCustard/90">
-              {selectedImage.caption}
-            </p>
-          )}
+          <div className="relative max-h-full max-w-full">
+            <img
+              src={selectedImage.filename.startsWith('http') ? selectedImage.filename : `/api/public/gallery/${selectedImage.filename}`}
+              alt={selectedImage.caption || selectedImage.originalName}
+              className="max-h-[80vh] max-w-[90vw] rounded-2xl object-contain shadow-2xl"
+            />
+            {selectedImage.caption && (
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-pitchBlack/95 via-pitchBlack/80 to-transparent p-6 rounded-b-2xl">
+                <p className="text-center text-vanillaCustard/95 text-base">
+                  {selectedImage.caption}
+                </p>
+              </div>
+            )}
+          </div>
           <button
             type="button"
             onClick={() => setSelectedImage(null)}
-            className="absolute top-4 right-4 rounded-lg bg-graphite/80 p-2 text-vanillaCustard hover:bg-graphite"
+            className="absolute top-6 right-6 rounded-full bg-pitchBlack/60 backdrop-blur-sm p-3 text-vanillaCustard/90 hover:bg-pitchBlack/80 transition-all duration-200"
           >
             <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
