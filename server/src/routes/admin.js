@@ -17,8 +17,8 @@ const router = express.Router();
 
 const OPTIONS = {
   locations: ['Fort Bend', 'Houston', 'Virtual', 'South TX', 'TX'],
-  types: ['Mental Health', 'Legal', 'Self Care', 'Faith', 'Business', 'Community', 'Pride Orgs', 'Arts', 'Youth', 'Family', 'Events'],
-  audiences: ['Trans', 'Youth', 'Seniors', 'Families', 'All']
+  types: ['Mental Health', 'Legal', 'Self Care', 'Faith', 'Business', 'Community', 'Pride Orgs', 'Arts', 'Youth', 'Family', 'Events', 'Care Services', 'Health Support'],
+  audiences: ['Trans', 'Youth', 'Seniors', 'Families', 'Lesbian', 'Nonbinary', 'All']
 };
 
 function normalizeUrl(input) {
