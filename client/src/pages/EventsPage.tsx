@@ -8,6 +8,14 @@ type EventItem = {
   locationHint: string;
 };
 
+type GalleryItem = {
+  _id: string;
+  filename: string;
+  originalName: string;
+  caption: string;
+  order: number;
+};
+
 // Add structured data for Events page
 function addEventsStructuredData() {
   const structuredData = {
@@ -67,6 +75,9 @@ export default function EventsPage() {
   const [items, setItems] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [galleryLoading, setGalleryLoading] = useState(true);
 
   // Add structured data when component mounts
   useEffect(() => {
@@ -92,19 +103,109 @@ export default function EventsPage() {
       }
     }
 
+    async function loadGallery() {
+      setGalleryLoading(true);
+      try {
+        const res = await fetch('/api/public/gallery', { credentials: 'include' });
+        if (!res.ok) throw new Error('Request failed');
+        const json = (await res.json()) as { items: GalleryItem[] };
+        if (!cancelled) setGalleryItems(Array.isArray(json.items) ? json.items : []);
+      } catch {
+        console.error('Could not load gallery images');
+      } finally {
+        if (!cancelled) setGalleryLoading(false);
+      }
+    }
+
     load();
+    loadGallery();
     return () => {
       cancelled = true;
     };
   }, []);
+
+  function nextImage() {
+    setCurrentImageIndex((prev) => (prev + 1) % galleryItems.length);
+  }
+
+  function previousImage() {
+    setCurrentImageIndex((prev) => (prev - 1 + galleryItems.length) % galleryItems.length);
+  }
 
   return (
     <div className="grid gap-6">
       <header className="grid gap-2">
         <h1 className="text-3xl font-extrabold text-vanillaCustard">LGBTQIA+ Community Events</h1>
         <p className="text-base text-vanillaCustard/85">Monthly community events and meetups in Fort Bend County and nearby areas.</p>
-        <h2 className="text-2xl font-extrabold text-vanillaCustard">Upcoming Events</h2>
       </header>
+
+      {/* Gallery Carousel */}
+      {galleryItems.length > 0 && (
+        <section className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-6 shadow-soft">
+          <h2 className="text-xl font-extrabold text-vanillaCustard mb-4">Community Moments</h2>
+          <div className="relative">
+            <div className="aspect-video overflow-hidden rounded-xl bg-graphite">
+              <img
+                src={`/api/public/gallery/${galleryItems[currentImageIndex].filename}`}
+                alt={galleryItems[currentImageIndex].caption || galleryItems[currentImageIndex].originalName}
+                className="h-full w-full object-cover"
+              />
+            </div>
+            
+            {/* Navigation buttons */}
+            {galleryItems.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={previousImage}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-pitchBlack/80 p-2 text-vanillaCustard transition hover:bg-pitchBlack"
+                  aria-label="Previous image"
+                >
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={nextImage}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-pitchBlack/80 p-2 text-vanillaCustard transition hover:bg-pitchBlack"
+                  aria-label="Next image"
+                >
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </>
+            )}
+
+            {/* Caption */}
+            {galleryItems[currentImageIndex].caption && (
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-pitchBlack to-transparent p-4">
+                <p className="text-sm text-vanillaCustard/90">{galleryItems[currentImageIndex].caption}</p>
+              </div>
+            )}
+
+            {/* Image indicators */}
+            {galleryItems.length > 1 && (
+              <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1">
+                {galleryItems.map((_, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => setCurrentImageIndex(index)}
+                    className={`h-2 w-2 rounded-full transition ${
+                      index === currentImageIndex ? 'bg-paleAmber' : 'bg-vanillaCustard/40'
+                    }`}
+                    aria-label={`Go to image ${index + 1}`}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      <h2 className="text-2xl font-extrabold text-vanillaCustard">Upcoming Events</h2>
 
       <section className="grid gap-4" aria-label="Event listings">
         {loading ? (

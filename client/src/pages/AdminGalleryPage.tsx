@@ -18,6 +18,7 @@ export default function AdminGalleryPage() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [editingCaptions, setEditingCaptions] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function load() {
@@ -66,10 +67,20 @@ export default function AdminGalleryPage() {
     try {
       await api.patch(`/api/admin/gallery/${id}/caption`, { caption });
       setItems(prev => prev.map(item => item._id === id ? { ...item, caption } : item));
+      setEditingCaptions(prev => ({ ...prev, [id]: '' }));
     } catch (e) {
       console.error('Failed to update caption', e);
       alert('Failed to update caption.');
     }
+  }
+
+  function handleCaptionChange(id: string, value: string) {
+    setEditingCaptions(prev => ({ ...prev, [id]: value }));
+  }
+
+  function handleCaptionSave(id: string) {
+    const newCaption = editingCaptions[id] || '';
+    updateCaption(id, newCaption);
   }
 
   async function deleteItem(id: string) {
@@ -161,13 +172,22 @@ export default function AdminGalleryPage() {
                   alt={item.caption || item.originalName}
                   className="mb-3 h-40 w-full rounded-xl object-cover"
                 />
-                <input
-                  type="text"
-                  value={item.caption}
-                  onChange={(e) => updateCaption(item._id, e.target.value)}
-                  placeholder="Add a caption…"
-                  className="mb-2 w-full rounded-lg border border-vanillaCustard/20 bg-graphite px-3 py-2 text-sm text-vanillaCustard placeholder:text-vanillaCustard/60"
-                />
+                <div className="mb-2">
+                  <textarea
+                    value={editingCaptions[item._id] ?? item.caption}
+                    onChange={(e) => handleCaptionChange(item._id, e.target.value)}
+                    placeholder="Add a caption…"
+                    rows={3}
+                    className="mb-1 w-full rounded-lg border border-vanillaCustard/20 bg-graphite px-3 py-2 text-sm text-vanillaCustard placeholder:text-vanillaCustard/60 resize-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleCaptionSave(item._id)}
+                    className="w-full rounded bg-paleAmber px-2 py-1 text-xs font-bold text-pitchBlack transition hover:bg-paleAmber/90"
+                  >
+                    Save Caption
+                  </button>
+                </div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-vanillaCustard/60">{item.originalName}</span>
                   <div className="flex gap-1">
