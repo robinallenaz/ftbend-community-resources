@@ -5,6 +5,8 @@ const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const { requireRole } = require('../lib/auth');
 const GalleryImage = require('../models/GalleryImage');
 
+const router = express.Router();
+
 // Configure Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,

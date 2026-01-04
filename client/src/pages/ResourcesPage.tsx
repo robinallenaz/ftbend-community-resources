@@ -67,10 +67,6 @@ export default function ResourcesPage() {
     switch (platform) {
       case 'facebook':
         return `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
-      case 'twitter':
-        return `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}&via=ftbend_lgbtqia`;
-      case 'linkedin':
-        return `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
       case 'email':
         return `mailto:?subject=${encodedTitle}&body=${encodedDesc}%0A%0A${encodedUrl}`;
       default:
@@ -140,24 +136,6 @@ export default function ResourcesPage() {
                     role="menuitem"
                   >
                     Facebook
-                  </a>
-                  <a
-                    href={shareUrl('twitter')}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block rounded-xl px-3 py-2 text-sm text-vanillaCustard hover:bg-pitchBlack/70 transition focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-1 focus:ring-offset-pitchBlack"
-                    role="menuitem"
-                  >
-                    Twitter
-                  </a>
-                  <a
-                    href={shareUrl('linkedin')}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block rounded-xl px-3 py-2 text-sm text-vanillaCustard hover:bg-pitchBlack/70 transition focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-1 focus:ring-offset-pitchBlack"
-                    role="menuitem"
-                  >
-                    LinkedIn
                   </a>
                   <a
                     href={shareUrl('email')}

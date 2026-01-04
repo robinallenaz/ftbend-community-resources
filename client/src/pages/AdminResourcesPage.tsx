@@ -71,46 +71,47 @@ export default function AdminResourcesPage() {
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search name, tags, etc…"
-              className="w-60 max-w-full rounded-xl border border-vanillaCustard/20 bg-graphite px-3 py-2 text-base font-semibold text-vanillaCustard placeholder:text-vanillaCustard/60"
-              inputMode="search"
-            />
-          </label>
+                className="w-60 max-w-full rounded-xl border border-vanillaCustard/20 bg-graphite px-3 py-2 text-base font-semibold text-vanillaCustard placeholder:text-vanillaCustard/60"
+                inputMode="search"
+              />
+            </label>
 
-          <label className="grid gap-1">
-            <span className="text-sm font-bold text-vanillaCustard">Show</span>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value as 'active' | 'archived' | 'all')}
-              className="rounded-xl border border-vanillaCustard/20 bg-graphite px-3 py-2 text-base font-semibold text-vanillaCustard"
+            <label className="grid gap-1">
+              <span className="text-sm font-bold text-vanillaCustard">Show</span>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value as 'active' | 'archived' | 'all')}
+                className="rounded-xl border border-vanillaCustard/20 bg-graphite px-3 py-2 text-base font-semibold text-vanillaCustard"
+              >
+                <option value="active">Active</option>
+                <option value="archived">Archived</option>
+                <option value="all">All</option>
+              </select>
+            </label>
+
+            <label className="grid gap-1">
+              <span className="text-sm font-bold text-vanillaCustard">Sort</span>
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value as (typeof SORT_OPTIONS)[number]['value'])}
+                className="rounded-xl border border-vanillaCustard/20 bg-graphite px-3 py-2 text-base font-semibold text-vanillaCustard"
+                aria-label={`Sort resources (${sortLabel})`}
+              >
+                {SORT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <Link
+              to="/admin/resources/new"
+              className="rounded-xl bg-powderBlush px-4 py-3 text-base font-extrabold text-pitchBlack shadow-soft transition hover:brightness-95"
             >
-              <option value="active">Active</option>
-              <option value="archived">Archived</option>
-              <option value="all">All</option>
-            </select>
-          </label>
-
-          <label className="grid gap-1">
-            <span className="text-sm font-bold text-vanillaCustard">Sort</span>
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value as (typeof SORT_OPTIONS)[number]['value'])}
-              className="rounded-xl border border-vanillaCustard/20 bg-graphite px-3 py-2 text-base font-semibold text-vanillaCustard"
-              aria-label={`Sort resources (${sortLabel})`}
-            >
-              {SORT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <Link
-            to="/admin/resources/new"
-            className="rounded-xl bg-powderBlush px-4 py-3 text-base font-extrabold text-pitchBlack shadow-soft transition hover:brightness-95"
-          >
-            Add resource
-          </Link>
+              Add resource
+            </Link>
+          </div>
         </div>
       </header>
 

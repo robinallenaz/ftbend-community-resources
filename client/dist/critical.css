@@ -1,0 +1,122 @@
+/* Critical CSS for above-the-fold content */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  background-color: #0C0805;
+  color: #D1DA9C;
+  line-height: 1.6;
+}
+
+/* Header styles */
+header {
+  border-bottom: 1px solid rgba(209, 218, 156, 0.15);
+  background-color: #0C0805;
+}
+
+/* Main content area */
+main {
+  min-height: 100vh;
+}
+
+/* Loading state */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: #D1DA9C;
+}
+
+/* Hero section */
+.hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 1px solid rgba(209, 218, 156, 0.15);
+  background-color: #0C0805;
+}
+
+/* Logo and title */
+.logo {
+  height: 4rem;
+  width: 4rem;
+  border-radius: 0.5rem;
+  object-fit: cover;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #D1DA9C;
+  margin: 0;
+}
+
+.subtitle {
+  color: rgba(209, 218, 156, 0.85);
+  margin: 0;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: filter 0.2s;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-primary {
+  background-color: #F4E4C1;
+  color: #0C0805;
+}
+
+.btn-secondary {
+  background-color: #D2DC76;
+  color: #0C0805;
+}
+
+.btn:hover {
+  filter: brightness(0.95);
+}
+
+/* Sections */
+section {
+  margin-bottom: 2.5rem;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #D1DA9C;
+  margin-bottom: 1rem;
+}
+
+/* Cards */
+.card {
+  border-radius: 1rem;
+  border: 1px solid rgba(209, 218, 156, 0.15);
+  background-color: #0C0805;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .title {
+    font-size: 1.5rem;
+  }
+  
+  .logo {
+    height: 3rem;
+    width: 3rem;
+  }
+}

@@ -27,7 +27,7 @@ export default function ResourceCard({ resource }: { resource: Resource }) {
           </a>
         </div>
 
-        <p className="text-base text-vanillaCustard/90">{resource.description}</p>
+        <p className="text-base text-vanillaCustard/90 whitespace-pre-wrap line-clamp-3">{resource.description}</p>
 
         <div className="flex flex-wrap gap-2" aria-label="Resource tags">
           {resource.locations.map((x) => (

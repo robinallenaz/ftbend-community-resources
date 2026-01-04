@@ -81,12 +81,13 @@ export default function AdminSubmissionsPage() {
               onChange={(e) => setStatus(e.target.value as any)}
               className="rounded-xl border border-vanillaCustard/20 bg-graphite px-3 py-2 text-base font-semibold text-vanillaCustard"
             >
-            <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-            <option value="all">All</option>
-          </select>
-        </label>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+              <option value="all">All</option>
+            </select>
+          </label>
+        </div>
       </header>
 
       {notif ? (
@@ -106,65 +107,56 @@ export default function AdminSubmissionsPage() {
             <span className="text-base font-bold text-vanillaCustard">Enable notifications</span>
           </label>
 
-          <label className="grid gap-2">
-            <span className="text-base font-bold text-vanillaCustard">Recipient emails (comma-separated)</span>
-            <input
-              value={notifRecipients}
-              onChange={(e) => setNotifRecipients(e.target.value)}
-              placeholder="admin1@example.com, admin2@example.com"
-              className="w-full rounded-2xl border border-vanillaCustard/20 bg-graphite px-4 py-3 text-lg font-semibold text-vanillaCustard"
-            />
-          </label>
+          {notifEnabled && (
+            <div className="grid gap-3">
+              <label className="grid gap-1">
+                <span className="text-sm font-bold text-vanillaCustard">Email to notify</span>
+                <input
+                  type="email"
+                  value={notifRecipients}
+                  onChange={(e) => setNotifRecipients(e.target.value)}
+                  placeholder="admin@example.com"
+                  className="w-full rounded-xl border border-vanillaCustard/20 bg-graphite px-3 py-2 text-base font-semibold text-vanillaCustard placeholder:text-vanillaCustard/60"
+                />
+              </label>
 
-          <label className="grid gap-2">
-            <span className="text-base font-bold text-vanillaCustard">Public site URL</span>
-            <input
-              value={publicSiteUrl}
-              onChange={(e) => setPublicSiteUrl(e.target.value)}
-              placeholder="https://ftbend-community-resources.netlify.app"
-              className="w-full rounded-2xl border border-vanillaCustard/20 bg-graphite px-4 py-3 text-lg font-semibold text-vanillaCustard"
-              inputMode="url"
-            />
-          </label>
+              <button
+                type="button"
+                className="w-fit rounded-xl bg-powderBlush px-4 py-3 text-base font-bold text-pitchBlack shadow-soft transition hover:brightness-95"
+                onClick={async () => {
+                  setNotifSaving(true);
+                  setNotifError('');
+                  setNotifSaved(false);
+                  try {
+                    const emails = notifRecipients
+                      .split(',')
+                      .map((x) => x.trim())
+                      .filter(Boolean);
 
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              className="rounded-xl bg-powderBlush px-4 py-3 text-base font-extrabold text-pitchBlack shadow-soft transition hover:brightness-95 disabled:opacity-60"
-              disabled={notifSaving}
-              onClick={async () => {
-                setNotifSaving(true);
-                setNotifError('');
-                setNotifSaved(false);
-                try {
-                  const emails = notifRecipients
-                    .split(',')
-                    .map((x) => x.trim())
-                    .filter(Boolean);
+                    const res = await api.patch<{ settings: NotificationSettings }>('/api/admin/notification-settings', {
+                      submissionEmailEnabled: notifEnabled,
+                      submissionEmailRecipients: emails,
+                      publicSiteUrl: publicSiteUrl.trim()
+                    });
 
-                  const res = await api.patch<{ settings: NotificationSettings }>('/api/admin/notification-settings', {
-                    submissionEmailEnabled: notifEnabled,
-                    submissionEmailRecipients: emails,
-                    publicSiteUrl: publicSiteUrl.trim()
-                  });
+                    setNotif(res.settings);
+                    setNotifEnabled(Boolean(res.settings.submissionEmailEnabled));
+                    setNotifRecipients((res.settings.submissionEmailRecipients || []).join(', '));
+                    setPublicSiteUrl(res.settings.publicSiteUrl || '');
+                    setNotifSaved(true);
+                  } catch (e: any) {
+                    setNotifError(e?.status === 403 ? 'Only admins can change notification settings.' : 'Save failed.');
+                  } finally {
+                    setNotifSaving(false);
+                  }
+                }}
+              >
+                Save notification settings
+              </button>
 
-                  setNotif(res.settings);
-                  setNotifEnabled(Boolean(res.settings.submissionEmailEnabled));
-                  setNotifRecipients((res.settings.submissionEmailRecipients || []).join(', '));
-                  setPublicSiteUrl(res.settings.publicSiteUrl || '');
-                  setNotifSaved(true);
-                } catch (e: any) {
-                  setNotifError(e?.status === 403 ? 'Only admins can change notification settings.' : 'Save failed.');
-                } finally {
-                  setNotifSaving(false);
-                }
-              }}
-            >
-              Save notification settings
-            </button>
-
-            {notifSaved ? <div className="text-sm font-bold text-vanillaCustard/85">Saved.</div> : null}
-          </div>
+              {notifSaved ? <div className="text-sm font-bold text-vanillaCustard/85">Saved.</div> : null}
+            </div>
+          )}
 
           {notifError ? <div className="rounded-2xl bg-graphite/70 p-4 text-base text-vanillaCustard">{notifError}</div> : null}
         </section>

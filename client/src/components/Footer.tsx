@@ -31,30 +31,6 @@ export default function Footer() {
                   >
                     Facebook
                   </a>
-                  <a
-                    href="https://twitter.com/ftbend_lgbtqia"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl border border-vanillaCustard/15 bg-graphite/60 px-4 py-3 text-base font-semibold text-vanillaCustard hover:border-vanillaCustard/35 focus-within:ring-2 focus-within:ring-paleAmber focus-within:ring-offset-2 focus-within:ring-offset-pitchBlack transition min-h-[48px] min-w-[48px]"
-                  >
-                    X (Twitter)
-                  </a>
-                  <a
-                    href="https://linkedin.com/company/ftbend-lgbtqia-community"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl border border-vanillaCustard/15 bg-graphite/60 px-4 py-3 text-base font-semibold text-vanillaCustard hover:border-vanillaCustard/35 focus-within:ring-2 focus-within:ring-paleAmber focus-within:ring-offset-2 focus-within:ring-offset-pitchBlack transition min-h-[48px] min-w-[48px]"
-                  >
-                    LinkedIn
-                  </a>
-                  <a
-                    href="https://youtube.com/@ftbend_lgbtqia"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl border border-vanillaCustard/15 bg-graphite/60 px-4 py-3 text-base font-semibold text-vanillaCustard hover:border-vanillaCustard/35 focus-within:ring-2 focus-within:ring-paleAmber focus-within:ring-offset-2 focus-within:ring-offset-pitchBlack transition min-h-[48px] min-w-[48px]"
-                  >
-                    YouTube
-                  </a>
                 </div>
               </div>
             </div>

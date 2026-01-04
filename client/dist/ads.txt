@@ -1,0 +1,8 @@
+# ads.txt file for ftbend-lgbtqia-community.org
+# This is a non-profit community resource website
+# Contact: ryancreates94@gmail.com
+
+# No authorized advertising partners at this time
+# This is a community resource website, not a commercial publisher
+
+CONTACT=ryancreates94@gmail.com
