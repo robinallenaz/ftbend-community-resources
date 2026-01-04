@@ -124,13 +124,15 @@ export default function AdminNewsletterPage() {
 
   return (
     <main className="mx-auto max-w-4xl space-y-8 px-4 py-12">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div className="grid gap-2">
-          <h1 className="text-3xl font-extrabold text-vanillaCustard">Newsletter</h1>
-          <p className="text-base text-vanillaCustard/85">Compose and send newsletters to subscribers.</p>
-        </div>
-        <div className="text-sm text-vanillaCustard/70">
-          {subscribers.length} active subscriber{subscribers.length !== 1 ? 's' : ''}
+      <header className="rounded-2xl border border-vanillaCustard/10 bg-gradient-to-br from-pitchBlack/60 via-pitchBlack/40 to-pitchBlack/30 backdrop-blur-sm p-8 shadow-soft">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div className="grid gap-3">
+            <h1 className="text-3xl font-extrabold text-vanillaCustard">Newsletter</h1>
+            <p className="text-base text-vanillaCustard/90">Compose and send newsletters to subscribers.</p>
+          </div>
+          <div className="text-sm text-vanillaCustard/80">
+            {subscribers.length} active subscriber{subscribers.length !== 1 ? 's' : ''}
+          </div>
         </div>
       </header>
 

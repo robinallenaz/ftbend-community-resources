@@ -67,19 +67,20 @@ export default function AdminSubmissionsPage() {
 
   return (
     <div className="grid gap-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div className="grid gap-2">
-          <h1 className="text-3xl font-extrabold text-vanillaCustard">Submissions</h1>
-          <p className="text-base text-vanillaCustard/85">Review community submissions.</p>
-        </div>
+      <header className="rounded-2xl border border-vanillaCustard/10 bg-gradient-to-br from-pitchBlack/60 via-pitchBlack/40 to-pitchBlack/30 backdrop-blur-sm p-8 shadow-soft">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div className="grid gap-3">
+            <h1 className="text-3xl font-extrabold text-vanillaCustard">Submissions</h1>
+            <p className="text-base text-vanillaCustard/90">Review community submissions.</p>
+          </div>
 
-        <label className="grid gap-1">
-          <span className="text-sm font-bold text-vanillaCustard">Show</span>
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value as any)}
-            className="rounded-xl border border-vanillaCustard/20 bg-graphite px-3 py-2 text-base font-semibold text-vanillaCustard"
-          >
+          <label className="grid gap-1">
+            <span className="text-sm font-bold text-vanillaCustard">Show</span>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value as any)}
+              className="rounded-xl border border-vanillaCustard/20 bg-graphite px-3 py-2 text-base font-semibold text-vanillaCustard"
+            >
             <option value="pending">Pending</option>
             <option value="approved">Approved</option>
             <option value="rejected">Rejected</option>

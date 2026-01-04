@@ -6,11 +6,13 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="grid gap-6">
-      <header className="grid gap-2">
-        <h1 className="text-3xl font-extrabold text-vanillaCustard">Welcome</h1>
-        <p className="text-base text-vanillaCustard/85">
-          Signed in as <span className="font-bold">{user?.email}</span> ({user?.role}).
-        </p>
+      <header className="rounded-2xl border border-vanillaCustard/10 bg-gradient-to-br from-pitchBlack/60 via-pitchBlack/40 to-pitchBlack/30 backdrop-blur-sm p-8 shadow-soft">
+        <div className="grid gap-3">
+          <h1 className="text-3xl font-extrabold text-vanillaCustard">Welcome</h1>
+          <p className="text-base text-vanillaCustard/90">
+            Signed in as <span className="font-bold">{user?.email}</span> ({user?.role}).
+          </p>
+        </div>
       </header>
 
       <div className="grid gap-4 md:grid-cols-3">

@@ -57,19 +57,20 @@ export default function AdminResourcesPage() {
 
   return (
     <div className="grid gap-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div className="grid gap-2">
-          <h1 className="text-3xl font-extrabold text-vanillaCustard">Resources</h1>
-          <p className="text-base text-vanillaCustard/85">Add, edit, and archive resources.</p>
-        </div>
+      <header className="rounded-2xl border border-vanillaCustard/10 bg-gradient-to-br from-pitchBlack/60 via-pitchBlack/40 to-pitchBlack/30 backdrop-blur-sm p-8 shadow-soft">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div className="grid gap-3">
+            <h1 className="text-3xl font-extrabold text-vanillaCustard">Resources</h1>
+            <p className="text-base text-vanillaCustard/90">Add, edit, and archive resources.</p>
+          </div>
 
-        <div className="flex flex-wrap items-end gap-2">
-          <label className="grid gap-1">
-            <span className="text-sm font-bold text-vanillaCustard">Search</span>
-            <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Search name, tags, etc…"
+          <div className="flex flex-wrap items-end gap-2">
+            <label className="grid gap-1">
+              <span className="text-sm font-bold text-vanillaCustard">Search</span>
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Search name, tags, etc…"
               className="w-60 max-w-full rounded-xl border border-vanillaCustard/20 bg-graphite px-3 py-2 text-base font-semibold text-vanillaCustard placeholder:text-vanillaCustard/60"
               inputMode="search"
             />
