@@ -55,7 +55,7 @@ export default function AdminEventsPage() {
 
   return (
     <div className="grid gap-6">
-      <header className="rounded-2xl border border-vanillaCustard/10 bg-gradient-to-br from-pitchBlack/60 via-pitchBlack/40 to-pitchBlack/30 backdrop-blur-sm p-8 shadow-soft">
+      <div className="rounded-2xl border border-vanillaCustard/10 bg-gradient-to-br from-pitchBlack/60 via-pitchBlack/40 to-pitchBlack/30 backdrop-blur-sm p-8 shadow-soft">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="grid gap-3">
             <h1 className="text-3xl font-extrabold text-vanillaCustard">Events</h1>
@@ -111,7 +111,7 @@ export default function AdminEventsPage() {
             </Link>
           </div>
         </div>
-      </header>
+      </div>
 
       {loading ? (
         <div className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-6">Loading…</div>
