@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+# Social media crawlers
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+Sitemap: https://ftbend-lgbtqia-community.org/sitemap.xml
