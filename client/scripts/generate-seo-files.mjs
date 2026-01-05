@@ -21,7 +21,7 @@ if (!fs.existsSync(distDir)) {
   throw new Error(`Dist directory not found: ${distDir} (did you run "vite build" first?)`);
 }
 
-const siteUrlRaw = process.env.URL || process.env.DEPLOY_PRIME_URL || 'http://localhost:5173';
+const siteUrlRaw = process.env.URL || process.env.DEPLOY_PRIME_URL || 'https://ftbend-lgbtqia-community.org';
 const siteUrl = siteUrlRaw.replace(/\/+$/, '');
 const basePath = normalizeBasePath(process.env.BASE_PATH);
 
