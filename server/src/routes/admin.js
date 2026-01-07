@@ -1,5 +1,8 @@
 const express = require('express');
 const { z } = require('zod');
+const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 const Resource = require('../models/Resource');
 const Event = require('../models/Event');
@@ -14,6 +17,26 @@ const { validate } = require('../lib/validate');
 const emailService = require('../services/emailService');
 
 const router = express.Router();
+
+// Configure Cloudinary (same as gallery.js)
+cloudinary.config(process.env.CLOUDINARY_URL || {
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+  secure: true
+});
+
+// Configure Cloudinary storage for multer
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'ftbend-community-gallery',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+    public_id: (req, file) => `gallery-${Date.now()}-${file.originalname}`
+  }
+});
+
+const upload = multer({ storage });
 
 const OPTIONS = {
   locations: ['Fort Bend', 'Houston', 'Virtual', 'South TX', 'TX'],
@@ -643,6 +666,45 @@ router.get('/gallery', requireAuth, async (req, res, next) => {
     const items = await GalleryImage.find({ status: 'active' }).sort({ order: 1 }).lean();
     res.json({ items });
   } catch (e) {
+    next(e);
+  }
+});
+
+// Upload endpoint (admin only)
+router.post('/gallery/upload', requireRole(['admin']), upload.single('file'), async (req, res, next) => {
+  console.log('Upload endpoint called!');
+  try {
+    if (!req.file) {
+      console.log('No file uploaded');
+      const err = new Error('No file uploaded');
+      err.status = 400;
+      throw err;
+    }
+
+    console.log('File received:', req.file.originalname);
+
+    const maxOrder = await GalleryImage.findOne({ status: 'active' }).sort({ order: -1 }).lean();
+    const newOrder = (maxOrder?.order ?? 0) + 1;
+
+    const item = await GalleryImage.create({
+      filename: `https://res.cloudinary.com/dpus8jzix/image/upload/${req.file.filename}.jpg`,
+      originalName: req.file.originalname,
+      caption: req.body.caption || '',
+      order: newOrder,
+      uploadedBy: req.auth?.sub || req.user?.id
+    });
+
+    console.log('Upload debug:', {
+      filename: req.file.filename,
+      originalName: req.file.originalname,
+      public_id: req.file.public_id,
+      folder: req.file.folder,
+      url: req.file.url
+    });
+
+    res.status(201).json(item);
+  } catch (e) {
+    console.error('Upload error:', e);
     next(e);
   }
 });

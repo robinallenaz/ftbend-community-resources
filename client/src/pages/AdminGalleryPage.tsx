@@ -183,7 +183,7 @@ export default function AdminGalleryPage() {
             {items.map((item, idx) => (
               <div key={item._id} className="group relative rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-4 shadow-soft">
                 <img
-                  src={item.filename.startsWith('http') ? item.filename : `https://res.cloudinary.com/df9jxmd8j/image/upload/w_800,h_600,c_fill,q_auto,f_auto/${item.filename}`}
+                  src={item.filename}
                   alt={item.caption || item.originalName}
                   className="mb-3 h-40 w-full rounded-xl object-cover cursor-pointer"
                   onClick={() => setSelectedImage(item)}
@@ -248,7 +248,7 @@ export default function AdminGalleryPage() {
         >
           <div className="relative max-h-full max-w-full">
             <img
-              src={selectedImage.filename.startsWith('http') ? selectedImage.filename : `https://res.cloudinary.com/df9jxmd8j/image/upload/w_800,h_600,c_fill,q_auto,f_auto/${selectedImage.filename}`}
+              src={selectedImage.filename}
               alt={selectedImage.caption || selectedImage.originalName}
               className="max-h-[80vh] max-w-[90vw] rounded-2xl object-contain shadow-2xl"
             />

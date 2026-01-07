@@ -8,10 +8,19 @@ const GalleryImage = require('../models/GalleryImage');
 const router = express.Router();
 
 // Configure Cloudinary
-cloudinary.config({
+cloudinary.config(process.env.CLOUDINARY_URL || {
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+  secure: true
+});
+
+// Debug: Log configuration (remove in production)
+console.log('Cloudinary config:', {
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY ? 'SET' : 'MISSING',
+  api_secret: process.env.CLOUDINARY_API_SECRET ? 'SET' : 'MISSING',
+  cloudinary_url: process.env.CLOUDINARY_URL ? 'SET' : 'MISSING'
 });
 
 // Configure Cloudinary storage for multer

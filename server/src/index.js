@@ -4,16 +4,24 @@ const dotenv = require('dotenv');
 const express = require('express');
 const path = require('path');
 
+// Load environment variables FIRST
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
 const { connectToDb } = require('./lib/db');
 const { buildCorsOptions } = require('./lib/cors');
 
+// Now require routes (after dotenv is loaded)
 const publicRoutes = require('./routes/public');
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
-const galleryRoutes = require('./routes/gallery');
 
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
+// Debug: Check if environment variables are loaded
+console.log('Environment check:', {
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY ? 'SET' : 'MISSING',
+  cloudinary_url: process.env.CLOUDINARY_URL ? 'SET' : 'MISSING'
+});
 
 const app = express();
 
@@ -30,8 +38,7 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/public', publicRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/admin/gallery', galleryRoutes);
-app.use('/api/public/gallery', galleryRoutes);
+app.use('/api/public/gallery', publicRoutes);
 
 app.use((err, _req, res, _next) => {
   const status = Number(err.status) || 500;
