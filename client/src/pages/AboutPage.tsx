@@ -43,7 +43,7 @@ export default function AboutPage() {
           <div className="relative group">
             <div className="aspect-video overflow-hidden rounded-xl bg-graphite shadow-inner">
               <img
-                src={gallery[currentImageIndex].filename.startsWith('http') ? gallery[currentImageIndex].filename : `/api/public/gallery/${gallery[currentImageIndex].filename}`}
+                src={gallery[currentImageIndex].filename.startsWith('http') ? gallery[currentImageIndex].filename : `https://res.cloudinary.com/df9jxmd8j/image/upload/w_800,h_600,c_fill,q_auto,f_auto/ftbend-community-gallery/${gallery[currentImageIndex].filename}`}
                 alt={gallery[currentImageIndex].caption || 'Gallery image'}
                 className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
               />
@@ -179,7 +179,7 @@ export default function AboutPage() {
           onClick={() => setSelectedImage(null)}
         >
           <img
-            src={`/api/public/gallery/${selectedImage.filename}`}
+            src={selectedImage.filename.startsWith('http') ? selectedImage.filename : `https://res.cloudinary.com/df9jxmd8j/image/upload/w_1200,h_800,c_fit,q_auto,f_auto/ftbend-community-gallery/${selectedImage.filename}`}
             alt={selectedImage.caption || 'Gallery image'}
             className="max-h-full max-w-full rounded-xl object-contain"
           />
