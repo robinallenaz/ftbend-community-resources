@@ -173,8 +173,7 @@ client/dist
 
 ### Newsletter
 - **Current:** Sends from `robin@transvoices.us` (verified domain)
-- **Alternative:** Set up Zoho Mail for custom domain emails
-- **Cost:** Zoho Mail has free tier for up to 5 users
+- **Alternative:** Set up Brevo for custom domain emails
 
 ---
 
@@ -184,7 +183,6 @@ client/dist
 
 **❌ "401 Unauthorized" on admin login**
 - Check that `MONGODB_URI` matches between local and production
-- Verify admin account was created with seed script
 
 **❌ "400 Bad Request" when submitting**
 - Resource name must be 2-140 characters
@@ -219,9 +217,9 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ## 🌟 Acknowledgments
 
-- Built for the Fort Bend County LGBTQIA+ community
+- Built for the Fort Bend County LGBTQIA+ community. The idea for the website was first conceived by Ryan Freund. 
 - Community-maintained and volunteer-run
-- All resources are verified and community-sourced
+- All resources are verified by admins before publishing
 
 ---
 
