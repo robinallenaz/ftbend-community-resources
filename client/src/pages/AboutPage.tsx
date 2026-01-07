@@ -43,7 +43,7 @@ export default function AboutPage() {
           <div className="relative group">
             <div className="aspect-video overflow-hidden rounded-xl bg-graphite shadow-inner">
               <img
-                src={gallery[currentImageIndex].filename.startsWith('http') ? gallery[currentImageIndex].filename : `https://res.cloudinary.com/df9jxmd8j/image/upload/w_800,h_600,c_fill,q_auto,f_auto/ftbend-community-gallery/${gallery[currentImageIndex].filename}`}
+                src={gallery[currentImageIndex].filename.startsWith('http') ? gallery[currentImageIndex].filename : `https://res.cloudinary.com/df9jxmd8j/image/upload/w_800,h_600,c_fill,q_auto,f_auto/${gallery[currentImageIndex].filename}`}
                 alt={gallery[currentImageIndex].caption || 'Gallery image'}
                 className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
               />
