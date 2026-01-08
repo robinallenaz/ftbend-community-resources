@@ -1,12 +1,23 @@
 import { useState, useRef, useEffect } from 'react';
-import type { Resource } from '../types';
+import type { Resource, Coordinates } from '../types';
 import Tag from './Tag';
 import { getTagColor, type TagTone } from '../utils/tagColors';
+import { getResourceDistance, formatDistance, getAccuracyLevel } from '../utils/locationUtils';
 
-export default function ResourceCard({ resource }: { resource: Resource }) {
+export default function ResourceCard({ 
+  resource, 
+  userLocation 
+}: { 
+  resource: Resource; 
+  userLocation?: Coordinates | null;
+}) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isTruncated, setIsTruncated] = useState(false);
   const descriptionRef = useRef<HTMLParagraphElement>(null);
+
+  // Calculate distance and accuracy if user location is available
+  const distance = userLocation ? getResourceDistance(resource, userLocation) : null;
+  const accuracyLevel = distance !== null ? getAccuracyLevel(resource) : null;
 
   useEffect(() => {
     const checkTruncation = () => {
@@ -27,24 +38,52 @@ export default function ResourceCard({ resource }: { resource: Resource }) {
     <article className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-5 shadow-soft">
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <h3 className="text-xl font-extrabold text-vanillaCustard">
+          <div className="flex flex-col gap-1">
+            <h3 className="text-xl font-extrabold text-vanillaCustard">
+              <a
+                href={resource.url}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-lg outline-none hover:underline focus-visible:underline"
+              >
+                {resource.name}
+              </a>
+            </h3>
+            {distance !== null && (
+              <div className="flex items-center gap-1">
+                <span className="text-sm text-vanillaCustard/70">
+                  {formatDistance(distance, accuracyLevel === 'precise')}
+                </span>
+                {accuracyLevel === 'approximate' && (
+                  <span 
+                    className="text-xs text-vanillaCustard/50 cursor-help"
+                    title="Distance to general area center, not exact location"
+                  >
+                    ℹ️
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+          <div className="flex gap-2">
+            {resource.phone && (
+              <a
+                href={`tel:${resource.phone}`}
+                className="rounded-xl bg-paleAmber px-4 py-2 text-base font-bold text-pitchBlack transition hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-2 focus:ring-offset-pitchBlack"
+                aria-label={`Call ${resource.name} at ${resource.phone}`}
+              >
+                Call
+              </a>
+            )}
             <a
               href={resource.url}
               target="_blank"
               rel="noreferrer"
-              className="rounded-lg outline-none hover:underline focus-visible:underline"
+              className="rounded-xl bg-powderBlush px-4 py-2 text-base font-bold text-pitchBlack transition hover:brightness-95"
             >
-              {resource.name}
+              Visit
             </a>
-          </h3>
-          <a
-            href={resource.url}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-xl bg-powderBlush px-4 py-2 text-base font-bold text-pitchBlack transition hover:brightness-95"
-          >
-            Visit
-          </a>
+          </div>
         </div>
 
         <div className="flex flex-col gap-2">

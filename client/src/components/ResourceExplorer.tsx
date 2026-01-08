@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { AudienceTag, Resource, ResourceLocation, ResourceType } from '../types';
+import type { AudienceTag, Resource, ResourceLocation, ResourceType, Coordinates } from '../types';
 import FilterGroup from './FilterGroup';
 import ResourceCard from './ResourceCard';
+import { filterResourcesByDistance } from '../utils/locationUtils';
 
 const RESOURCE_CACHE_KEY = 'ftbend_resources_cache_v1';
 const RESOURCE_CACHE_TTL_MS = 1000 * 60 * 30;
@@ -40,8 +41,9 @@ function toSortedArray(set: Set<string>) {
   return Array.from(set.values()).sort((a, b) => a.localeCompare(b));
 }
 
-export default function ResourceExplorer(args: { initialQuery?: string }) {
-  const [query, setQuery] = useState(args.initialQuery ?? '');
+export default function ResourceExplorer(args: { initialQuery?: string; userLocation?: Coordinates | null }) {
+  const { initialQuery, userLocation } = args;
+  const [query, setQuery] = useState(initialQuery ?? '');
   const [selectedLocations, setSelectedLocations] = useState<Set<string>>(new Set());
   const [selectedTypes, setSelectedTypes] = useState<Set<string>>(new Set());
   const [selectedAudiences, setSelectedAudiences] = useState<Set<string>>(new Set());
@@ -175,8 +177,16 @@ export default function ResourceExplorer(args: { initialQuery?: string }) {
   }, [query, selectedLocations, selectedTypes, selectedAudiences]);
 
   const filtered = useMemo(() => {
-    return (items || []).slice().sort((a, b) => a.name.localeCompare(b.name));
-  }, [items]);
+  let filteredItems = items || [];
+  
+  // Apply location-based filtering if user location is available
+  if (userLocation) {
+    filteredItems = filterResourcesByDistance(filteredItems, userLocation, 50); // 50 miles radius
+  }
+  
+  // Sort by name
+  return filteredItems.sort((a, b) => a.name.localeCompare(b.name));
+}, [items, userLocation]);
 
   const activeFilters = useMemo(() => {
     return {
@@ -305,7 +315,7 @@ export default function ResourceExplorer(args: { initialQuery?: string }) {
           ) : null}
 
           {filtered.map((r) => (
-            <ResourceCard key={r.id} resource={r} />
+            <ResourceCard key={r.id} resource={r} userLocation={userLocation} />
           ))}
         </section>
       </div>

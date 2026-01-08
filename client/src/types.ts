@@ -16,15 +16,28 @@ export type ResourceType =
 
 export type AudienceTag = 'Trans' | 'Youth' | 'Seniors' | 'Families' | 'All';
 
+export type Coordinates = {
+  latitude: number;
+  longitude: number;
+};
+
+export type LocationData = {
+  name: ResourceLocation;
+  coordinates: Coordinates;
+  radius: number; // miles
+};
+
 export type Resource = {
   id: string;
   name: string;
   description: string;
   url: string;
+  phone?: string; // Optional phone number for click-to-call
   locations: ResourceLocation[];
   types: ResourceType[];
   audiences: AudienceTag[];
   tags: string[];
+  coordinates?: Coordinates; // Optional specific coordinates for precise location
 };
 
 export type EventListing = {

@@ -1,5 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import ResourceExplorer from '../components/ResourceExplorer';
+import LocationButton from '../components/LocationButton';
+import LocationInfo from '../components/LocationInfo';
+import type { Coordinates } from '../types';
+
+// Feature flag - only enable when you have enough resources with exact coordinates
+// This is hardcoded and not exposed to users for security
+const ENABLE_LOCATION_FEATURES = false; // Change to true when ready
 
 // Add structured data for Resources page
 function addResourcesStructuredData() {
@@ -47,6 +54,7 @@ function addResourcesStructuredData() {
 
 export default function ResourcesPage() {
   const [showShareMenu, setShowShareMenu] = useState(false);
+  const [userLocation, setUserLocation] = useState<Coordinates | null>(null);
   const shareButtonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -101,57 +109,65 @@ export default function ResourcesPage() {
     };
   }, [showShareMenu]);
 
+  const handleLocationFound = (location: Coordinates) => {
+    setUserLocation(location);
+  };
+
   return (
     <div className="grid gap-6">
       <header className="rounded-2xl border border-vanillaCustard/10 bg-gradient-to-br from-pitchBlack/60 via-pitchBlack/40 to-pitchBlack/30 backdrop-blur-sm p-8 shadow-soft">
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col gap-4">
           <div className="grid gap-3">
             <h1 className="text-3xl font-extrabold text-vanillaCustard">LGBTQIA+ Resources</h1>
             <p className="text-base text-vanillaCustard/90">
               Search by what you need. Narrow results by location, type, and audience.
             </p>
+            {ENABLE_LOCATION_FEATURES && userLocation && <LocationInfo />}
           </div>
-          <div className="relative">
-            <button
-              ref={shareButtonRef}
-              className="rounded-xl border border-vanillaCustard/20 bg-graphite px-3 py-2 text-sm font-extrabold text-vanillaCustard shadow-soft transition hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-2 focus:ring-offset-graphite"
-              onClick={() => setShowShareMenu(!showShareMenu)}
-              aria-expanded={showShareMenu}
-              aria-haspopup="true"
-            >
-              Share Resources
-            </button>
-            {showShareMenu && (
-              <div 
-                ref={menuRef}
-                className="absolute right-0 top-full mt-2 w-48 rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-2 shadow-soft z-50"
-                role="menu"
+          <div className="flex flex-col items-end gap-3">
+            {ENABLE_LOCATION_FEATURES && <LocationButton onLocationFound={handleLocationFound} />}
+            <div className="relative">
+              <button
+                ref={shareButtonRef}
+                className="rounded-xl border border-vanillaCustard/20 bg-graphite px-3 py-2 text-sm font-extrabold text-vanillaCustard shadow-soft transition hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-2 focus:ring-offset-graphite"
+                onClick={() => setShowShareMenu(!showShareMenu)}
+                aria-expanded={showShareMenu}
+                aria-haspopup="true"
               >
-                <div className="grid gap-1">
-                  <a
-                    href={shareUrl('facebook')}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block rounded-xl px-3 py-2 text-sm text-vanillaCustard hover:bg-pitchBlack/70 transition focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-1 focus:ring-offset-pitchBlack"
-                    role="menuitem"
-                  >
-                    Facebook
-                  </a>
-                  <a
-                    href={shareUrl('email')}
-                    className="block rounded-xl px-3 py-2 text-sm text-vanillaCustard hover:bg-pitchBlack/70 transition focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-1 focus:ring-offset-pitchBlack"
-                    role="menuitem"
-                  >
-                    Email
-                  </a>
+                Share Resources
+              </button>
+              {showShareMenu && (
+                <div 
+                  ref={menuRef}
+                  className="absolute right-0 top-full mt-2 w-48 rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-2 shadow-soft z-50"
+                  role="menu"
+                >
+                  <div className="grid gap-1">
+                    <a
+                      href={shareUrl('facebook')}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block rounded-xl px-3 py-2 text-sm text-vanillaCustard hover:bg-pitchBlack/70 transition focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-1 focus:ring-offset-pitchBlack"
+                      role="menuitem"
+                    >
+                      Facebook
+                    </a>
+                    <a
+                      href={shareUrl('email')}
+                      className="block rounded-xl px-3 py-2 text-sm text-vanillaCustard hover:bg-pitchBlack/70 transition focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-1 focus:ring-offset-pitchBlack"
+                      role="menuitem"
+                    >
+                      Email
+                    </a>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </header>
 
-      <ResourceExplorer />
+      <ResourceExplorer userLocation={ENABLE_LOCATION_FEATURES ? userLocation : null} />
     </div>
   );
 }
