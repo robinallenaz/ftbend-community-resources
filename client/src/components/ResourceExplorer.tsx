@@ -275,7 +275,7 @@ export default function ResourceExplorer(args: { initialQuery?: string; userLoca
                   <span className="font-bold">Audience:</span> {activeFilters.audiences.length ? activeFilters.audiences.join(', ') : 'Any'}
                 </div>
               </div>
-              <div className="mt-3 text-sm text-vanillaCustard/75">Can’t find what you need? Try adjusting your filters.</div>
+              <div className="mt-3 text-sm text-vanillaCustard/75">Can't find what you need? Try adjusting your filters.</div>
             </div>
           ) : null}
         </div>
@@ -289,6 +289,7 @@ export default function ResourceExplorer(args: { initialQuery?: string; userLoca
             options={LOCATION_OPTIONS}
             selected={selectedLocations}
             onToggle={(v) => toggle(setSelectedLocations, v)}
+            shortcutKey="L"
           />
           <FilterGroup
             title="Resource Type"
@@ -296,6 +297,7 @@ export default function ResourceExplorer(args: { initialQuery?: string; userLoca
             options={TYPE_OPTIONS}
             selected={selectedTypes}
             onToggle={(v) => toggle(setSelectedTypes, v)}
+            shortcutKey="T"
           />
           <FilterGroup
             title="Audience"
@@ -303,6 +305,7 @@ export default function ResourceExplorer(args: { initialQuery?: string; userLoca
             options={AUDIENCE_OPTIONS}
             selected={selectedAudiences}
             onToggle={(v) => toggle(setSelectedAudiences, v)}
+            shortcutKey="A"
           />
         </div>
 

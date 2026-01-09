@@ -68,7 +68,7 @@ export default function ResourceCard({
                 href={resource.url}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-lg outline-none hover:underline focus-visible:underline"
+                className="rounded-lg outline-none hover:text-paleAmber focus-visible:text-paleAmber hover:underline focus-visible:underline decoration-2 decoration-paleAmber/50 underline-offset-2 transition-all"
               >
                 {resource.name}
               </a>
@@ -133,9 +133,11 @@ export default function ResourceCard({
               }}
               aria-expanded={isExpanded}
               aria-controls={`description-${resource.name.replace(/\s+/g, '-').toLowerCase()}`}
-              className="text-sm font-bold text-vanillaCustard hover:text-vanillaCustard focus:text-vanillaCustard focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-2 focus:ring-offset-pitchBlack transition-colors self-start"
+              className="text-sm font-bold text-vanillaCustard/90 hover:text-vanillaCustard/70 focus:text-vanillaCustard focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-2 focus:ring-offset-pitchBlack transition-colors self-start relative group"
             >
               {isExpanded ? 'Show less' : 'Show more'}
+              {/* Glow effect */}
+              <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-paleAmber/20 via-vanillaCustard/20 to-powderBlush/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm -z-10" />
             </button>
           )}
         </div>

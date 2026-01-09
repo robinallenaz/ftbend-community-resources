@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react';
+
 type Option = { label: string; value: string };
 
 export default function FilterGroup(args: {
@@ -6,13 +8,46 @@ export default function FilterGroup(args: {
   options: Option[];
   selected: Set<string>;
   onToggle: (value: string) => void;
+  shortcutKey?: string;
 }) {
-  const { title, description, options, selected, onToggle } = args;
+  const { title, description, options, selected, onToggle, shortcutKey } = args;
+  const fieldsetRef = useRef<HTMLFieldSetElement>(null);
+
+  useEffect(() => {
+    if (!shortcutKey) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only trigger when not focused on input elements
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      
+      if (e.key.toLowerCase() === shortcutKey.toLowerCase() && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        fieldsetRef.current?.focus();
+        // Focus first checkbox
+        const firstCheckbox = fieldsetRef.current?.querySelector('input[type="checkbox"]') as HTMLInputElement;
+        firstCheckbox?.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [shortcutKey]);
 
   return (
-    <fieldset className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-4">
-      <legend className="mb-3">
-        <div className="text-lg font-extrabold text-vanillaCustard">{title}</div>
+    <fieldset 
+      ref={fieldsetRef}
+      className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-3 focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-2 focus:ring-offset-pitchBlack"
+      tabIndex={shortcutKey ? 0 : -1}
+    >
+      <legend className="mb-1">
+        <div className="flex items-center gap-2">
+          <div className="text-lg font-extrabold text-vanillaCustard relative -translate-y-1">{title}</div>
+          {shortcutKey && (
+            <kbd className="text-sm font-mono text-vanillaCustard/50 bg-gradient-to-br from-graphite/70 to-graphite/50 w-6 h-6 flex items-center justify-center rounded border border-vanillaCustard/20 shadow-sm relative -translate-y-1">
+              {shortcutKey}
+            </kbd>
+          )}
+        </div>
         {description ? <div className="text-sm text-vanillaCustard/75">{description}</div> : null}
       </legend>
 

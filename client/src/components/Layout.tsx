@@ -11,7 +11,7 @@ export default function Layout() {
       <SkipLink />
       <Seo />
       <Header />
-      <main id="main" className="mx-auto w-full max-w-6xl px-4 pb-16 pt-6 md:px-6">
+      <main id="main" className="mx-auto w-full max-w-6xl px-4 pb-6 pt-6 md:px-6">
         <Outlet />
       </main>
       <Footer />

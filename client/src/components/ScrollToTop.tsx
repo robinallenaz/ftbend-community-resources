@@ -5,29 +5,27 @@ export default function ScrollToTop() {
 
   useEffect(() => {
     const toggleVisibility = () => {
-      if (window.pageYOffset > 300) {
+      if (window.pageYOffset > 800) {
         setIsVisible(true);
       } else {
         setIsVisible(false);
       }
     };
 
-    const scrollToTop = () => {
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-    };
-
     window.addEventListener('scroll', toggleVisibility);
     return () => window.removeEventListener('scroll', toggleVisibility);
   }, []);
 
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
+  const scrollToSearch = () => {
+    const searchInput = document.getElementById('resource-search');
+    if (searchInput) {
+      searchInput.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'center' // Puts search bar in middle of viewport
+      });
+      // Optional: Focus the input for better UX
+      setTimeout(() => searchInput.focus(), 500);
+    }
   };
 
   if (!isVisible) {
@@ -36,7 +34,7 @@ export default function ScrollToTop() {
 
   return (
     <button
-      onClick={scrollToTop}
+      onClick={scrollToSearch}
       className="
         fixed bottom-8 right-8 z-50
         w-12 h-12 md:w-14 md:h-14
@@ -50,7 +48,7 @@ export default function ScrollToTop() {
         border border-vanillaCustard/20
         backdrop-blur-sm
       "
-      aria-label="Scroll to top"
+      aria-label="Scroll to search"
     >
       {/* Arrow Icon */}
       <svg
