@@ -87,17 +87,17 @@ export default function ResourceCard({
         </div>
 
         <div className="flex flex-col gap-2">
-          <p 
-            ref={descriptionRef}
-            id={`description-${resource.name.replace(/\s+/g, '-').toLowerCase()}`}
-            className={`text-base text-vanillaCustard/90 whitespace-pre-wrap transition-all ${
-              isExpanded ? '' : 'line-clamp-3'
-            }`}
-            aria-live="polite"
-            aria-expanded={isExpanded}
-          >
-            {resource.description}
-          </p>
+          <div>
+            <p 
+              ref={descriptionRef}
+              id={`description-${resource.name.replace(/\s+/g, '-').toLowerCase()}`}
+              className={`text-base text-vanillaCustard/90 whitespace-pre-wrap transition-all ${
+                isExpanded ? '' : 'line-clamp-3'
+              }`}
+            >
+              {resource.description}
+            </p>
+          </div>
           {isTruncated && (
             <button
               onClick={() => setIsExpanded(!isExpanded)}
@@ -107,11 +107,10 @@ export default function ResourceCard({
                   setIsExpanded(!isExpanded);
                 }
               }}
-              className="text-sm font-bold text-vanillaCustard/90 hover:text-vanillaCustard focus:text-vanillaCustard focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-2 focus:ring-offset-pitchBlack rounded transition-colors self-start"
               aria-expanded={isExpanded}
               aria-controls={`description-${resource.name.replace(/\s+/g, '-').toLowerCase()}`}
+              className="text-sm font-bold text-vanillaCustard hover:text-vanillaCustard focus:text-vanillaCustard focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-2 focus:ring-offset-pitchBlack transition-colors self-start"
             >
-              <span className="sr-only">{isExpanded ? 'Collapse' : 'Expand'} full description for {resource.name}: </span>
               {isExpanded ? 'Show less' : 'Show more'}
             </button>
           )}
