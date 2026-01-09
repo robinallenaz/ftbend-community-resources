@@ -89,7 +89,12 @@ export default function HomePage() {
         <div className="absolute inset-0 opacity-25">
           <picture>
             <source type="image/webp" srcSet="/pride-flag-banner.webp" />
-            <img src="/pride-flag-banner.jpg" alt="Pride flag banner with rainbow colors representing LGBTQIA+ community" className="h-full w-full object-cover" />
+            <img 
+              src="/pride-flag-banner.jpg" 
+              alt="Pride flag banner with rainbow colors representing LGBTQIA+ community" 
+              className="h-full w-full object-cover"
+              fetchPriority="high"
+            />
           </picture>
         </div>
         <div className="relative grid gap-5 p-6 md:p-10">
