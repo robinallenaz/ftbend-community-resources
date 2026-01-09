@@ -3,6 +3,7 @@ import Footer from './Footer';
 import Header from './Header';
 import Seo from './Seo';
 import SkipLink from './SkipLink';
+import ScrollToTop from './ScrollToTop';
 
 export default function Layout() {
   return (
@@ -14,6 +15,7 @@ export default function Layout() {
         <Outlet />
       </main>
       <Footer />
+      <ScrollToTop />
     </div>
   );
 }
