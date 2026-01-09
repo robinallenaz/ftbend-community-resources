@@ -54,6 +54,28 @@ This is a **monorepo** with two main applications:
 
 ---
 
+## 🗺️ Automatic Sitemap Generation
+
+The sitemap automatically updates `lastmod` dates based on file modification times - no manual updates needed!
+
+### **Generate Sitemap**
+```bash
+cd client
+npm run sitemap
+```
+
+### **What It Does**
+- Tracks file changes in `src/pages/*.tsx`
+- Updates `lastmod` with actual modification dates
+- Generates SEO-friendly sitemap in `public/sitemap.xml`
+
+### **When to Run**
+- After updating page content
+- Before deploying to production
+- Anytime you want fresh timestamps
+
+---
+
 ## 🚀 Quick Start (Local Development)
 
 ### Prerequisites
