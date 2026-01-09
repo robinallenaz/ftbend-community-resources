@@ -4,6 +4,30 @@ import Tag from './Tag';
 import { getTagColor, type TagTone } from '../utils/tagColors';
 import { getResourceDistance, formatDistance, getAccuracyLevel } from '../utils/locationUtils';
 
+// Function to parse URLs and convert to clickable links
+function parseLinks(text: string): (string | JSX.Element)[] {
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const parts = text.split(urlRegex);
+  
+  return parts.map((part, index) => {
+    if (part.match(urlRegex)) {
+      return (
+        <a
+          key={index}
+          href={part}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-400 hover:text-blue-300 underline transition-colors"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {part}
+        </a>
+      );
+    }
+    return part;
+  });
+}
+
 export default function ResourceCard({ 
   resource, 
   userLocation 
@@ -95,7 +119,7 @@ export default function ResourceCard({
                 isExpanded ? '' : 'line-clamp-3'
               }`}
             >
-              {resource.description}
+              {parseLinks(resource.description)}
             </p>
           </div>
           {isTruncated && (
