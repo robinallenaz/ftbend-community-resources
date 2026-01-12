@@ -42,11 +42,6 @@ export default function FilterGroup(args: {
       <legend className="mb-1">
         <div className="flex items-center gap-2">
           <div className="text-lg font-extrabold text-vanillaCustard relative -translate-y-1">{title}</div>
-          {shortcutKey && (
-            <kbd className="text-sm font-mono text-vanillaCustard/50 bg-gradient-to-br from-graphite/70 to-graphite/50 w-6 h-6 flex items-center justify-center rounded border border-vanillaCustard/20 shadow-sm relative -translate-y-1">
-              {shortcutKey}
-            </kbd>
-          )}
         </div>
         {description ? <div className="text-sm text-vanillaCustard/75">{description}</div> : null}
       </legend>

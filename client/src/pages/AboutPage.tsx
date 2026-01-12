@@ -12,14 +12,69 @@ export default function AboutPage() {
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [selectedImage, setSelectedImage] = useState<GalleryItem | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   function nextImage() {
-    setCurrentImageIndex((prev) => (prev + 1) % gallery.length);
+    if (gallery.length <= 1) return;
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % gallery.length);
+      setIsTransitioning(false);
+    }, 150);
   }
 
   function previousImage() {
-    setCurrentImageIndex((prev) => (prev - 1 + gallery.length) % gallery.length);
+    if (gallery.length <= 1) return;
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentImageIndex((prev) => (prev - 1 + gallery.length) % gallery.length);
+      setIsTransitioning(false);
+    }, 150);
   }
+
+  function goToImage(index: number) {
+    if (index === currentImageIndex || gallery.length <= 1) return;
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentImageIndex(index);
+      setIsTransitioning(false);
+    }, 150);
+  }
+
+  function toggleAutoplay() {
+    setIsPlaying(!isPlaying);
+  }
+
+  // Auto-play functionality
+  useEffect(() => {
+    if (!isPlaying || gallery.length <= 1) return;
+    
+    const interval = setInterval(() => {
+      nextImage();
+    }, 4000);
+    
+    return () => clearInterval(interval);
+  }, [isPlaying, gallery.length]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        previousImage();
+      } else if (e.key === 'ArrowRight') {
+        nextImage();
+      } else if (e.key === ' ') {
+        e.preventDefault();
+        toggleAutoplay();
+      } else if (e.key === 'Escape' && selectedImage) {
+        setSelectedImage(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedImage]);
 
   useEffect(() => {
     fetch('/api/public/gallery')
@@ -29,7 +84,7 @@ export default function AboutPage() {
   }, []);
 
   return (
-    <div className="grid gap-6">
+    <div className="grid gap-4">
       <header className="rounded-2xl border border-vanillaCustard/10 bg-gradient-to-br from-pitchBlack/60 via-pitchBlack/40 to-pitchBlack/30 backdrop-blur-sm p-8 shadow-soft">
         <div className="grid gap-3">
           <h1 className="text-3xl font-extrabold text-vanillaCustard">About Fort Bend LGBTQIA+ Community Resources</h1>
@@ -38,14 +93,47 @@ export default function AboutPage() {
       </header>
 
       {gallery.length > 0 && (
-        <section className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-6 shadow-soft">
-          <h2 className="text-xl font-extrabold text-vanillaCustard mb-6">Community Moments</h2>
-          <div className="relative group">
-            <div className="aspect-video overflow-hidden rounded-xl bg-graphite shadow-inner">
+        <section className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-6 pb-4 shadow-soft">
+          <div className="flex flex-col items-center mb-6">
+            <h2 className="text-xl font-extrabold text-vanillaCustard mb-4">Community Moments</h2>
+            {gallery.length > 1 && (
+              <button
+                onClick={toggleAutoplay}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-vanillaCustard/20 text-sm text-vanillaCustard/80 hover:border-vanillaCustard/40 hover:text-vanillaCustard transition-all"
+                aria-label={isPlaying ? "Pause slideshow" : "Play slideshow"}
+              >
+                {isPlaying ? (
+                  <>
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Pause
+                  </>
+                ) : (
+                  <>
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Play
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+          
+          <div className="relative group" tabIndex={0} aria-label="Image carousel">
+            <div className="aspect-video overflow-hidden rounded-lg bg-graphite shadow-inner max-w-4xl mx-auto relative">
               <img
                 src={gallery[currentImageIndex].filename}
                 alt={gallery[currentImageIndex].caption || 'Gallery image'}
-                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                className={`h-full w-full object-cover transition-opacity duration-300 cursor-pointer ${
+                  isTransitioning ? 'opacity-50' : 'opacity-100'
+                }`}
+                onClick={() => setSelectedImage(gallery[currentImageIndex])}
+                role="button"
+                tabIndex={0}
+                aria-label={`Open ${gallery[currentImageIndex].caption || 'Gallery image'} in lightbox`}
               />
             </div>
             
@@ -55,7 +143,7 @@ export default function AboutPage() {
                 <button
                   type="button"
                   onClick={previousImage}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-pitchBlack/90 backdrop-blur-sm p-3 text-vanillaCustard transition-all hover:bg-pitchBlack hover:scale-110 opacity-0 group-hover:opacity-100"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-pitchBlack/90 backdrop-blur-sm p-3 text-vanillaCustard transition-all hover:bg-pitchBlack hover:scale-110 opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-paleAmber/50"
                   aria-label="Previous image"
                 >
                   <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -65,7 +153,7 @@ export default function AboutPage() {
                 <button
                   type="button"
                   onClick={nextImage}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-pitchBlack/90 backdrop-blur-sm p-3 text-vanillaCustard transition-all hover:bg-pitchBlack hover:scale-110 opacity-0 group-hover:opacity-100"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-pitchBlack/90 backdrop-blur-sm p-3 text-vanillaCustard transition-all hover:bg-pitchBlack hover:scale-110 opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-paleAmber/50"
                   aria-label="Next image"
                 >
                   <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -82,6 +170,13 @@ export default function AboutPage() {
               </div>
             )}
 
+            {/* Image counter */}
+            {gallery.length > 1 && (
+              <div className="absolute top-4 right-4 rounded-full bg-pitchBlack/90 backdrop-blur-sm px-3 py-1 text-sm text-vanillaCustard/80">
+                {currentImageIndex + 1} / {gallery.length}
+              </div>
+            )}
+
             {/* Image indicators */}
             {gallery.length > 1 && (
               <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
@@ -89,16 +184,26 @@ export default function AboutPage() {
                   <button
                     key={index}
                     type="button"
-                    onClick={() => setCurrentImageIndex(index)}
+                    onClick={() => goToImage(index)}
                     className={`h-2 w-2 rounded-full transition-all ${
-                      index === currentImageIndex ? 'bg-paleAmber w-8' : 'bg-vanillaCustard/40 hover:bg-vanillaCustard/60'
-                    }`}
+                      index === currentImageIndex 
+                        ? 'bg-paleAmber w-8 shadow-lg shadow-paleAmber/30' 
+                        : 'bg-vanillaCustard/40 hover:bg-vanillaCustard/60 hover:scale-125'
+                    } focus:outline-none focus:ring-2 focus:ring-paleAmber/50`}
                     aria-label={`Go to image ${index + 1}`}
+                    aria-current={index === currentImageIndex}
                   />
                 ))}
               </div>
             )}
           </div>
+          
+          {/* Keyboard hints */}
+          {gallery.length > 1 && (
+            <div className="mt-4 text-center text-xs text-vanillaCustard/60">
+              Use arrow keys to navigate • Space to {isPlaying ? 'pause' : 'play'} • Click image to expand
+            </div>
+          )}
         </section>
       )}
 
@@ -109,20 +214,25 @@ export default function AboutPage() {
             This site exists to make LGBTQIA+ resources easier to find—especially when you're tired, stressed, or just need a clear answer. We connect community members with healthcare providers, legal services, support groups, and inclusive events throughout Fort Bend County and across Texas.
           </p>
           
-          <h2 className="text-2xl font-extrabold text-vanillaCustard">What You'll Find</h2>
-          <ul className="grid gap-2 list-disc list-inside">
-            <li><Link to="/resources" className="text-paleAmber hover:underline">LGBTQIA+ Resources</Link> - Healthcare providers, legal services, and support organizations</li>
-            <li><Link to="/events" className="text-paleAmber hover:underline">Community Events</Link> - Monthly meetups and inclusive gatherings</li>
-            <li><Link to="/submit" className="text-paleAmber hover:underline">Resource Submissions</Link> - Share helpful services with our community</li>
-          </ul>
-
           <h2 className="text-2xl font-extrabold text-vanillaCustard">Community Safety</h2>
           <p>
-            If something listed here feels unsafe, outdated, or harmful, please reach out so we can review it. Your feedback helps keep this resource directory trustworthy and helpful for everyone.
+            If something listed here feels unsafe, outdated, or harmful, please{' '}
+            <a 
+              href="mailto:robin@transvoices.us?subject=Community Safety Feedback - FTBend Resources"
+              className="text-paleAmber hover:text-vanillaCustard underline transition-colors"
+            >
+              reach out via email
+            </a>
+            {' '}so we can review it. Your feedback helps keep this resource directory trustworthy and helpful for everyone.
           </p>
           
           <div className="rounded-2xl bg-graphite/70 p-4">
-            <h3 className="text-lg font-extrabold text-vanillaCustard">Accessibility</h3>
+            <div className="flex items-center gap-3">
+              <svg className="h-6 w-6 text-vanillaCustard" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+              </svg>
+              <h3 className="text-lg font-extrabold text-vanillaCustard">Accessibility</h3>
+            </div>
             <p className="mt-2">
               You can increase text size in the top right. Everything should work with keyboard navigation and screen readers for full accessibility.
             </p>
@@ -172,31 +282,83 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Lightbox */}
+      {/* Enhanced Lightbox */}
       {selectedImage && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-pitchBlack/95 p-4"
-          onClick={() => setSelectedImage(null)}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setSelectedImage(null);
+            }
+          }}
         >
-          <img
-            src={selectedImage.filename}
-            alt={selectedImage.caption || 'Gallery image'}
-            className="max-h-full max-w-full rounded-xl object-contain"
-          />
-          {selectedImage.caption && (
-            <p className="absolute bottom-4 left-4 right-4 text-center text-vanillaCustard/90">
-              {selectedImage.caption}
-            </p>
-          )}
-          <button
-            type="button"
-            onClick={() => setSelectedImage(null)}
-            className="absolute top-4 right-4 rounded-lg bg-graphite/80 p-2 text-vanillaCustard hover:bg-graphite"
-          >
-            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <div className="relative max-w-7xl max-h-full">
+            <img
+              src={selectedImage.filename}
+              alt={selectedImage.caption || 'Gallery image'}
+              className="max-h-[80vh] max-w-full rounded-xl object-contain"
+            />
+            
+            {/* Lightbox navigation */}
+            {gallery.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const currentIndex = gallery.findIndex(img => img._id === selectedImage._id);
+                    const prevIndex = (currentIndex - 1 + gallery.length) % gallery.length;
+                    setSelectedImage(gallery[prevIndex]);
+                  }}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-pitchBlack/90 backdrop-blur-sm p-3 text-vanillaCustard transition-all hover:bg-pitchBlack hover:scale-110"
+                  aria-label="Previous image in lightbox"
+                >
+                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const currentIndex = gallery.findIndex(img => img._id === selectedImage._id);
+                    const nextIndex = (currentIndex + 1) % gallery.length;
+                    setSelectedImage(gallery[nextIndex]);
+                  }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-pitchBlack/90 backdrop-blur-sm p-3 text-vanillaCustard transition-all hover:bg-pitchBlack hover:scale-110"
+                  aria-label="Next image in lightbox"
+                >
+                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </>
+            )}
+            
+            {/* Lightbox caption */}
+            {selectedImage.caption && (
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-pitchBlack via-pitchBlack/95 to-transparent p-6">
+                <p className="text-center text-vanillaCustard/90 text-lg drop-shadow-lg">{selectedImage.caption}</p>
+              </div>
+            )}
+            
+            {/* Lightbox image counter */}
+            {gallery.length > 1 && (
+              <div className="absolute top-4 right-4 rounded-full bg-pitchBlack/90 backdrop-blur-sm px-3 py-1 text-sm text-vanillaCustard/80">
+                {gallery.findIndex(img => img._id === selectedImage._id) + 1} / {gallery.length}
+              </div>
+            )}
+            
+            {/* Close button */}
+            <button
+              type="button"
+              onClick={() => setSelectedImage(null)}
+              className="absolute top-4 left-4 rounded-full bg-pitchBlack/90 backdrop-blur-sm p-3 text-vanillaCustard hover:bg-pitchBlack transition-all"
+              aria-label="Close lightbox"
+            >
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
       )}
     </div>

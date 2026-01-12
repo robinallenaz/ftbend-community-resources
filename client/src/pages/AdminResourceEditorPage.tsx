@@ -69,7 +69,7 @@ export default function AdminResourceEditorPage() {
         const item = res.item;
         setName(item.name);
         setUrl(item.url);
-        setDescription(item.description);
+        setDescription(convertToMarkdown(item.description));
         setLocations(toSet(item.locations));
         setTypes(toSet(item.types));
         setAudiences(toSet(item.audiences));
@@ -87,14 +87,20 @@ export default function AdminResourceEditorPage() {
     load();
   }, [id]);
 
-  async function onSave(e: FormEvent) {
+  // Function to convert processed links back to markdown format for saving
+function convertToMarkdown(text: string): string {
+  // Convert any processed markdown links back to original format
+  return text.replace(/__MARKDOWN_LINK__(.*?)__SEPARATOR__(.*?)__END__/g, '[$1]($2)');
+}
+
+async function onSave(e: FormEvent) {
     e.preventDefault();
     setError('');
 
     const payload = {
       name,
       url,
-      description,
+      description: convertToMarkdown(description),
       locations: setToList(locations),
       types: setToList(types),
       audiences: setToList(audiences),
@@ -145,10 +151,9 @@ export default function AdminResourceEditorPage() {
 
   return (
     <div className="grid gap-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div className="grid gap-2">
+      <header className="flex flex-wrap items-end justify-between gap-4 rounded-2xl border border-vanillaCustard/10 bg-gradient-to-br from-pitchBlack/60 via-pitchBlack/40 to-pitchBlack/30 backdrop-blur-sm p-8 shadow-soft">
+        <div className="grid gap-3">
           <h1 className="text-3xl font-extrabold text-vanillaCustard">{isNew ? 'Add resource' : 'Edit resource'}</h1>
-          <p className="text-base text-vanillaCustard/85">Simple form—no markdown.</p>
         </div>
 
         <Link
@@ -180,6 +185,15 @@ export default function AdminResourceEditorPage() {
             className="w-full rounded-2xl border border-vanillaCustard/20 bg-graphite px-4 py-3 text-lg font-semibold text-vanillaCustard"
           />
         </label>
+
+        {/* Link Formatting Guide */}
+        <div className="rounded-xl bg-paleAmber/10 border border-paleAmber/20 p-3">
+          <p className="text-sm text-vanillaCustard font-medium">
+            <span className="text-paleAmber font-bold">To create a custom link</span> like "Visit Website", type: [Visit Website](https://example.com)
+            <br />
+            <span className="text-vanillaCustard/70">Or just paste any website URL directly - it will become clickable automatically</span>
+          </p>
+        </div>
 
         <label className="grid gap-2">
           <span className="text-base font-bold text-vanillaCustard">Description</span>

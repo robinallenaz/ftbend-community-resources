@@ -40,6 +40,7 @@ export default function AdminLayout() {
             <NavItem to="/admin" label="Overview" />
             <NavItem to="/admin/resources" label="Resources" />
             <NavItem to="/admin/events" label="Events" />
+            <NavItem to="/admin/blog-posts" label="Blog Posts" />
             <NavItem to="/admin/gallery" label="Gallery" />
             <NavItem to="/admin/submissions" label="Submissions" />
             <NavItem to="/admin/newsletter" label="Newsletter" />

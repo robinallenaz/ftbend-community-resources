@@ -36,38 +36,6 @@ export default function NotFoundPage() {
           </Link>
         </div>
         
-        {/* Helpful Links */}
-        <div className="mt-12 pt-8 border-t border-vanillaCustard/15">
-          <h2 className="text-lg font-bold text-vanillaCustard mb-4">
-            Looking for something specific?
-          </h2>
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <Link
-              to="/resources"
-              className="text-vanillaCustard/90 hover:text-powderBlush transition"
-            >
-              🏥 Healthcare
-            </Link>
-            <Link
-              to="/resources"
-              className="text-vanillaCustard/90 hover:text-powderBlush transition"
-            >
-              ⚖️ Legal Support
-            </Link>
-            <Link
-              to="/events"
-              className="text-vanillaCustard/90 hover:text-powderBlush transition"
-            >
-              📅 Events
-            </Link>
-            <Link
-              to="/about"
-              className="text-vanillaCustard/90 hover:text-powderBlush transition"
-            >
-              ℹ️ About Us
-            </Link>
-          </div>
-        </div>
         
         {/* Contact Support */}
         <div className="mt-8 p-4 rounded-xl border border-vanillaCustard/15 bg-pitchBlack">
@@ -75,7 +43,7 @@ export default function NotFoundPage() {
             Still can't find what you need?
           </p>
           <a
-            href="mailto:ryancreates94@gmail.com"
+            href="mailto:robin@transvoices.us"
             className="text-powderBlush hover:brightness-95 transition font-medium"
           >
             Contact Support

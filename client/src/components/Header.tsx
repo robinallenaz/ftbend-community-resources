@@ -47,6 +47,7 @@ export default function Header() {
           <NavItem to="/" label="Home" />
           <NavItem to="/resources" label="Resources" />
           <NavItem to="/events" label="Events" />
+          <NavItem to="/blog" label="Blog" />
           <NavItem to="/about" label="About" />
           <NavItem to="/submit" label="Submit a Resource" />
         </nav>
@@ -64,11 +65,12 @@ export default function Header() {
         </div>
       </div>
 
-      <div className="mx-auto w-full max-w-6xl px-4 pb-3 md:hidden md:px-6">
+      <div className="mx-auto w-full max-w-6xl px-4 pb-3 md:px-6 md:hidden">
         <nav aria-label="Primary navigation (mobile)" className="flex flex-wrap gap-2">
           <NavItem to="/" label="Home" />
           <NavItem to="/resources" label="Resources" />
           <NavItem to="/events" label="Events" />
+          <NavItem to="/blog" label="Blog" />
           <NavItem to="/about" label="About" />
           <NavItem to="/submit" label="Submit" />
         </nav>

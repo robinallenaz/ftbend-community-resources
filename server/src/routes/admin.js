@@ -10,6 +10,7 @@ const Submission = require('../models/Submission');
 const NewsletterSubscriber = require('../models/NewsletterSubscriber');
 const NewsletterCampaign = require('../models/NewsletterCampaign');
 const GalleryImage = require('../models/GalleryImage');
+const BlogPost = require('../models/BlogPost');
 const { getOrCreateNotificationSettings } = require('../lib/notificationSettings');
 const { sendEmail } = require('../lib/email');
 const { requireAuth, requireRole } = require('../lib/auth');
@@ -691,7 +692,7 @@ router.post('/gallery/upload', requireRole(['admin']), upload.single('file'), as
       originalName: req.file.originalname,
       caption: req.body.caption || '',
       order: newOrder,
-      uploadedBy: req.auth?.sub || req.user?.id
+      uploadedBy: req.auth.sub
     });
 
     console.log('Upload debug:', {
@@ -727,7 +728,7 @@ router.post('/gallery', requireRole(['admin']), async (req, res, next) => {
     const item = await GalleryImage.create({
       ...input,
       order: newOrder,
-      uploadedBy: req.user.id
+      uploadedBy: req.auth.sub
     });
 
     res.status(201).json(item);
@@ -805,6 +806,203 @@ router.delete('/gallery/:id', requireRole(['admin']), async (req, res, next) => 
     }
 
     res.json({ status: 'archived' });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// Test endpoint for blog post uploads
+router.post('/upload-test', requireAuth, async (req, res, next) => {
+  console.log('=== UPLOAD TEST ROUTE HIT ===');
+  res.json({ message: 'Upload route is accessible!' });
+});
+
+// Image upload route for blog posts
+router.post('/upload-image', requireAuth, upload.single('image'), async (req, res, next) => {
+  try {
+    console.log('=== BLOG POST UPLOAD ROUTE HIT ===');
+    console.log('Upload request received, req.file:', req.file);
+    
+    if (!req.file) {
+      console.log('ERROR: No file received');
+      const err = new Error('No image file provided');
+      err.status = 400;
+      throw err;
+    }
+
+    console.log('File properties:', Object.keys(req.file));
+    console.log('File details:', {
+      filename: req.file.filename,
+      path: req.file.path,
+      originalname: req.file.originalname,
+      mimetype: req.file.mimetype,
+      size: req.file.size,
+      url: req.file.url,
+      secure_url: req.file.secure_url,
+      public_id: req.file.public_id
+    });
+
+    // Debug all available properties
+    console.log('Complete file object:', JSON.stringify(req.file, null, 2));
+
+    // Use the same URL format as the gallery upload
+    const imageUrl = `https://res.cloudinary.com/dpus8jzix/image/upload/${req.file.filename}.jpg`;
+
+    console.log('Final image URL:', imageUrl);
+    console.log('=== END BLOG POST UPLOAD ===');
+    res.json({ url: imageUrl });
+  } catch (e) {
+    console.error('Upload error:', e);
+    next(e);
+  }
+});
+
+// Admin blog posts routes
+router.get('/blog-posts', requireAuth, async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const skip = (page - 1) * limit;
+
+    const filter = {};
+    
+    // Add status filter
+    if (req.query.status) {
+      filter.status = req.query.status;
+    }
+
+    // Add search functionality
+    if (req.query.q) {
+      filter.$text = { $search: req.query.q };
+    }
+
+    const posts = await BlogPost.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    const total = await BlogPost.countDocuments(filter);
+
+    res.json({
+      posts,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/blog-posts/:id', requireAuth, async (req, res, next) => {
+  try {
+    const post = await BlogPost.findById(req.params.id).lean();
+
+    if (!post) {
+      const err = new Error('Blog post not found');
+      err.status = 404;
+      throw err;
+    }
+
+    res.json({ post });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.patch('/blog-posts/:id', requireAuth, async (req, res, next) => {
+  try {
+    const input = validate(
+      z.object({
+        title: z.string().min(2).max(200).optional(),
+        content: z.string().min(50).max(10000).optional(),
+        authorName: z.string().max(100).optional(),
+        authorEmail: z.string().max(255).optional().refine((val) => {
+          if (!val || val === '') return true;
+          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+        }, { message: 'Invalid email format' }),
+        categories: z.array(z.string().max(50)).optional(),
+        tags: z.array(z.string().max(30)).optional(),
+        status: z.enum(['pending', 'approved', 'rejected', 'published']).optional(),
+        slug: z.string().min(1).max(200).optional(),
+        excerpt: z.string().max(500).optional(),
+        featuredImage: z.string().max(500).optional(),
+        metaDescription: z.string().max(160).optional(),
+        reviewNotes: z.string().max(1000).optional()
+      }),
+      req.body
+    );
+
+    const post = await BlogPost.findById(req.params.id);
+    if (!post) {
+      const err = new Error('Blog post not found');
+      err.status = 404;
+      throw err;
+    }
+
+    // Update fields
+    Object.keys(input).forEach(key => {
+      if (input[key] !== undefined) {
+        post[key] = input[key];
+      }
+    });
+
+    // Set published date if status is being set to published
+    if (input.status === 'published' && post.status !== 'published') {
+      post.publishedAt = new Date();
+    }
+
+    // Set review metadata
+    post.reviewedByUserId = req.auth.sub;
+    post.reviewedAt = new Date();
+
+    await post.save();
+
+    res.json({ post });
+  } catch (e) {
+    console.error('Error in PATCH blog post:', e);
+    next(e);
+  }
+});
+
+router.delete('/blog-posts/:id', requireAuth, async (req, res, next) => {
+  try {
+    const post = await BlogPost.findById(req.params.id);
+    
+    if (!post) {
+      const err = new Error('Blog post not found');
+      err.status = 404;
+      throw err;
+    }
+
+    await BlogPost.findByIdAndDelete(req.params.id);
+
+    res.json({ status: 'deleted' });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// Reset likes for a blog post (temporary for testing)
+router.post('/blog-posts/:id/reset-likes', requireRole(['admin']), async (req, res, next) => {
+  try {
+    const post = await BlogPost.findByIdAndUpdate(
+      req.params.id,
+      { $set: { likeCount: 0 } },
+      { new: true }
+    );
+
+    if (!post) {
+      const err = new Error('Blog post not found');
+      err.status = 404;
+      throw err;
+    }
+
+    res.json({ message: 'Likes reset successfully', likeCount: 0 });
   } catch (e) {
     next(e);
   }

@@ -7,12 +7,12 @@ export function buildResourceFuse(resources: Resource[]) {
     threshold: 0.35,
     ignoreLocation: true,
     keys: [
-      { name: 'name', weight: 0.45 },
-      { name: 'description', weight: 0.25 },
-      { name: 'tags', weight: 0.15 },
-      { name: 'locations', weight: 0.1 },
-      { name: 'types', weight: 0.1 },
-      { name: 'audiences', weight: 0.1 }
+      { name: 'name', weight: 0.6 },
+      { name: 'description', weight: 0.2 },
+      { name: 'tags', weight: 0.1 },
+      { name: 'locations', weight: 0.05 },
+      { name: 'types', weight: 0.05 },
+      { name: 'audiences', weight: 0.05 }
     ]
   });
 }

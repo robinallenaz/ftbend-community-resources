@@ -219,7 +219,12 @@ export default function ResourceExplorer(args: { initialQuery?: string; userLoca
       <section className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-5 shadow-soft">
         <div className="grid gap-3">
           <label className="grid gap-2" htmlFor="resource-search">
-            <h2 className="text-lg font-extrabold text-vanillaCustard">Search resources</h2>
+            <h2 className="text-lg font-extrabold text-vanillaCustard flex items-center gap-2">
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              Search resources
+            </h2>
             <span className="text-sm text-vanillaCustard/75">
               Type what you need. Results update as you type. Example: "trans", "Fort Bend", "counseling", "youth".
             </span>
@@ -282,31 +287,36 @@ export default function ResourceExplorer(args: { initialQuery?: string; userLoca
       </section>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="grid gap-4 lg:col-span-1">
-          <FilterGroup
-            title="Location"
-            description="Choose one or more."
-            options={LOCATION_OPTIONS}
-            selected={selectedLocations}
-            onToggle={(v) => toggle(setSelectedLocations, v)}
-            shortcutKey="L"
-          />
-          <FilterGroup
-            title="Resource Type"
-            description="Choose one or more."
-            options={TYPE_OPTIONS}
-            selected={selectedTypes}
-            onToggle={(v) => toggle(setSelectedTypes, v)}
-            shortcutKey="T"
-          />
-          <FilterGroup
-            title="Audience"
-            description="Choose one or more."
-            options={AUDIENCE_OPTIONS}
-            selected={selectedAudiences}
-            onToggle={(v) => toggle(setSelectedAudiences, v)}
-            shortcutKey="A"
-          />
+        <div className="lg:col-span-1">
+          <div className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-5 shadow-soft">
+            <h3 className="text-lg font-extrabold text-vanillaCustard mb-4">Filter Resources</h3>
+            <div className="space-y-4">
+              <FilterGroup
+                title="Location"
+                description="Choose one or more."
+                options={LOCATION_OPTIONS}
+                selected={selectedLocations}
+                onToggle={(v) => toggle(setSelectedLocations, v)}
+                shortcutKey="L"
+              />
+              <FilterGroup
+                title="Resource Type"
+                description="Choose one or more."
+                options={TYPE_OPTIONS}
+                selected={selectedTypes}
+                onToggle={(v) => toggle(setSelectedTypes, v)}
+                shortcutKey="T"
+              />
+              <FilterGroup
+                title="Audience"
+                description="Choose one or more."
+                options={AUDIENCE_OPTIONS}
+                selected={selectedAudiences}
+                onToggle={(v) => toggle(setSelectedAudiences, v)}
+                shortcutKey="A"
+              />
+            </div>
+          </div>
         </div>
 
         <section className="grid gap-4 lg:col-span-2" aria-label="Search results">

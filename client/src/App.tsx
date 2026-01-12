@@ -12,11 +12,16 @@ import AdminNewsletterPage from './pages/AdminNewsletterPage';
 import AdminResourceEditorPage from './pages/AdminResourceEditorPage';
 import AdminResourcesPage from './pages/AdminResourcesPage';
 import AdminSubmissionsPage from './pages/AdminSubmissionsPage';
+import AdminBlogPostsPage from './pages/AdminBlogPostsPage';
+import AdminBlogPostEditorPage from './pages/AdminBlogPostEditorPage';
+import BlogPage from './pages/BlogPage';
+import BlogPostPage from './pages/BlogPostPage';
 import EventsPage from './pages/EventsPage';
 import HomePage from './pages/HomePage';
 import NotFoundPage from './pages/NotFoundPage';
 import ResourcesPage from './pages/ResourcesPage';
 import SubmitResourcePage from './pages/SubmitResourcePage';
+import SubmitBlogPostPage from './pages/SubmitBlogPostPage';
 
 export default function App() {
   return (
@@ -30,6 +35,8 @@ export default function App() {
           <Route path="events" element={<AdminEventsPage />} />
           <Route path="events/:id" element={<AdminEventEditorPage />} />
           <Route path="gallery" element={<AdminGalleryPage />} />
+          <Route path="blog-posts" element={<AdminBlogPostsPage />} />
+          <Route path="blog-posts/:id" element={<AdminBlogPostEditorPage />} />
           <Route path="submissions" element={<AdminSubmissionsPage />} />
           <Route path="newsletter" element={<AdminNewsletterPage />} />
           <Route path="*" element={<Navigate to="/admin" replace />} />
@@ -40,8 +47,11 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/resources" element={<ResourcesPage />} />
         <Route path="/events" element={<EventsPage />} />
+        <Route path="/blog" element={<BlogPage />} />
+        <Route path="/blog/:slug" element={<BlogPostPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/submit" element={<SubmitResourcePage />} />
+        <Route path="/submit-blog-contribution" element={<SubmitBlogPostPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

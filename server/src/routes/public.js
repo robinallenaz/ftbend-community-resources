@@ -6,6 +6,7 @@ const Event = require('../models/Event');
 const Submission = require('../models/Submission');
 const NewsletterSubscriber = require('../models/NewsletterSubscriber');
 const GalleryImage = require('../models/GalleryImage');
+const BlogPost = require('../models/BlogPost');
 const { validate } = require('../lib/validate');
 const { sendEmail } = require('../lib/email');
 const { getOrCreateNotificationSettings } = require('../lib/notificationSettings');
@@ -205,6 +206,195 @@ router.get('/gallery', async (req, res, next) => {
   try {
     const items = await GalleryImage.find({ status: 'active' }).sort({ order: 1 }).lean();
     res.json({ items });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// Blog post submission
+router.post('/blog-submissions', async (req, res, next) => {
+  try {
+    console.log('Received blog submission request body:', req.body); // Debug log
+    
+    const input = validate(
+      z.object({
+        title: z.string().min(2).max(200),
+        content: z.string().min(50).max(10000),
+        authorName: z.string().max(100).optional().default('Anonymous'),
+        authorEmail: z.string().max(255).optional().default('').refine((val) => {
+          if (!val || val === '') return true; // Allow empty string
+          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val); // Validate email format if provided
+        }, { message: 'Invalid email format' }),
+        categories: z.array(z.string().max(50)).optional().default([]),
+        tags: z.array(z.string().max(30)).optional().default([]),
+        submissionConsent: z.boolean().refine(val => val === true, { message: 'Submission consent is required' }),
+        privacyConsent: z.boolean().refine(val => val === true, { message: 'Privacy consent is required' })
+      }),
+      req.body
+    );
+
+    // Generate slug from title
+    const slug = input.title
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim('-') + `-${Date.now().toString(36)}`;
+
+    const blogPost = await BlogPost.create({
+      title: input.title,
+      slug: slug,
+      content: input.content,
+      authorName: input.authorName,
+      authorEmail: input.authorEmail,
+      categories: input.categories,
+      tags: input.tags,
+      submissionConsent: input.submissionConsent,
+      privacyConsent: input.privacyConsent,
+      status: 'pending'
+    });
+
+    // Send notification email to admins
+    void (async () => {
+      try {
+        const settings = await getOrCreateNotificationSettings();
+        if (!settings.submissionEmailEnabled) {
+          console.log('[blog submission] notifications disabled; skipping email');
+          return;
+        }
+
+        const recipients = Array.isArray(settings.submissionEmailRecipients)
+          ? settings.submissionEmailRecipients.map((x) => String(x || '').trim()).filter(Boolean)
+          : [];
+        if (!recipients.length) {
+          console.log('[blog submission] no recipients; skipping email');
+          return;
+        }
+
+        const base = String(settings.publicSiteUrl || '').replace(/\/+$/, '');
+        const adminUrl = `${base}/admin/blog-posts`;
+
+        const subject = `New blog post submission: ${blogPost.title}`;
+        const text = `A new blog post was submitted to the Fort Bend County LGBTQIA+ Community Resources website.\n\nTitle: ${blogPost.title}\nAuthor: ${blogPost.authorName}\n\nReview in admin: ${adminUrl}`;
+        const html = `
+          <p>A new blog post was submitted to the Fort Bend County LGBTQIA+ Community Resources website.</p>
+          <p><strong>Title:</strong> ${blogPost.title}</p>
+          <p><strong>Author:</strong> ${blogPost.authorName}</p>
+          <p><strong>Content Preview:</strong> ${blogPost.content.substring(0, 200)}...</p>
+          <p><a href="${adminUrl}" target="_blank" rel="noreferrer">Review blog submissions</a></p>
+        `;
+
+        await sendEmail({ to: recipients, subject, text, html });
+      } catch (e) {
+        console.error('Blog submission notification email failed', e);
+      }
+    })();
+
+    res.status(201).json({
+      id: blogPost._id,
+      status: blogPost.status
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// Get published blog posts
+router.get('/blog-posts', async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const filter = { status: 'published' };
+    
+    // Add search functionality
+    if (req.query.q) {
+      filter.$text = { $search: req.query.q };
+    }
+
+    // Add category filter
+    if (req.query.category) {
+      filter.categories = { $in: [req.query.category] };
+    }
+
+    // Add tag filter
+    if (req.query.tag) {
+      filter.tags = { $in: [req.query.tag] };
+    }
+
+    const posts = await BlogPost.find(filter)
+      .sort({ publishedAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .select('-content') // Exclude content from list view
+      .lean();
+
+    const total = await BlogPost.countDocuments(filter);
+
+    res.json({
+      posts,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// Get single blog post
+router.get('/blog-posts/:slug', async (req, res, next) => {
+  try {
+    const post = await BlogPost.findOne({ 
+      slug: req.params.slug, 
+      status: 'published' 
+    }).lean();
+
+    if (!post) {
+      return res.status(404).json({ error: 'Blog post not found' });
+    }
+
+    // Increment view count
+    await BlogPost.updateOne(
+      { _id: post._id },
+      { $inc: { viewCount: 1 } }
+    );
+
+    res.json({ post });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// Like/unlike a blog post
+router.post('/blog-posts/:id/like', async (req, res, next) => {
+  try {
+    const post = await BlogPost.findById(req.params.id);
+    
+    if (!post) {
+      return res.status(404).json({ error: 'Blog post not found' });
+    }
+
+    if (post.status !== 'published') {
+      return res.status(404).json({ error: 'Blog post not found' });
+    }
+
+    // Check if this is a like or unlike based on the request body
+    const { action } = req.body;
+    const increment = action === 'unlike' ? -1 : 1;
+
+    // Update like count
+    const updatedPost = await BlogPost.findByIdAndUpdate(
+      req.params.id,
+      { $inc: { likeCount: increment } },
+      { new: true, runValidators: true }
+    ).select('likeCount');
+
+    res.json({ likeCount: Math.max(0, updatedPost.likeCount || 0) });
   } catch (e) {
     next(e);
   }

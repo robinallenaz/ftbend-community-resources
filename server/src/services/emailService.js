@@ -10,7 +10,7 @@ class EmailService {
     try {
       const html = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #D1DA9C;">🌈 Welcome to Our Community!</h2>
+            <h2 style="color: #2c5f2d;">🌈 Welcome to Our Community!</h2>
             <p>Thank you for joining the Fort Bend County LGBTQIA+ Community newsletter!</p>
             <p>You'll receive updates about:</p>
             <ul>
@@ -59,6 +59,12 @@ class EmailService {
       console.error("Error sending newsletter campaign:", error);
       throw error;
     }
+  }
+
+  async addContactToList(email, listId = null) {
+    // Placeholder for Brevo integration - for now just log
+    console.log(`Contact ${email} would be added to Brevo list ${listId || 'default'}`);
+    return { success: true, message: 'Contact logged (Brevo integration pending)' };
   }
 
   async sendContactNotification(contactData) {

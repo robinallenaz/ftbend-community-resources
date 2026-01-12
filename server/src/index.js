@@ -56,7 +56,7 @@ app.use((err, _req, res, _next) => {
 async function start() {
   await connectToDb();
 
-  const port = Number(process.env.PORT) || 8080;
+  const port = Number(process.env.PORT) || 8081;
   app.listen(port, () => {
     console.log(`API listening on http://localhost:${port}`);
   });
