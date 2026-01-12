@@ -89,4 +89,22 @@ router.post('/logout', (req, res) => {
     .send();
 });
 
+router.post('/newsletter/unsubscribe', async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    // TODO: Remove from Brevo list and mark as unsubscribed in database
+    console.log(`Unsubscribe request for: ${email}`);
+    
+    // For now, just return success
+    res.json({ message: 'Successfully unsubscribed from newsletter' });
+  } catch (e) {
+    next(e);
+  }
+});
+
 module.exports = router;

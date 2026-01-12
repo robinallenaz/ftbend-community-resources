@@ -10,14 +10,14 @@ class EmailService {
     try {
       const html = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #2c5f2d;">🌈 Welcome to Our Community!</h2>
+            <h2 style="color: #333333;">🌈 Welcome to Our Community!</h2>
             <p>Thank you for joining the Fort Bend County LGBTQIA+ Community newsletter!</p>
             <p>You'll receive updates about:</p>
             <ul>
-              <li>🏥 Local healthcare resources</li>
-              <li>⚖️ Legal support services</li>
               <li>📅 Community events and meetups</li>
               <li>🤝 Support groups and organizations</li>
+              <li>🏥 Local healthcare resources</li>
+              <li>⚖️ Legal support services</li>
             </ul>
             <p>Together we build a stronger, more inclusive community.</p>
             <p><em>There is no community without unity 🏳️‍⚧️🏳️‍🌈</em></p>
@@ -25,6 +25,9 @@ class EmailService {
             <p style="font-size: 12px; color: #666;">
               Fort Bend County LGBTQIA+ Community Resources<br>
               <a href="https://ftbend-lgbtqia-community.org">ftbend-lgbtqia-community.org</a>
+            </p>
+            <p style="font-size: 11px; color: #999;">
+              <a href="https://ftbend-lgbtqia-community.org/unsubscribe?email=${toEmail}" style="color: #999;">Unsubscribe</a>
             </p>
           </div>
         `;
