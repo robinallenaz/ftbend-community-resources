@@ -12,17 +12,11 @@
   status = 200
   force = true
 
-# SPA fallback - serve index.html for all non-API routes
-[[redirects]]
-  from = "/submit-blog-contribution"
-  to = "/index.html"
-  status = 200
-
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-  force = false
+  force = true
 
 [[headers]]
   for = "*.jpg"
