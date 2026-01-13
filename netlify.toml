@@ -29,6 +29,12 @@
   status = 200
   force = true
 
+# SPA fallback - serve index.html for all non-API routes
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
 [[redirects]]
   from = "/*"
   to = "/404.html"
