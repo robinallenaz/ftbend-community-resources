@@ -194,8 +194,14 @@ client/dist
 ## 📧 Email Configuration
 
 ### Newsletter
-- **Current:** Sends from `robin@transvoices.us` (verified domain)
-- **Alternative:** Set up Brevo for custom domain emails
+The newsletter system uses **Brevo (Sendinblue)** for transactional emails:
+
+### How It Works
+1. **User subscribes** via frontend form → `/api/newsletter/subscribe`
+2. **Backend validates** email and checks for duplicates
+3. **Brevo API call** adds subscriber to mailing list
+4. **Welcome email** sent automatically via Brevo (welcome email can be customized in `server/src/services/emailService.js`)
+5. **Unsubscribe** handled via `/api/auth/unsubscribe/:email`
 
 ---
 
