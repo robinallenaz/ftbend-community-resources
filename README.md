@@ -10,14 +10,14 @@ A community-maintained website connecting people with **LGBTQIA+ resources, even
 
 ## 📋 What This Project Does
 
-- **🏥 Find Resources** - Healthcare providers, legal services, support groups
-- **📅 Discover Events** - Community meetups, support groups, social gatherings  
-- **📝 Submit Content** - Community members can add new resources and events
-- **🔐 Admin Dashboard** - Manage and moderate all content
+- **Find Resources** - Healthcare providers, legal services, support groups
+- **Discover Events** - Community meetups, support groups, social gatherings  
+- **Submit Content** - Community members can add new resources and events
+- **Admin Dashboard** - Manage and moderate all content
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 This is a **monorepo** with two main applications:
 
