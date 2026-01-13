@@ -8,16 +8,16 @@ A community-maintained website connecting people with **LGBTQIA+ resources, even
 
 ---
 
-## 📋 What This Project Does
+## What This Project Does
 
-- **🏥 Find Resources** - Healthcare providers, legal services, support groups
-- **📅 Discover Events** - Community meetups, support groups, social gatherings  
-- **📝 Submit Content** - Community members can add new resources and events
-- **🔐 Admin Dashboard** - Manage and moderate all content
+- **Find Resources** - Healthcare providers, legal services, support groups, and more
+- **Discover Events** - Community meetups, support groups, social gatherings  
+- **Submit Content** - Community members can add new resources on the Submit A Resource page, or submit blog posts for review and publishing through the Share Your Story button on the Blog page
+- **Admin Dashboard** - Manage and moderate all content
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 This is a **monorepo** with two main applications:
 
@@ -194,8 +194,14 @@ client/dist
 ## 📧 Email Configuration
 
 ### Newsletter
-- **Current:** Sends from `robin@transvoices.us` (verified domain)
-- **Alternative:** Set up Brevo for custom domain emails
+The newsletter system uses **Brevo (Sendinblue)** for transactional emails:
+
+### How It Works
+1. **User subscribes** via frontend form → `/api/newsletter/subscribe`
+2. **Backend validates** email and checks for duplicates
+3. **Brevo API call** adds subscriber to mailing list
+4. **Welcome email** sent automatically via Brevo (welcome email can be customized in `server/src/services/emailService.js`)
+5. **Unsubscribe** handled via `/api/auth/unsubscribe/:email`
 
 ---
 
