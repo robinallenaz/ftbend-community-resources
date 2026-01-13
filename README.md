@@ -8,11 +8,11 @@ A community-maintained website connecting people with **LGBTQIA+ resources, even
 
 ---
 
-## 📋 What This Project Does
+## What This Project Does
 
-- **Find Resources** - Healthcare providers, legal services, support groups
+- **Find Resources** - Healthcare providers, legal services, support groups, and more
 - **Discover Events** - Community meetups, support groups, social gatherings  
-- **Submit Content** - Community members can add new resources and events
+- **Submit Content** - Community members can add new resources on the Submit A Resource page, or submit blog posts for review and publishing through the Share Your Story button on the Blog page
 - **Admin Dashboard** - Manage and moderate all content
 
 ---
