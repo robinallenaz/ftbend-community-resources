@@ -205,7 +205,7 @@ export default function BlogPage() {
     <div className="min-h-screen bg-pitchBlack">
       <div className="max-w-6xl mx-auto px-6 py-12">
         {/* Header */}
-        <header className="text-center mb-12">
+        <header className="text-center mb-6">
           <h1 className="text-4xl sm:text-5xl font-extrabold text-vanillaCustard mb-4">
             Community Blog
           </h1>
@@ -286,8 +286,9 @@ export default function BlogPage() {
         </div>
 
         {/* Search and Filters Section */}
-        <div className="sticky top-16 z-30 bg-pitchBlack/95 backdrop-blur-sm border-b border-vanillaCustard/10">
-          <div className="py-2">
+        <div className="bg-pitchBlack/95 backdrop-blur-sm border-b border-vanillaCustard/10">
+          <div className="max-w-6xl mx-auto px-6">
+            <div className="py-2">
             {/* Search - Always Visible */}
             <div className="relative mb-2">
               <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-vanillaCustard/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -349,6 +350,7 @@ export default function BlogPage() {
                 ))}
               </select>
             </div>
+          </div>
           </div>
         </div>
 
