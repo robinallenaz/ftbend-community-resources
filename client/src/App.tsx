@@ -18,6 +18,7 @@ import BlogPage from './pages/BlogPage';
 import BlogPostPage from './pages/BlogPostPage';
 import EventsPage from './pages/EventsPage';
 import HomePage from './pages/HomePage';
+import NewsletterPage from './pages/NewsletterPage';
 import NotFoundPage from './pages/NotFoundPage';
 import ResourcesPage from './pages/ResourcesPage';
 import SubmitResourcePage from './pages/SubmitResourcePage';
@@ -50,6 +51,7 @@ export default function App() {
         <Route path="/blog" element={<BlogPage />} />
         <Route path="/blog/:slug" element={<BlogPostPage />} />
         <Route path="/about" element={<AboutPage />} />
+        <Route path="/newsletter" element={<NewsletterPage />} />
         <Route path="/submit" element={<SubmitResourcePage />} />
         <Route path="/submit-blog-contribution" element={<SubmitBlogPostPage />} />
         <Route path="*" element={<NotFoundPage />} />

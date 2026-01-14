@@ -19,7 +19,7 @@ export default function NewsletterPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Failed');
       setStatus('success');
-      setMessage("You're subscribed! Check your inbox for updates.");
+      setMessage("You're subscribed! Check your inbox for a welcome email (it may go to your spam folder - mark us 'not spam' to ensure delivery).");
       setEmail('');
     } catch (e: any) {
       setStatus('error');
@@ -65,6 +65,10 @@ export default function NewsletterPage() {
             {message}
           </div>
         ) : null}
+
+        <div className="text-sm text-vanillaCustard/70">
+          <p>You can unsubscribe at any time - every email includes an unsubscribe link.</p>
+        </div>
       </section>
     </main>
   );

@@ -45,13 +45,28 @@ export default function BlogPage() {
   const postsPerPage = 12;
 
   useEffect(() => {
-    fetchPosts();
+    // Only fetch posts if not the initial load
+    if (posts.length > 0) {
+      const scrollY = window.scrollY;
+      fetchPosts().then(() => {
+        // Restore scroll position after data loads
+        setTimeout(() => {
+          window.scrollTo(0, scrollY);
+        }, 100);
+      });
+    } else {
+      fetchPosts();
+    }
     // Load liked posts from localStorage
     const savedLikedPosts = localStorage.getItem('likedBlogPosts');
     if (savedLikedPosts) {
       setLikedPosts(new Set(JSON.parse(savedLikedPosts)));
     }
   }, [currentPage, selectedCategory, selectedTag, searchQuery, sortBy]);
+
+  async function handlePageChange(newPage: number) {
+    setCurrentPage(newPage);
+  }
 
   async function fetchPosts() {
     try {
@@ -267,15 +282,15 @@ export default function BlogPage() {
               </div>
             </div>
           )}
-
+</div>
         </div>
 
         {/* Search and Filters Section */}
-        <div className="sticky top-0 z-40 bg-pitchBlack/95 backdrop-blur-sm border-b border-vanillaCustard/10 pb-6 mb-8">
-          <div className="space-y-4">
-            {/* Search */}
-            <div className="relative">
-              <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-vanillaCustard/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="sticky top-16 z-30 bg-pitchBlack/95 backdrop-blur-sm border-b border-vanillaCustard/10">
+          <div className="py-2">
+            {/* Search - Always Visible */}
+            <div className="relative mb-2">
+              <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-vanillaCustard/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <input
@@ -283,65 +298,56 @@ export default function BlogPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search blog posts..."
-                className="w-full rounded-2xl border border-vanillaCustard/20 bg-graphite pl-12 pr-4 py-3 text-vanillaCustard placeholder-vanillaCustard/50 focus:border-paleAmber focus:outline-none focus:ring-2 focus:ring-paleAmber/50 transition-all"
+                className="w-full rounded-xl border border-vanillaCustard/20 bg-graphite pl-10 pr-4 py-2 text-sm text-vanillaCustard placeholder-vanillaCustard/50 focus:border-paleAmber focus:outline-none focus:ring-1 focus:ring-paleAmber/50 transition-all"
               />
             </div>
 
-            {/* Filters */}
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-semibold text-vanillaCustard/80">Sort:</label>
-                <select
-                  value={sortBy}
-                  onChange={(e) => {
-                    setSortBy(e.target.value as 'recent' | 'popular' | 'trending');
-                    setCurrentPage(1);
-                  }}
-                  className="rounded-xl border border-vanillaCustard/20 bg-graphite px-3 py-2 text-vanillaCustard focus:border-paleAmber focus:outline-none focus:ring-2 focus:ring-paleAmber/50 transition-all"
-                >
-                  <option value="recent">Most Recent</option>
-                  <option value="popular">Most Popular</option>
-                  <option value="trending">Trending</option>
-                </select>
-              </div>
+            {/* Filters - Ultra Compact Single Row */}
+            <div className="flex items-center gap-1 text-xs">
+              <select
+                value={sortBy}
+                onChange={(e) => {
+                  setSortBy(e.target.value as 'recent' | 'popular' | 'trending');
+                  setCurrentPage(1);
+                }}
+                className="rounded-md border border-vanillaCustard/20 bg-graphite px-2 py-1 text-vanillaCustard focus:border-paleAmber focus:outline-none focus:ring-1 focus:ring-paleAmber/50 transition-all"
+              >
+                <option value="recent">Recent</option>
+                <option value="popular">Popular</option>
+                <option value="trending">Trending</option>
+              </select>
 
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-semibold text-vanillaCustard/80">Category:</label>
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => {
-                    setSelectedCategory(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                  className="rounded-xl border border-vanillaCustard/20 bg-graphite px-3 py-2 text-vanillaCustard focus:border-paleAmber focus:outline-none focus:ring-2 focus:ring-paleAmber/50 transition-all"
-                >
-                  <option value="">All Categories</option>
-                  {getAllCategories().map(category => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <select
+                value={selectedCategory}
+                onChange={(e) => {
+                  setSelectedCategory(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="rounded-md border border-vanillaCustard/20 bg-graphite px-2 py-1 text-vanillaCustard focus:border-paleAmber focus:outline-none focus:ring-1 focus:ring-paleAmber/50 transition-all"
+              >
+                <option value="">Categories</option>
+                {getAllCategories().map(category => (
+                  <option key={category} value={category}>
+                    {category.length > 10 ? category.substring(0, 10) + '...' : category}
+                  </option>
+                ))}
+              </select>
 
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-semibold text-vanillaCustard/80">Tag:</label>
-                <select
-                  value={selectedTag}
-                  onChange={(e) => {
-                    setSelectedTag(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                  className="rounded-xl border border-vanillaCustard/20 bg-graphite px-3 py-2 text-vanillaCustard focus:border-paleAmber focus:outline-none focus:ring-2 focus:ring-paleAmber/50 transition-all"
-                >
-                  <option value="">All Tags</option>
-                  {getAllTags().map(tag => (
-                    <option key={tag} value={tag}>
-                      #{tag}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <select
+                value={selectedTag}
+                onChange={(e) => {
+                  setSelectedTag(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="rounded-md border border-vanillaCustard/20 bg-graphite px-2 py-1 text-vanillaCustard focus:border-paleAmber focus:outline-none focus:ring-1 focus:ring-paleAmber/50 transition-all"
+              >
+                <option value="">All Tags</option>
+                {getAllTags().map(tag => (
+                  <option key={tag} value={tag}>
+                    #{tag.length > 8 ? tag.substring(0, 8) + '...' : tag}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
@@ -390,15 +396,6 @@ export default function BlogPage() {
                 <p className="text-vanillaCustard/70 mb-4">
                   Check back soon for community stories and insights!
                 </p>
-                <Link
-                  to="/submit-blog-contribution"
-                  className="inline-flex items-center gap-2 rounded-xl bg-powderBlush px-4 py-2 text-base font-bold text-pitchBlack hover:brightness-95 transition"
-                >
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                  Share Your Story
-                </Link>
               </div>
             ) : (
               <>
@@ -478,7 +475,7 @@ export default function BlogPage() {
                 {totalPages > 1 && (
                   <div className="flex justify-center items-center gap-4 mt-12">
                     <button
-                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
                       disabled={currentPage === 1}
                       className="rounded-xl border border-vanillaCustard/20 bg-graphite px-4 py-2 text-vanillaCustard hover:border-paleAmber disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                     >
@@ -489,7 +486,7 @@ export default function BlogPage() {
                       {Array.from({ length: totalPages }, (_, index) => (
                         <button
                           key={index + 1}
-                          onClick={() => setCurrentPage(index + 1)}
+                          onClick={() => handlePageChange(index + 1)}
                           className={`rounded-lg px-3 py-2 text-sm font-medium transition-all ${
                             currentPage === index + 1
                               ? 'bg-powderBlush text-pitchBlack'
@@ -502,7 +499,7 @@ export default function BlogPage() {
                     </div>
 
                     <button
-                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
                       disabled={currentPage === totalPages}
                       className="rounded-xl border border-vanillaCustard/20 bg-graphite px-4 py-2 text-vanillaCustard hover:border-paleAmber disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                     >
@@ -536,7 +533,6 @@ export default function BlogPage() {
           </div>
         </div>
 
-        </div>
       </div>
     </div>
   );

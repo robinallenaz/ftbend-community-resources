@@ -23,7 +23,7 @@ export default function Header() {
   const location = useLocation();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-vanillaCustard/15 bg-graphite/85 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-vanillaCustard/15 bg-graphite/85 backdrop-blur">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3 md:px-6">
         <button
           type="button"
@@ -57,10 +57,10 @@ export default function Header() {
           <button
             type="button"
             className="rounded-xl bg-powderBlush px-3 py-2 text-base font-bold text-pitchBlack shadow-soft transition hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-2 focus:ring-offset-graphite"
-            onClick={() => navigate(location.pathname === '/resources' ? '/' : '/resources')}
-            aria-label={location.pathname === '/resources' ? 'Go to homepage' : 'Search resources'}
+            onClick={() => navigate('/newsletter')}
+            aria-label="Subscribe to newsletter"
           >
-            Search
+            Newsletter
           </button>
         </div>
       </div>

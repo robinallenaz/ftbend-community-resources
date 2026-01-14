@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import ResourceExplorer from '../components/ResourceExplorer';
 import LocationButton from '../components/LocationButton';
 import LocationInfo from '../components/LocationInfo';
@@ -53,61 +53,12 @@ function addResourcesStructuredData() {
 }
 
 export default function ResourcesPage() {
-  const [showShareMenu, setShowShareMenu] = useState(false);
   const [userLocation, setUserLocation] = useState<Coordinates | null>(null);
-  const shareButtonRef = useRef<HTMLButtonElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
 
   // Add structured data when component mounts
   useEffect(() => {
     addResourcesStructuredData();
   }, []);
-
-  const shareUrl = (platform: string) => {
-    const url = window.location.href;
-    const title = 'Fort Bend County LGBTQIA+ Resources';
-    const description = 'Search LGBTQIA+ resources by location, type, and audience. Find support groups, healthcare providers, and more.';
-
-    const encodedUrl = encodeURIComponent(url);
-    const encodedTitle = encodeURIComponent(title);
-    const encodedDesc = encodeURIComponent(description);
-
-    switch (platform) {
-      case 'facebook':
-        return `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
-      case 'email':
-        return `mailto:?subject=${encodedTitle}&body=${encodedDesc}%0A%0A${encodedUrl}`;
-      default:
-        return url;
-    }
-  };
-
-  // Close menu when clicking outside or pressing Escape
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node) && 
-          shareButtonRef.current && !shareButtonRef.current.contains(event.target as Node)) {
-        setShowShareMenu(false);
-      }
-    }
-
-    function handleEscape(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        setShowShareMenu(false);
-        shareButtonRef.current?.focus();
-      }
-    }
-
-    if (showShareMenu) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('keydown', handleEscape);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [showShareMenu]);
 
   const handleLocationFound = (location: Coordinates) => {
     setUserLocation(location);
@@ -126,43 +77,6 @@ export default function ResourcesPage() {
           </div>
           <div className="flex flex-col items-end gap-3">
             {ENABLE_LOCATION_FEATURES && <LocationButton onLocationFound={handleLocationFound} />}
-            <div className="relative">
-              <button
-                ref={shareButtonRef}
-                className="rounded-xl border border-vanillaCustard/20 bg-graphite px-3 py-2 text-sm font-extrabold text-vanillaCustard shadow-soft transition hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-2 focus:ring-offset-graphite"
-                onClick={() => setShowShareMenu(!showShareMenu)}
-                aria-expanded={showShareMenu}
-                aria-haspopup="true"
-              >
-                Share Resources
-              </button>
-              {showShareMenu && (
-                <div 
-                  ref={menuRef}
-                  className="absolute right-0 top-full mt-2 w-48 rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-2 shadow-soft z-50"
-                  role="menu"
-                >
-                  <div className="grid gap-1">
-                    <a
-                      href={shareUrl('facebook')}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block rounded-xl px-3 py-2 text-sm text-vanillaCustard hover:bg-pitchBlack/70 transition focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-1 focus:ring-offset-pitchBlack"
-                      role="menuitem"
-                    >
-                      Facebook
-                    </a>
-                    <a
-                      href={shareUrl('email')}
-                      className="block rounded-xl px-3 py-2 text-sm text-vanillaCustard hover:bg-pitchBlack/70 transition focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-1 focus:ring-offset-pitchBlack"
-                      role="menuitem"
-                    >
-                      Email
-                    </a>
-                  </div>
-                </div>
-              )}
-            </div>
           </div>
         </div>
       </header>

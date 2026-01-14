@@ -67,6 +67,7 @@ export default function ResourceExplorer(args: { initialQuery?: string; userLoca
 
         const params = new URLSearchParams();
         if (q) params.set('q', q);
+        params.set('limit', '1000'); // Get all resources
 
         const locations = Array.from(selectedLocations);
         const types = Array.from(selectedTypes);
@@ -84,6 +85,7 @@ export default function ResourceExplorer(args: { initialQuery?: string; userLoca
 
         const json: unknown = await res.json();
         const rawItems = (json as { items?: unknown[] }).items;
+        
         if (!Array.isArray(rawItems)) {
           throw new Error('Unexpected response from server');
         }
@@ -177,16 +179,16 @@ export default function ResourceExplorer(args: { initialQuery?: string; userLoca
   }, [query, selectedLocations, selectedTypes, selectedAudiences]);
 
   const filtered = useMemo(() => {
-  let filteredItems = items || [];
-  
-  // Apply location-based filtering if user location is available
-  if (userLocation) {
-    filteredItems = filterResourcesByDistance(filteredItems, userLocation, 50); // 50 miles radius
-  }
-  
-  // Sort by name
-  return filteredItems.sort((a, b) => a.name.localeCompare(b.name));
-}, [items, userLocation]);
+    let filteredItems = items || [];
+    
+    // Apply location-based filtering if user location is available
+    if (userLocation) {
+      filteredItems = filterResourcesByDistance(filteredItems, userLocation, 50); // 50 miles radius
+    }
+    
+    // Sort by name
+    return filteredItems.sort((a, b) => a.name.localeCompare(b.name));
+  }, [items, userLocation]);
 
   const activeFilters = useMemo(() => {
     return {
@@ -241,8 +243,7 @@ export default function ResourceExplorer(args: { initialQuery?: string; userLoca
 
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="text-base text-vanillaCustard/85" aria-live="polite">
-              Showing <span className="font-extrabold text-vanillaCustard">{filtered.length}</span> result
-              {filtered.length === 1 ? '' : 's'}
+              <>Showing <span className="font-extrabold text-vanillaCustard">{filtered.length}</span> result{filtered.length === 1 ? '' : 's'}</>
             </div>
             <button
               type="button"
@@ -320,10 +321,16 @@ export default function ResourceExplorer(args: { initialQuery?: string; userLoca
         </div>
 
         <section className="grid gap-4 lg:col-span-2" aria-label="Search results">
-          {filtered.length === 0 ? (
+          {filtered.length === 0 && !isLoading ? (
             <div className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-6 text-base text-vanillaCustard/90">
               <div className="text-lg font-extrabold text-vanillaCustard">No matches</div>
               <div className="mt-2">Try a shorter search, or clear some filters.</div>
+            </div>
+          ) : null}
+
+          {isLoading ? (
+            <div className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-6 text-base text-vanillaCustard/90">
+              <div className="text-lg font-extrabold text-vanillaCustard">Loading resources...</div>
             </div>
           ) : null}
 

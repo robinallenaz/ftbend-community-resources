@@ -9,6 +9,8 @@ type EventDoc = {
   schedule: string;
   url: string;
   locationHint: string;
+  instagramPost?: string;
+  facebookEvent?: string;
   status: 'active' | 'archived';
 };
 
@@ -25,6 +27,8 @@ export default function AdminEventEditorPage() {
   const [schedule, setSchedule] = useState('');
   const [url, setUrl] = useState('');
   const [locationHint, setLocationHint] = useState('');
+  const [instagramPost, setInstagramPost] = useState('');
+  const [facebookEvent, setFacebookEvent] = useState('');
   const [status, setStatus] = useState<'active' | 'archived'>('active');
   const [error, setError] = useState('');
 
@@ -40,6 +44,8 @@ export default function AdminEventEditorPage() {
         setSchedule(item.schedule);
         setUrl(item.url);
         setLocationHint(item.locationHint);
+        setInstagramPost(item.instagramPost || '');
+        setFacebookEvent(item.facebookEvent || '');
         setStatus(item.status);
       }
     } catch {
@@ -61,7 +67,9 @@ export default function AdminEventEditorPage() {
       name,
       schedule,
       url,
-      locationHint
+      locationHint,
+      instagramPost,
+      facebookEvent
     };
 
     try {
@@ -158,6 +166,28 @@ export default function AdminEventEditorPage() {
             onChange={(e) => setUrl(e.target.value)}
             required
             inputMode="url"
+            className="w-full rounded-2xl border border-vanillaCustard/20 bg-graphite px-4 py-3 text-lg font-semibold text-vanillaCustard"
+          />
+        </label>
+
+        <label className="grid gap-2">
+          <span className="text-base font-bold text-vanillaCustard">Instagram Post URL (optional)</span>
+          <input
+            value={instagramPost}
+            onChange={(e) => setInstagramPost(e.target.value)}
+            inputMode="url"
+            placeholder="https://www.instagram.com/p/..."
+            className="w-full rounded-2xl border border-vanillaCustard/20 bg-graphite px-4 py-3 text-lg font-semibold text-vanillaCustard"
+          />
+        </label>
+
+        <label className="grid gap-2">
+          <span className="text-base font-bold text-vanillaCustard">Facebook Event URL (optional)</span>
+          <input
+            value={facebookEvent}
+            onChange={(e) => setFacebookEvent(e.target.value)}
+            inputMode="url"
+            placeholder="https://www.facebook.com/events/..."
             className="w-full rounded-2xl border border-vanillaCustard/20 bg-graphite px-4 py-3 text-lg font-semibold text-vanillaCustard"
           />
         </label>

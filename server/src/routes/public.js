@@ -53,6 +53,11 @@ router.get('/resources', async (req, res, next) => {
     const locations = normalizeList(req.query.locations);
     const types = normalizeList(req.query.types);
     const audiences = normalizeList(req.query.audiences);
+    
+    // Pagination parameters
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 12; // 12 resources per page
+    const skip = (page - 1) * limit;
 
     const filter = { status: 'active' };
     if (locations.length) filter.locations = { $in: locations };
@@ -64,14 +69,40 @@ router.get('/resources', async (req, res, next) => {
 
       const items = await Resource.find(filter, { score: { $meta: 'textScore' } })
         .sort({ score: { $meta: 'textScore' }, name: 1 })
-        .limit(200)
+        .skip(skip)
+        .limit(limit)
         .lean();
 
-      return res.json({ items });
+      const total = await Resource.countDocuments(filter);
+
+      return res.json({ 
+        items,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      });
     }
 
-    const items = await Resource.find(filter).sort({ name: 1 }).limit(200).lean();
-    return res.json({ items });
+    const items = await Resource.find(filter)
+      .sort({ name: 1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+    
+    const total = await Resource.countDocuments(filter);
+    
+    return res.json({ 
+      items,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    });
   } catch (e) {
     next(e);
   }
