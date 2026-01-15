@@ -250,7 +250,7 @@ router.post('/blog-submissions', async (req, res, next) => {
     const input = validate(
       z.object({
         title: z.string().min(2).max(200),
-        content: z.string().min(50).max(10000),
+        content: z.string().min(1500).max(10000),
         authorName: z.string().max(100).optional().default('Anonymous'),
         authorEmail: z.string().max(255).optional().default('').refine((val) => {
           if (!val || val === '') return true; // Allow empty string
@@ -258,6 +258,9 @@ router.post('/blog-submissions', async (req, res, next) => {
         }, { message: 'Invalid email format' }),
         categories: z.array(z.string().max(50)).optional().default([]),
         tags: z.array(z.string().max(30)).optional().default([]),
+        excerpt: z.string().max(500).optional().default(''),
+        metaDescription: z.string().max(160).optional().default(''),
+        featuredImage: z.string().max(500).optional().default(''),
         submissionConsent: z.boolean().refine(val => val === true, { message: 'Submission consent is required' }),
         privacyConsent: z.boolean().refine(val => val === true, { message: 'Privacy consent is required' })
       }),
@@ -280,6 +283,9 @@ router.post('/blog-submissions', async (req, res, next) => {
       authorEmail: input.authorEmail,
       categories: input.categories,
       tags: input.tags,
+      excerpt: input.excerpt,
+      metaDescription: input.metaDescription,
+      featuredImage: input.featuredImage,
       submissionConsent: input.submissionConsent,
       privacyConsent: input.privacyConsent,
       status: 'pending'

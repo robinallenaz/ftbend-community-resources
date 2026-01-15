@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { marked } from 'marked';
 
 // Configure marked for better markdown rendering
@@ -23,9 +23,198 @@ export default function SubmitBlogPostPage() {
   const [privacyConsent, setPrivacyConsent] = useState(false);
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [showDraftRestored, setShowDraftRestored] = useState(false);
+  const [showMarkdownGuide, setShowMarkdownGuide] = useState(false);
+  const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const [history, setHistory] = useState<string[]>(['']);
+  const [historyIndex, setHistoryIndex] = useState(0);
 
   // Preview markdown
   const previewHtml = marked(content);
+
+  // Word counter utility
+  function getWordCount(text: string) {
+    return text.trim().split(/\s+/).filter(word => word.length > 0).length;
+  }
+
+  function getCharacterCount(text: string) {
+    return text.length;
+  }
+
+  function getReadingTime(text: string) {
+    const wordsPerMinute = 200;
+    const words = getWordCount(text);
+    
+    // For very short content, show "less than 1 min read"
+    if (words < 50) {
+      return '< 1';
+    }
+    
+    // For normal content, round up to nearest minute
+    return Math.ceil(words / wordsPerMinute);
+  }
+
+  // Auto-save functionality
+  function saveDraft() {
+    const draft = {
+      title,
+      content,
+      authorName,
+      authorEmail,
+      categories,
+      tags,
+      excerpt,
+      featuredImage,
+      imageRightsConfirmation,
+      submissionConsent,
+      privacyConsent,
+      savedAt: new Date().toISOString()
+    };
+    localStorage.setItem('blogPostDraft', JSON.stringify(draft));
+    setLastSaved(new Date());
+  }
+
+  function loadDraft() {
+    const savedDraft = localStorage.getItem('blogPostDraft');
+    if (savedDraft) {
+      try {
+        const draft = JSON.parse(savedDraft);
+        const savedTime = new Date(draft.savedAt);
+        const hoursAgo = (Date.now() - savedTime.getTime()) / (1000 * 60 * 60);
+        
+        // Only restore if draft is less than 24 hours old
+        if (hoursAgo < 24) {
+          setTitle(draft.title || '');
+          setContent(draft.content || '');
+          setAuthorName(draft.authorName || '');
+          setAuthorEmail(draft.authorEmail || '');
+          setCategories(draft.categories || '');
+          setTags(draft.tags || '');
+          setExcerpt(draft.excerpt || '');
+          setFeaturedImage(draft.featuredImage || '');
+          setImageRightsConfirmation(draft.imageRightsConfirmation || false);
+          setSubmissionConsent(draft.submissionConsent || false);
+          setPrivacyConsent(draft.privacyConsent || false);
+          setLastSaved(savedTime);
+          setShowDraftRestored(true);
+          setTimeout(() => setShowDraftRestored(false), 5000);
+        }
+      } catch (error) {
+        console.error('Failed to load draft:', error);
+      }
+    }
+  }
+
+  function clearDraft() {
+    localStorage.removeItem('blogPostDraft');
+    setLastSaved(null);
+  }
+
+  // Undo/Redo functionality
+  function addToHistory(newContent: string) {
+    const newHistory = history.slice(0, historyIndex + 1);
+    newHistory.push(newContent);
+    setHistory(newHistory);
+    setHistoryIndex(newHistory.length - 1);
+  }
+
+  function undo() {
+    if (historyIndex > 0) {
+      const newIndex = historyIndex - 1;
+      setHistoryIndex(newIndex);
+      setContent(history[newIndex]);
+      
+      // Restore cursor position
+      setTimeout(() => {
+        const textarea = contentTextareaRef.current;
+        if (textarea) {
+          textarea.focus();
+          const textLength = history[newIndex].length;
+          textarea.setSelectionRange(textLength, textLength);
+        }
+      }, 0);
+    }
+  }
+
+  function redo() {
+    if (historyIndex < history.length - 1) {
+      const newIndex = historyIndex + 1;
+      setHistoryIndex(newIndex);
+      setContent(history[newIndex]);
+      
+      // Restore cursor position
+      setTimeout(() => {
+        const textarea = contentTextareaRef.current;
+        if (textarea) {
+          textarea.focus();
+          const textLength = history[newIndex].length;
+          textarea.setSelectionRange(textLength, textLength);
+        }
+      }, 0);
+    }
+  }
+
+  // Update setContent to track history
+  const setContentWithHistory = (newContent: string) => {
+    setContent(newContent);
+    addToHistory(newContent);
+  };
+
+  // Keyboard shortcuts functionality
+  function insertMarkdown(before: string, after: string = '') {
+    const textarea = contentTextareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = content.substring(start, end);
+    const newText = before + selectedText + after;
+    
+    // Update content
+    const newContent = content.substring(0, start) + newText + content.substring(end);
+    setContentWithHistory(newContent);
+    
+    // Restore cursor position
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + before.length, start + before.length + selectedText.length);
+    }, 0);
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.ctrlKey || e.metaKey) {
+      switch (e.key) {
+        case 'z':
+          e.preventDefault();
+          undo();
+          break;
+        case 'y':
+          e.preventDefault();
+          redo();
+          break;
+        case 'b':
+          e.preventDefault();
+          insertMarkdown('**', '**');
+          break;
+        case 'i':
+          e.preventDefault();
+          insertMarkdown('*', '*');
+          break;
+        case 'k':
+          e.preventDefault();
+          const url = prompt('Enter URL:');
+          if (url) {
+            insertMarkdown('[', `](${url})`);
+          }
+          break;
+        case 's':
+          e.preventDefault();
+          saveDraft();
+          break;
+      }
+    }
+  }
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -139,6 +328,29 @@ export default function SubmitBlogPostPage() {
     }
   }
 
+  // Load draft on component mount
+  useEffect(() => {
+    loadDraft();
+  }, []);
+
+  // Auto-save every 10 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (title || content || authorName || authorEmail || categories || tags || excerpt || featuredImage) {
+        saveDraft();
+      }
+    }, 10000); // 10 seconds
+
+    return () => clearInterval(interval);
+  }, [title, content, authorName, authorEmail, categories, tags, excerpt, featuredImage, imageRightsConfirmation, submissionConsent, privacyConsent]);
+
+  // Clear draft on successful submission
+  useEffect(() => {
+    if (status === 'sent') {
+      clearDraft();
+    }
+  }, [status]);
+
   if (status === 'sent') {
     return (
       <div className="max-w-4xl mx-auto p-6">
@@ -224,7 +436,7 @@ export default function SubmitBlogPostPage() {
                   value={categories}
                   onChange={(e) => setCategories(e.target.value)}
                   className="w-full rounded-2xl border border-vanillaCustard/20 bg-graphite px-4 py-3 text-lg font-semibold text-vanillaCustard"
-                  placeholder="Personal Story, Community News, Resources (comma separated)"
+                  placeholder="Personal Story, Community News, Resources"
                 />
               </label>
             </div>
@@ -236,7 +448,7 @@ export default function SubmitBlogPostPage() {
                   value={tags}
                   onChange={(e) => setTags(e.target.value)}
                   className="w-full rounded-2xl border border-vanillaCustard/20 bg-graphite px-4 py-3 text-lg font-semibold text-vanillaCustard"
-                  placeholder="mental-health, youth, support, local (comma separated)"
+                  placeholder="mental-health, youth, pride"
                 />
               </label>
             </div>
@@ -259,7 +471,7 @@ export default function SubmitBlogPostPage() {
               <label className="grid gap-2">
                 <span className="text-base font-bold text-vanillaCustard">Featured Image</span>
                 <p className="text-sm text-vanillaCustard/70">
-                  📸 Share your own photos or use free images from Unsplash, Pexels, or Pixabay
+                  Share your own photos or use free images from Unsplash, Pexels, or Pixabay
                 </p>
                 
                 <div className="space-y-3">
@@ -337,7 +549,7 @@ export default function SubmitBlogPostPage() {
                   <div className="text-sm text-vanillaCustard/80">
                     <span className="font-medium">Image Rights Confirmation</span>
                     <p className="text-xs mt-1">
-                      I confirm this is my own photo or a royalty-free image that I have permission to use. I understand copyrighted images are not allowed.
+                      I confirm this is my own photo or a royalty-free image that I have permission to use.
                     </p>
                   </div>
                 </label>
@@ -347,11 +559,129 @@ export default function SubmitBlogPostPage() {
 
           {/* Content & Preview Column */}
           <div className="space-y-4">
+            {showDraftRestored && (
+              <div className="rounded-xl bg-green-600/20 border border-green-500/30 p-4 text-green-200 text-sm font-medium">
+                ✅ Draft restored from previous session - Your work has been recovered!
+              </div>
+            )}
+            
             <div className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-6">
               <label className="grid gap-2">
-                <span className="text-base font-bold text-vanillaCustard">Content *</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-base font-bold text-vanillaCustard">Content *</span>
+                  {lastSaved && (
+                    <div className="text-sm text-green-400 flex items-center gap-2 font-medium">
+                      <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                      </svg>
+                      Draft saved {lastSaved.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                    </div>
+                  )}
+                </div>
                 <div className="text-sm text-vanillaCustard/85">
-                  <strong>Quick Markdown Guide:</strong> <code className="rounded border border-vanillaCustard/20 bg-graphite px-1 py-0.5 text-xs"># Header</code> | <code className="rounded border border-vanillaCustard/20 bg-graphite px-1 py-0.5 text-xs">## Header</code> | <code className="rounded border border-vanillaCustard/20 bg-graphite px-1 py-0.5 text-xs">**<strong>bold</strong>**</code> | <code className="rounded border border-vanillaCustard/20 bg-graphite px-1 py-0.5 text-xs">*<em>italic</em>*</code> | <code className="rounded border border-vanillaCustard/20 bg-graphite px-1 py-0.5 text-xs">[<a href="#" className="text-paleAmber underline">link text</a>](https://example.com)</code> | <code className="rounded border border-vanillaCustard/20 bg-graphite px-1 py-0.5 text-xs">![<em>alt</em>](image-url)</code>
+                  <button
+                    type="button"
+                    onClick={() => setShowMarkdownGuide(!showMarkdownGuide)}
+                    className="inline-flex items-center gap-2 text-paleAmber hover:text-paleAmber/80 transition-colors"
+                  >
+                    <svg 
+                      className={`h-4 w-4 transition-transform ${showMarkdownGuide ? 'rotate-90' : ''}`} 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                    <strong>Markdown Guide & Shortcuts</strong>
+                  </button>
+                  
+                  {showMarkdownGuide && (
+                    <div className="mt-4 p-4 rounded-xl bg-graphite border border-vanillaCustard/15 space-y-4">
+                      {/* Markdown Syntax Section */}
+                      <div>
+                        <h4 className="text-sm font-semibold text-vanillaCustard mb-3 flex items-center gap-2">
+                          <svg className="h-4 w-4 text-paleAmber" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                          Markdown Syntax
+                        </h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                          <div className="flex items-center gap-2">
+                            <code className="rounded bg-pitchBlack border border-vanillaCustard/20 px-2 py-1 font-mono"># Header</code>
+                            <span className="text-vanillaCustard/60">→ Heading</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <code className="rounded bg-pitchBlack border border-vanillaCustard/20 px-2 py-1 font-mono">**bold**</code>
+                            <span className="text-vanillaCustard/60">→ <strong>bold</strong></span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <code className="rounded bg-pitchBlack border border-vanillaCustard/20 px-2 py-1 font-mono">*italic*</code>
+                            <span className="text-vanillaCustard/60">→ <em>italic</em></span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <code className="rounded bg-pitchBlack border border-vanillaCustard/20 px-2 py-1 font-mono">[text](url)</code>
+                            <span className="text-vanillaCustard/60">→ link</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <code className="rounded bg-pitchBlack border border-vanillaCustard/20 px-2 py-1 font-mono">- item</code>
+                            <span className="text-vanillaCustard/60">→ bullet</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <code className="rounded bg-pitchBlack border border-vanillaCustard/20 px-2 py-1 font-mono">![alt](url)</code>
+                            <span className="text-vanillaCustard/60">→ image</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Keyboard Shortcuts Section */}
+                      <div>
+                        <h4 className="text-sm font-semibold text-vanillaCustard mb-3 flex items-center gap-2">
+                          <svg className="h-4 w-4 text-paleAmber" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                          </svg>
+                          Keyboard Shortcuts
+                        </h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                          <div className="flex items-center gap-2">
+                            <kbd className="rounded bg-pitchBlack border border-vanillaCustard/30 px-2 py-1 font-mono text-paleAmber">Ctrl+Z</kbd>
+                            <span className="text-vanillaCustard/80">Undo</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <kbd className="rounded bg-pitchBlack border border-vanillaCustard/30 px-2 py-1 font-mono text-paleAmber">Ctrl+Y</kbd>
+                            <span className="text-vanillaCustard/80">Redo</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <kbd className="rounded bg-pitchBlack border border-vanillaCustard/30 px-2 py-1 font-mono text-paleAmber">Ctrl+B</kbd>
+                            <span className="text-vanillaCustard/80">Bold text</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <kbd className="rounded bg-pitchBlack border border-vanillaCustard/30 px-2 py-1 font-mono text-paleAmber">Ctrl+I</kbd>
+                            <span className="text-vanillaCustard/80">Italic text</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <kbd className="rounded bg-pitchBlack border border-vanillaCustard/30 px-2 py-1 font-mono text-paleAmber">Ctrl+K</kbd>
+                            <span className="text-vanillaCustard/80">Add link</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <kbd className="rounded bg-pitchBlack border border-vanillaCustard/30 px-2 py-1 font-mono text-paleAmber">Ctrl+S</kbd>
+                            <span className="text-vanillaCustard/80">Save draft</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Tips Section */}
+                      <div className="pt-2 border-t border-vanillaCustard/10">
+                        <div className="flex items-start gap-2 text-xs text-vanillaCustard/60">
+                          <svg className="h-4 w-4 text-paleAmber mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span>
+                            <strong>Pro tip:</strong> Keyboard shortcuts work even when the guide is collapsed!
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="text-sm">
                   <a
@@ -367,8 +697,10 @@ export default function SubmitBlogPostPage() {
                   </a>
                 </div>
                 <textarea
+                  ref={contentTextareaRef}
                   value={content}
-                  onChange={(e) => setContent(e.target.value)}
+                  onChange={(e) => setContentWithHistory(e.target.value)}
+                  onKeyDown={handleKeyDown}
                   required
                   rows={12}
                   maxLength={10000}
@@ -382,6 +714,23 @@ This is a paragraph with **bold** and *italic* text.
 - Bullet point 1
 - Bullet point 2"
                 />
+                
+                {/* Word Counter */}
+                <div className="mt-2 flex items-center justify-between text-xs text-vanillaCustard/70">
+                  <div className="flex items-center gap-4">
+                    <span className={getWordCount(content) < 300 ? 'text-red-400' : getWordCount(content) >= 300 && getWordCount(content) <= 2500 ? 'text-green-400' : 'text-yellow-400'}>
+                      {getWordCount(content)} words
+                    </span>
+                    <span>{getCharacterCount(content)}/10,000 characters</span>
+                    <span>{getReadingTime(content)} min read</span>
+                  </div>
+                  {getWordCount(content) < 300 && (
+                    <span className="text-red-400">Minimum 300 words recommended for better SEO</span>
+                  )}
+                  {getWordCount(content) >= 300 && getWordCount(content) <= 2500 && (
+                    <span className="text-green-400">✓ Optimal length for SEO</span>
+                  )}
+                </div>
               </label>
             </div>
 

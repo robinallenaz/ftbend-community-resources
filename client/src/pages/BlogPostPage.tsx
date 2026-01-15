@@ -8,6 +8,113 @@ marked.setOptions({
   gfm: true
 });
 
+// SEO Meta Tags Component
+function BlogPostSEO({ post }: { post: BlogPost }) {
+  useEffect(() => {
+    // Update document title
+    document.title = `${post.title} | Fort Bend County LGBTQIA+ Community Blog`;
+    
+    // Update or create meta description
+    let metaDesc = document.querySelector('meta[name="description"]') as HTMLMetaElement;
+    if (!metaDesc) {
+      metaDesc = document.createElement('meta');
+      metaDesc.name = 'description';
+      document.head.appendChild(metaDesc);
+    }
+    metaDesc.content = post.metaDescription || post.excerpt || `Read "${post.title}" - A story from the Fort Bend LGBTQIA+ community. ${post.excerpt || ''}`;
+    
+    // Update Open Graph tags
+    updateMetaTag('og:title', post.title);
+    updateMetaTag('og:description', post.metaDescription || post.excerpt || `Read "${post.title}" - A story from the Fort Bend LGBTQIA+ community.`);
+    updateMetaTag('og:url', `https://ftbend-lgbtqia-community.org/blog/${post.slug}`);
+    updateMetaTag('og:type', 'article');
+    if (post.featuredImage) {
+      updateMetaTag('og:image', post.featuredImage);
+      updateMetaTag('og:image:alt', post.title);
+    }
+    
+    // Update Twitter Card tags
+    updateMetaTag('twitter:title', post.title);
+    updateMetaTag('twitter:description', post.metaDescription || post.excerpt || `Read "${post.title}" - A story from the Fort Bend LGBTQIA+ community.`);
+    if (post.featuredImage) {
+      updateMetaTag('twitter:image', post.featuredImage);
+    }
+    
+    // Update canonical URL
+    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.rel = 'canonical';
+      document.head.appendChild(canonical);
+    }
+    canonical.href = `https://ftbend-lgbtqia-community.org/blog/${post.slug}`;
+    
+    // Add structured data for blog post
+    addStructuredData(post);
+    
+    return () => {
+      // Cleanup function to remove meta tags when component unmounts
+      const createdTags = ['meta[name="description"]', 'meta[property^="og:"]', 'meta[property^="twitter:"]', 'link[rel="canonical"]', 'script[type="application/ld+json"]'];
+      createdTags.forEach(selector => {
+        const elements = document.head.querySelectorAll(selector);
+        elements.forEach(el => el.remove());
+      });
+    };
+  }, [post]);
+  
+  return null;
+}
+
+function updateMetaTag(property: string, content: string) {
+  let tag = document.querySelector(`meta[property="${property}"], meta[name="${property}"]`) as HTMLMetaElement;
+  if (!tag) {
+    tag = document.createElement('meta');
+    if (property.startsWith('twitter:')) {
+      tag.name = property;
+    } else {
+      tag.setAttribute('property', property);
+    }
+    document.head.appendChild(tag);
+  }
+  tag.content = content;
+}
+
+function addStructuredData(post: BlogPost) {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": post.title,
+    "description": post.metaDescription || post.excerpt || '',
+    "image": post.featuredImage ? [post.featuredImage] : [],
+    "datePublished": post.publishedAt || post.createdAt,
+    "dateModified": post.publishedAt || post.createdAt,
+    "author": {
+      "@type": "Person",
+      "name": post.authorName
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Fort Bend County LGBTQIA+ Community",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://ftbend-lgbtqia-community.org/ftbend-lgbtqia-logo.jpg"
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": `https://ftbend-lgbtqia-community.org/blog/${post.slug}`
+    },
+    "keywords": [...post.categories, ...post.tags].join(', '),
+    "articleSection": post.categories.join(', ') || 'Community Stories',
+    "inLanguage": "en-US"
+  };
+  
+  const script = document.createElement('script');
+  script.type = 'application/ld+json';
+  script.textContent = JSON.stringify(structuredData);
+  document.head.appendChild(script);
+}
+
 interface BlogPost {
   _id: string;
   title: string;
@@ -198,6 +305,7 @@ export default function BlogPostPage() {
 
   return (
     <div className="min-h-screen bg-pitchBlack">
+      <BlogPostSEO post={post} />
       <div className="max-w-4xl mx-auto px-6 py-12">
         {/* Navigation */}
         <nav className="mb-8">

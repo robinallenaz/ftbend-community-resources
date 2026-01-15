@@ -1,6 +1,67 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
+// SEO Meta Tags Component
+function BlogPageSEO() {
+  useEffect(() => {
+    // Update document title
+    document.title = 'Community Blog | Fort Bend County LGBTQIA+ Community';
+    
+    // Update or create meta description
+    let metaDesc = document.querySelector('meta[name="description"]') as HTMLMetaElement;
+    if (!metaDesc) {
+      metaDesc = document.createElement('meta');
+      metaDesc.name = 'description';
+      document.head.appendChild(metaDesc);
+    }
+    metaDesc.content = 'Read stories, insights, and experiences from the Fort Bend LGBTQIA+ community. Personal narratives, community news, and resources shared by local voices.';
+    
+    // Update Open Graph tags
+    updateMetaTag('og:title', 'Community Blog | Fort Bend County LGBTQIA+ Community');
+    updateMetaTag('og:description', 'Read stories, insights, and experiences from the Fort Bend LGBTQIA+ community. Personal narratives, community news, and resources shared by local voices.');
+    updateMetaTag('og:url', 'https://ftbend-lgbtqia-community.org/blog');
+    updateMetaTag('og:type', 'website');
+    
+    // Update Twitter Card tags
+    updateMetaTag('twitter:title', 'Community Blog | Fort Bend County LGBTQIA+ Community');
+    updateMetaTag('twitter:description', 'Read stories, insights, and experiences from the Fort Bend LGBTQIA+ community.');
+    
+    // Update canonical URL
+    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.rel = 'canonical';
+      document.head.appendChild(canonical);
+    }
+    canonical.href = 'https://ftbend-lgbtqia-community.org/blog';
+    
+    return () => {
+      // Cleanup function to remove meta tags when component unmounts
+      const createdTags = ['meta[name="description"]', 'meta[property^="og:"]', 'meta[property^="twitter:"]', 'link[rel="canonical"]'];
+      createdTags.forEach(selector => {
+        const elements = document.head.querySelectorAll(selector);
+        elements.forEach(el => el.remove());
+      });
+    };
+  }, []);
+  
+  return null;
+}
+
+function updateMetaTag(property: string, content: string) {
+  let tag = document.querySelector(`meta[property="${property}"], meta[name="${property}"]`) as HTMLMetaElement;
+  if (!tag) {
+    tag = document.createElement('meta');
+    if (property.startsWith('twitter:')) {
+      tag.name = property;
+    } else {
+      tag.setAttribute('property', property);
+    }
+    document.head.appendChild(tag);
+  }
+  tag.content = content;
+}
+
 interface BlogPost {
   _id: string;
   title: string;
@@ -203,6 +264,7 @@ export default function BlogPage() {
 
   return (
     <div className="min-h-screen bg-pitchBlack">
+      <BlogPageSEO />
       <div className="max-w-6xl mx-auto px-6 py-12">
         {/* Header */}
         <header className="text-center mb-6">

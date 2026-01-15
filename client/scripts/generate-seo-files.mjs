@@ -30,6 +30,7 @@ const staticRoutes = [
   { path: '/', changefreq: 'weekly', priority: '1.0' },
   { path: '/resources', changefreq: 'weekly', priority: '0.9' },
   { path: '/events', changefreq: 'weekly', priority: '0.8' },
+  { path: '/blog', changefreq: 'daily', priority: '0.9' },
   { path: '/about', changefreq: 'monthly', priority: '0.6' },
   { path: '/submit', changefreq: 'monthly', priority: '0.6' }
 ];
@@ -40,9 +41,10 @@ async function generateDynamicRoutes() {
     // Try to fetch data from the API
     const baseUrl = process.env.API_URL || 'https://ftbend-community-resources.onrender.com';
     
-    const [resourcesRes, eventsRes] = await Promise.all([
+    const [resourcesRes, eventsRes, blogRes] = await Promise.all([
       fetch(`${baseUrl}/api/public/resources`),
-      fetch(`${baseUrl}/api/public/events`)
+      fetch(`${baseUrl}/api/public/events`),
+      fetch(`${baseUrl}/api/public/blog-posts`)
     ]);
 
     const dynamicRoutes = [];
@@ -68,6 +70,19 @@ async function generateDynamicRoutes() {
             path: `/events/${event._id}`,
             changefreq: 'weekly',
             priority: '0.7'
+          });
+        });
+      }
+    }
+
+    if (blogRes.ok) {
+      const blogData = await blogRes.json();
+      if (blogData.posts) {
+        blogData.posts.forEach(post => {
+          dynamicRoutes.push({
+            path: `/blog/${post.slug}`,
+            changefreq: 'weekly',
+            priority: '0.8'
           });
         });
       }
