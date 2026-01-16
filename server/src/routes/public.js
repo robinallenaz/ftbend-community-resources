@@ -309,16 +309,41 @@ router.post('/blog-submissions', async (req, res, next) => {
         }
 
         const base = String(settings.publicSiteUrl || '').replace(/\/+$/, '');
-        const adminUrl = `${base}/admin/blog-posts`;
+        const blogUrl = `${base}/blog`;
+        const adminUrl = `${base}/admin/blog-posts/${blogPost._id}`;
 
         const subject = `New blog post submission: ${blogPost.title}`;
-        const text = `A new blog post was submitted to the Fort Bend County LGBTQIA+ Community Resources website.\n\nTitle: ${blogPost.title}\nAuthor: ${blogPost.authorName}\n\nReview in admin: ${adminUrl}`;
+        const text = `A new blog post was submitted to the Fort Bend County LGBTQIA+ Community Resources website.\n\nTitle: ${blogPost.title}\nAuthor: ${blogPost.authorName}\nContent Preview:\n${blogPost.content.substring(0, 500)}...\n\nTo review and publish this submission, please log in to the admin dashboard: ${adminUrl}\n\nNote: You'll be taken directly to the blog post editor after logging in.\n\nPublic blog page: ${blogUrl}`;
         const html = `
-          <p>A new blog post was submitted to the Fort Bend County LGBTQIA+ Community Resources website.</p>
-          <p><strong>Title:</strong> ${blogPost.title}</p>
-          <p><strong>Author:</strong> ${blogPost.authorName}</p>
-          <p><strong>Content Preview:</strong> ${blogPost.content.substring(0, 200)}...</p>
-          <p><a href="${adminUrl}" target="_blank" rel="noreferrer">Review blog submissions</a></p>
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #333; margin-bottom: 20px;">New Blog Post Submission</h1>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <h2 style="color: #333; margin-top: 0;">Post Information</h2>
+              <p><strong>Title:</strong> ${blogPost.title}</p>
+              <p><strong>Author:</strong> ${blogPost.authorName}</p>
+              <p><strong>Status:</strong> Pending review</p>
+              
+              <div style="margin: 15px 0;">
+                <h3 style="color: #666; font-size: 14px; margin-bottom: 8px;">Content Preview:</h3>
+                <div style="background: white; padding: 15px; border-left: 4px solid #007bff; border-radius: 4px;">
+                  ${blogPost.content.substring(0, 500).replace(/\n/g, '<br>')}...
+                </div>
+              </div>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${adminUrl}" target="_blank" rel="noreferrer" style="display: inline-block; background: #007bff; color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">Review Blog Post</a>
+              <p style="margin-top: 10px; color: #666; font-size: 14px;">Log in to edit and publish this submission</p>
+              <p style="margin-top: 5px; color: #999; font-size: 12px; font-style: italic;">You'll go directly to the blog post editor</p>
+            </div>
+            
+            <div style="border-top: 1px solid #eee; padding-top: 20px; text-align: center;">
+              <p style="color: #999; font-size: 12px;">
+                <a href="${blogUrl}" target="_blank" rel="noreferrer" style="color: #007bff;">View Public Blog Page</a>
+              </p>
+            </div>
+          </div>
         `;
 
         await sendEmail({ to: recipients, subject, text, html });
