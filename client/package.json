@@ -10,7 +10,8 @@
     "build": "vite build && node ./scripts/generate-seo-files.mjs",
     "preview": "vite preview",
     "preview:ssr": "npm run build && node simple-ssr-server.js",
-    "sitemap": "node src/utils/generateSitemap.js"
+    "sitemap": "node src/utils/generateSitemap.js",
+    "generate-seo-files": "node scripts/generate-seo-files.mjs"
   },
   "dependencies": {
     "@tailwindcss/typography": "^0.5.15",

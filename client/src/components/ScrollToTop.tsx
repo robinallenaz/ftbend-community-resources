@@ -24,20 +24,57 @@ export default function ScrollToTop() {
   }, []);
 
   const scrollToSearch = () => {
-    const searchInput = document.getElementById('resource-search');
-    if (searchInput) {
-      searchInput.scrollIntoView({ 
-        behavior: 'smooth',
-        block: 'center' // Puts search bar in middle of viewport
-      });
-      // Optional: Focus the input for better UX
-      setTimeout(() => searchInput.focus(), 500);
+    // Check if we're on the blog submission page
+    if (pathname === '/submit' || pathname === '/submit-blog-contribution') {
+      const contentTextarea = document.getElementById('content');
+      if (contentTextarea) {
+        contentTextarea.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'center'
+        });
+        setTimeout(() => contentTextarea.focus(), 500);
+      }
+    } else if (pathname.startsWith('/blog')) {
+      // Handle blog pages - scroll to blog search
+      const searchInput = document.getElementById('search');
+      if (searchInput) {
+        searchInput.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'center'
+        });
+        setTimeout(() => searchInput.focus(), 500);
+      }
+    } else {
+      // Original behavior - scroll to resource search
+      const searchInput = document.getElementById('resource-search');
+      if (searchInput) {
+        searchInput.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'center'
+        });
+        setTimeout(() => searchInput.focus(), 500);
+      }
+    }
+  };
+
+  const getButtonLabel = () => {
+    // Debug: log the current pathname
+    console.log('ScrollToTop pathname:', pathname);
+    
+    if (pathname === '/submit' || pathname === '/submit-blog-contribution') {
+      return 'Scroll to Content';
+    } else if (pathname.startsWith('/blog')) {
+      return 'Back to Search';
+    } else {
+      return 'Back to Search';
     }
   };
 
   if (!isVisible) {
     return null;
   }
+
+  const buttonLabel = getButtonLabel();
 
   return (
     <button
@@ -55,13 +92,13 @@ export default function ScrollToTop() {
         border border-vanillaCustard/20
         backdrop-blur-sm
       "
-      aria-label="Back to Search"
+      aria-label={buttonLabel}
       style={{
         animation: 'fadeInSlideUp 0.4s ease-out'
       }}
     >
       {/* Text Label */}
-      <span className="sr-only">Back to Search</span>
+      <span className="sr-only">{buttonLabel}</span>
       
       {/* Arrow Icon */}
       <svg
@@ -78,7 +115,7 @@ export default function ScrollToTop() {
       
       {/* Visible text label for better accessibility */}
       <span className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs text-pitchBlack bg-vanillaCustard/90 px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-        Back to Search
+        {buttonLabel}
       </span>
       
       {/* Hover effect - subtle glow */}

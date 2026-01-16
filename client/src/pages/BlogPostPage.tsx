@@ -183,7 +183,16 @@ export default function BlogPostPage() {
 
   async function fetchPost(postSlug: string) {
     try {
-      const res = await fetch(`/api/public/blog-posts/${postSlug}`);
+      // Check if this is a preview request (from URL params)
+      const urlParams = new URLSearchParams(window.location.search);
+      const isPreview = urlParams.get('preview') !== null;
+      
+      let apiUrl = `/api/public/blog-posts/${postSlug}`;
+      if (isPreview) {
+        apiUrl += '/preview';
+      }
+      
+      const res = await fetch(apiUrl);
       if (!res.ok) {
         if (res.status === 404) {
           setError('Blog post not found');
@@ -195,9 +204,11 @@ export default function BlogPostPage() {
       const data = await res.json();
       setPost(data.post);
       
-      // Check if user has already liked this post
-      const likedPosts = getLikedPosts();
-      setIsLiked(likedPosts.includes(data.post._id));
+      // Check if user has already liked this post (only for published posts)
+      if (!data.isPreview) {
+        const likedPosts = getLikedPosts();
+        setIsLiked(likedPosts.includes(data.post._id));
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -277,6 +288,32 @@ export default function BlogPostPage() {
 
   const previewHtml = post ? marked(post.content) : '';
 
+  // Get button label based on current page
+  const getBackButtonLabel = () => {
+    // For blog post pages, always return "Back to Search"
+    return 'Back to Search';
+  };
+
+  // Scroll to search function
+  function scrollToSearch() {
+    // Navigate to blog page and scroll to search
+    window.location.href = '/blog#search';
+  }
+
+  // Add scroll to search on page load if hash is present
+  useEffect(() => {
+    if (window.location.hash === '#search') {
+      // Small delay to ensure page is loaded
+      setTimeout(() => {
+        const searchElement = document.getElementById('search') as HTMLInputElement;
+        if (searchElement) {
+          searchElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          searchElement.focus();
+        }
+      }, 100);
+    }
+  }, []);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-pitchBlack flex items-center justify-center">
@@ -293,10 +330,10 @@ export default function BlogPostPage() {
             {error || 'Blog post not found'}
           </div>
           <Link
-            to="/"
+            to="/blog#search"
             className="inline-block rounded-xl bg-powderBlush px-4 py-2 text-base font-bold text-pitchBlack hover:brightness-95 transition"
           >
-            Back to Home
+            {getBackButtonLabel()}
           </Link>
         </div>
       </div>
@@ -307,17 +344,37 @@ export default function BlogPostPage() {
     <div className="min-h-screen bg-pitchBlack">
       <BlogPostSEO post={post} />
       <div className="max-w-4xl mx-auto px-6 py-12">
+        {/* Preview Banner */}
+        {new URLSearchParams(window.location.search).get('preview') !== null && (
+          <div className="mb-6 rounded-2xl border border-paleAmber/30 bg-paleAmber/10 p-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-paleAmber/20">
+                <svg className="h-4 w-4 text-paleAmber" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-paleAmber">Preview Mode</h3>
+                <p className="text-sm text-vanillaCustard/80">
+                  This is a preview of your blog post. It's currently pending review and not yet published.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Navigation */}
         <nav className="mb-8">
-          <Link
-            to="/"
+          <button
+            onClick={scrollToSearch}
             className="inline-flex items-center gap-2 text-vanillaCustard/80 hover:text-vanillaCustard transition"
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            Back to Home
-          </Link>
+            {getBackButtonLabel()}
+          </button>
         </nav>
 
         {/* Article Header */}
@@ -510,13 +567,13 @@ export default function BlogPostPage() {
               Published by Fort Bend LGBTQIA+ Community Resources
             </p>
             <Link
-              to="/"
+              to="/blog#search"
               className="inline-flex items-center gap-2 text-paleAmber hover:text-vanillaCustard transition"
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
               </svg>
-              Back to Home
+              {getBackButtonLabel()}
             </Link>
           </div>
         </footer>

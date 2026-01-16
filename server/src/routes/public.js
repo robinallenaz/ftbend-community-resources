@@ -407,6 +407,25 @@ router.get('/blog-posts/:slug', async (req, res, next) => {
   }
 });
 
+// Preview pending blog post (simplified - no email verification)
+router.get('/blog-posts/:slug/preview', async (req, res, next) => {
+  try {
+    const post = await BlogPost.findOne({ 
+      slug: req.params.slug,
+      status: { $in: ['pending', 'published'] } // Allow both pending and published
+    }).lean();
+
+    if (!post) {
+      return res.status(404).json({ error: 'Blog post not found' });
+    }
+
+    // Don't increment view count for previews
+    res.json({ post, isPreview: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
 // Like/unlike a blog post
 router.post('/blog-posts/:id/like', async (req, res, next) => {
   try {

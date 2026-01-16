@@ -2,22 +2,33 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://ftbend-lgbtqia-community.org/</loc>
-    <lastmod>2026-01-08</lastmod>
+    <lastmod>2026-01-16</lastmod>
+    <changefreq>daily</changefreq>
   </url>
   <url>
     <loc>https://ftbend-lgbtqia-community.org/resources/</loc>
-    <lastmod>2026-01-07</lastmod>
+    <lastmod>2026-01-16</lastmod>
+    <changefreq>weekly</changefreq>
   </url>
   <url>
     <loc>https://ftbend-lgbtqia-community.org/events/</loc>
-    <lastmod>2026-01-06</lastmod>
+    <lastmod>2026-01-16</lastmod>
+    <changefreq>weekly</changefreq>
+  </url>
+  <url>
+    <loc>https://ftbend-lgbtqia-community.org/blog/</loc>
+    <lastmod>2026-01-16</lastmod>
+    <changefreq>weekly</changefreq>
   </url>
   <url>
     <loc>https://ftbend-lgbtqia-community.org/about/</loc>
-    <lastmod>2025-12-15</lastmod>
+    <lastmod>2026-01-16</lastmod>
+    <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://ftbend-lgbtqia-community.org/submit/</loc>
-    <lastmod>2025-11-20</lastmod>
+    <lastmod>2026-01-16</lastmod>
+    <changefreq>monthly</changefreq>
   </url>
+
 </urlset>
