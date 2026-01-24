@@ -1,11 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
-import { marked } from 'marked';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 
-// Configure marked for better markdown rendering
-marked.setOptions({
-  breaks: true,
-  gfm: true
-});
+const MarkdownProcessor = lazy(() => import('../components/MarkdownProcessor'));
 
 export default function SubmitBlogPostPage() {
   const [title, setTitle] = useState('');
@@ -35,8 +30,7 @@ export default function SubmitBlogPostPage() {
   const [history, setHistory] = useState<string[]>(['']);
   const [historyIndex, setHistoryIndex] = useState(0);
 
-  // Preview markdown
-  const previewHtml = marked(content);
+  const previewHtml = content;
 
   // Word counter utility
   function getWordCount(text: string) {
@@ -342,7 +336,7 @@ export default function SubmitBlogPostPage() {
       setImageRightsConfirmation(false);
       setSubmissionConsent(false);
       setPrivacyConsent(false);
-    } catch {
+    } catch (error) {
       setErrorMessage('Sorry—your submission could not be sent right now. Please try again later.');
       setStatus('error');
     }
@@ -685,6 +679,31 @@ export default function SubmitBlogPostPage() {
                         </div>
                       </div>
 
+                      {/* Extended Features Section */}
+                      <div>
+                        <h4 className="text-sm font-semibold text-vanillaCustard mb-3 flex items-center gap-2">
+                          <svg className="h-4 w-4 text-paleAmber" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                          </svg>
+                          Extended Features 🎯
+                        </h4>
+                        <div className="space-y-3">
+                          <div className="rounded-lg bg-pitchBlack/50 p-3 border border-vanillaCustard/10">
+                            <div className="text-xs font-semibold text-paleAmber mb-2">📢 Alert Blocks</div>
+                            <div className="text-xs text-vanillaCustard/80 space-y-1">
+                              <div><code className="rounded bg-pitchBlack border border-vanillaCustard/20 px-1 py-0.5 font-mono">!!! info</code> - Informational alerts</div>
+                              <div><code className="rounded bg-pitchBlack border border-vanillaCustard/20 px-1 py-0.5 font-mono">!!! warning</code> - Warning messages</div>
+                              <div><code className="rounded bg-pitchBlack border border-vanillaCustard/20 px-1 py-0.5 font-mono">!!! success</code> - Success messages</div>
+                              <div><code className="rounded bg-pitchBlack border border-vanillaCustard/20 px-1 py-0.5 font-mono">!!! error</code> - Error messages</div>
+                              <div><code className="rounded bg-pitchBlack border border-vanillaCustard/20 px-1 py-0.5 font-mono">!!! tip</code> - Tips and advice</div>
+                            </div>
+                            <div className="mt-2 text-xs text-vanillaCustard/60">
+                              Example: <code className="rounded bg-pitchBlack border border-vanillaCustard/20 px-1 py-0.5 font-mono">!!! info&#10;This is important information</code>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
                       {/* Keyboard Shortcuts Section */}
                       <div>
                         <h4 className="text-sm font-semibold text-vanillaCustard mb-3 flex items-center gap-2">
@@ -843,10 +862,11 @@ This is a paragraph with **bold** and *italic* text.
                   
                   {/* Content */}
                   {content && (
-                    <div 
-                      className="prose prose-invert max-w-none text-vanillaCustard/90 [&>*]:mb-4 [&>h1]:text-2xl [&>h2]:text-xl [&>h3]:text-lg [&>h1]:font-bold [&>h2]:font-bold [&>h3]:font-bold [&>h1]:text-vanillaCustard [&>h2]:text-vanillaCustard [&>h3]:text-vanillaCustard [&>ul]:list-disc [&>ol]:list-decimal [&>li]:ml-6"
-                      dangerouslySetInnerHTML={{ __html: previewHtml }}
-                    />
+                    <Suspense fallback={<div className="text-vanillaCustard/60">Loading preview...</div>}>
+                      <div className="prose prose-invert max-w-none text-vanillaCustard/90 [&>*]:mb-4 [&>h1]:text-2xl [&>h2]:text-xl [&>h3]:text-lg [&>h1]:font-bold [&>h2]:font-bold [&>h3]:font-bold [&>h1]:text-vanillaCustard [&>h2]:text-vanillaCustard [&>h3]:text-vanillaCustard [&>ul]:list-disc [&>ol]:list-decimal [&>li]:ml-6">
+                        <MarkdownProcessor content={content} />
+                      </div>
+                    </Suspense>
                   )}
                 </div>
               </div>

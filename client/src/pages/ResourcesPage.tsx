@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import ResourceExplorer from '../components/ResourceExplorer';
+import { useState, useEffect, lazy, Suspense } from 'react';
+const ResourceExplorer = lazy(() => import('../components/ResourceExplorer'));
 import LocationButton from '../components/LocationButton';
 import LocationInfo from '../components/LocationInfo';
 import type { Coordinates } from '../types';
@@ -81,7 +81,9 @@ export default function ResourcesPage() {
         </div>
       </header>
 
-      <ResourceExplorer userLocation={ENABLE_LOCATION_FEATURES ? userLocation : null} />
+      <Suspense fallback={<div className="text-vanillaCustard/60">Loading resource search...</div>}>
+          <ResourceExplorer userLocation={ENABLE_LOCATION_FEATURES ? userLocation : null} />
+        </Suspense>
     </div>
   );
 }
