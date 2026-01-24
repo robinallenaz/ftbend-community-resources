@@ -14,8 +14,6 @@ app.use('/favicon-16x16.png', express.static(path.resolve(__dirname, '../dist/fa
 app.use('/favicon-32x32.png', express.static(path.resolve(__dirname, '../dist/favicon-32x32.png')));
 app.use('/apple-touch-icon.png', express.static(path.resolve(__dirname, '../dist/apple-touch-icon.png')));
 app.use('/site.webmanifest', express.static(path.resolve(__dirname, '../dist/site.webmanifest')));
-app.use('/ftbend-lgbtqia-logo.jpg', express.static(path.resolve(__dirname, '../dist/ftbend-lgbtqia-logo.jpg')));
-app.use('/pride-flag-banner.jpg', express.static(path.resolve(__dirname, '../dist/pride-flag-banner.jpg')));
 
 // Simple API proxy
 import { createProxyMiddleware } from 'http-proxy-middleware';

@@ -32,7 +32,7 @@ export default function Header() {
           aria-label="Go to homepage"
         >
           <img
-            src="/ftbend-lgbtqia-logo.jpg"
+            src="https://res.cloudinary.com/dpus8jzix/image/upload/v1769212019/ftbend-lgbtqia-logo_erkzpu.jpg"
             alt="Fort Bend County LGBTQIA+ Community logo"
             className="h-10 w-10 rounded-xl object-cover"
           />

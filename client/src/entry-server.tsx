@@ -30,7 +30,7 @@ export function createDocument({ html }: { html: string }) {
         <meta property="og:title" content="Fort Bend County LGBTQIA+ Community Resources" />
         <meta property="og:description" content="Find LGBTQIA+ resources, healthcare providers, legal services, and community events in Fort Bend County, Texas." />
         <meta property="og:url" content="https://ftbend-community-resources.netlify.app" />
-        <meta property="og:image" content="https://ftbend-community-resources.netlify.app/ftbend-lgbtqia-logo.jpg" />
+        <meta property="og:image" content="https://res.cloudinary.com/dpus8jzix/image/upload/v1769212019/ftbend-lgbtqia-logo_erkzpu.jpg" />
         <meta property="og:image:alt" content="Fort Bend County LGBTQIA+ Community Logo" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
@@ -39,7 +39,7 @@ export function createDocument({ html }: { html: string }) {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Fort Bend County LGBTQIA+ Community Resources" />
         <meta name="twitter:description" content="Find LGBTQIA+ resources, healthcare providers, legal services, and community events in Fort Bend County, Texas." />
-        <meta name="twitter:image" content="https://ftbend-community-resources.netlify.app/ftbend-lgbtqia-logo.jpg" />
+        <meta name="twitter:image" content="https://res.cloudinary.com/dpus8jzix/image/upload/v1769212019/ftbend-lgbtqia-logo_erkzpu.jpg" />
         <meta name="twitter:image:alt" content="Fort Bend County LGBTQIA+ Community Logo" />
         
         <!-- Structured Data -->

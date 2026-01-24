@@ -29,7 +29,7 @@ export default function HomePage() {
         "url": "https://ftbend-lgbtqia-community.org",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://ftbend-lgbtqia-community.org/ftbend-lgbtqia-logo.webp",
+          "url": "https://res.cloudinary.com/dpus8jzix/image/upload/v1769212019/ftbend-lgbtqia-logo_erkzpu.jpg",
           "width": 1200,
           "height": 630
         },

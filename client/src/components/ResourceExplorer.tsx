@@ -67,7 +67,7 @@ export default function ResourceExplorer(args: { initialQuery?: string; userLoca
 
         const params = new URLSearchParams();
         if (q) params.set('q', q);
-        params.set('limit', '1000'); // Get all resources
+        params.set('limit', '50'); // Load fewer resources for faster initial load
 
         const locations = Array.from(selectedLocations);
         const types = Array.from(selectedTypes);

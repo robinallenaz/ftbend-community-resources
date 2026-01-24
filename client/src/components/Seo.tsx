@@ -134,14 +134,14 @@ export default function Seo() {
 
     setMetaByProperty('og:title', title);
     setMetaByProperty('og:description', description);
-    setMetaByProperty('og:image', `${SITE_URL}/ftbend-lgbtqia-logo.jpg`);
+    setMetaByProperty('og:image', 'https://res.cloudinary.com/dpus8jzix/image/upload/v1769212019/ftbend-lgbtqia-logo_erkzpu.jpg');
     setMetaByProperty('og:image:alt', 'Fort Bend County LGBTQIA+ Community Logo');
     setMetaByProperty('og:image:width', '1200');
     setMetaByProperty('og:image:height', '630');
 
     setMetaByName('twitter:title', title);
     setMetaByName('twitter:description', description);
-    setMetaByName('twitter:image', `${SITE_URL}/ftbend-lgbtqia-logo.jpg`);
+    setMetaByName('twitter:image', 'https://res.cloudinary.com/dpus8jzix/image/upload/v1769212019/ftbend-lgbtqia-logo_erkzpu.jpg');
     setMetaByName('twitter:image:alt', 'Fort Bend County LGBTQIA+ Community Logo');
 
     const url = window.location.href;

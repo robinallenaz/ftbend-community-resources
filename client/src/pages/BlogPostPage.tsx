@@ -1,12 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { marked } from 'marked';
 
-// Configure marked for better markdown rendering
-marked.setOptions({
-  breaks: true,
-  gfm: true
-});
+const MarkdownProcessor = lazy(() => import('../components/MarkdownProcessor'));
 
 // SEO Meta Tags Component
 function BlogPostSEO({ post }: { post: BlogPost }) {
@@ -97,7 +92,7 @@ function addStructuredData(post: BlogPost) {
       "name": "Fort Bend County LGBTQIA+ Community",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://ftbend-lgbtqia-community.org/ftbend-lgbtqia-logo.jpg"
+        "url": "https://res.cloudinary.com/dpus8jzix/image/upload/v1769212019/ftbend-lgbtqia-logo_erkzpu.jpg"
       }
     },
     "mainEntityOfPage": {
@@ -286,7 +281,7 @@ export default function BlogPostPage() {
     };
   }
 
-  const previewHtml = post ? marked(post.content) : '';
+  const content = post ? post.content : '';
 
   // Get button label based on current page
   const getBackButtonLabel = () => {
@@ -468,8 +463,11 @@ export default function BlogPostPage() {
           {/* Article Content */}
           <div 
             className="prose prose-invert max-w-none text-vanillaCustard/90 [&>*]:mb-6 [&>h1]:text-3xl [&>h2]:text-2xl [&>h3]:text-xl [&>h1]:font-bold [&>h2]:font-bold [&>h3]:font-bold [&>h1]:text-vanillaCustard [&>h2]:text-vanillaCustard [&>h3]:text-vanillaCustard [&>ul]:list-disc [&>ol]:list-decimal [&>li]:ml-6 [&>p]:leading-relaxed [&>blockquote]:border-l-4 [&>blockquote]:border-powderBlush [&>blockquote]:pl-6 [&>blockquote]:italic [&>a]:text-paleAmber [&>a]:underline [&>a]:underline-offset-2 [&>a]:hover:no-underline [&>code]:bg-graphite [&>code]:px-2 [&>code]:py-1 [&>code]:rounded [&>code]:text-sm [&>pre]:bg-graphite [&>pre]:p-4 [&>pre]:rounded-lg [&>pre]:overflow-x-auto"
-            dangerouslySetInnerHTML={{ __html: previewHtml }}
-          />
+          >
+            <Suspense fallback={<div className="text-vanillaCustard/60">Loading content...</div>}>
+              <MarkdownProcessor content={content} />
+            </Suspense>
+          </div>
 
           {/* Share Section */}
           <div className="mt-12 pt-8 border-t border-vanillaCustard/10">
