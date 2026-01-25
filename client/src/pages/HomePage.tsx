@@ -102,17 +102,7 @@ export default function HomePage() {
           </picture>
         </div>
         <div className="relative grid gap-5 p-6 md:p-10">
-          <div className="flex flex-col items-start gap-4 md:flex-row md:items-center">
-            <picture>
-              <source type="image/webp" srcSet="https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_128,h_128,c_fill/ftbend-lgbtqia-logo_y4sgtp.webp" />
-              <img 
-                src="https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_64,h_64,c_fill/ftbend-lgbtqia-logo_erkzpu.jpg"
-                srcSet="https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_64,h_64,c_fill/ftbend-lgbtqia-logo_erkzpu.jpg 64w, https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_128,h_128,c_fill/ftbend-lgbtqia-logo_erkzpu.jpg 128w"
-                sizes="(max-width: 768px) 64px, 128px"
-                alt="Fort Bend County LGBTQIA+ Community logo"
-                className="h-16 w-16 rounded-2xl object-cover"
-              />
-            </picture>
+          <div className="flex flex-col items-start gap-4 md:items-center">
             <div>
               <h1 className="text-3xl font-extrabold text-vanillaCustard md:text-4xl">
                 Fort Bend County LGBTQIA+ Community Resources

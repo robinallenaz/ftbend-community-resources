@@ -49,6 +49,9 @@ const UrlSchema = z
 
 router.get('/resources', async (req, res, next) => {
   try {
+    // Add response caching for public API
+    res.set('Cache-Control', 'public, max-age=300'); // 5 minutes cache
+    
     const q = typeof req.query.q === 'string' ? req.query.q.trim() : '';
     const locations = normalizeList(req.query.locations);
     const types = normalizeList(req.query.types);
@@ -110,6 +113,9 @@ router.get('/resources', async (req, res, next) => {
 
 router.get('/events', async (req, res, next) => {
   try {
+    // Add response caching for public API
+    res.set('Cache-Control', 'public, max-age=600'); // 10 minutes cache for events
+    
     const q = typeof req.query.q === 'string' ? req.query.q.trim() : '';
 
     const filter = { status: 'active' };
@@ -364,6 +370,9 @@ router.post('/blog-submissions', async (req, res, next) => {
 // Get published blog posts
 router.get('/blog-posts', async (req, res, next) => {
   try {
+    // Add response caching for public API
+    res.set('Cache-Control', 'public, max-age=300'); // 5 minutes cache for blog posts
+    
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
@@ -411,6 +420,9 @@ router.get('/blog-posts', async (req, res, next) => {
 // Get single blog post
 router.get('/blog-posts/:slug', async (req, res, next) => {
   try {
+    // Add response caching for public API
+    res.set('Cache-Control', 'public, max-age=600'); // 10 minutes cache for individual posts
+    
     const post = await BlogPost.findOne({ 
       slug: req.params.slug, 
       status: 'published' 

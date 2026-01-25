@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import TextSizeToggle from './TextSizeToggle';
 
 function NavItem({ to, label }: { to: string; label: string }) {
@@ -24,6 +24,50 @@ export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [textScale, setTextScale] = useState(1);
+
+  // Check text scale on mount and when it changes
+  useEffect(() => {
+    const checkTextScale = () => {
+      // Check the CSS custom property set by TextSizeToggle
+      const rootElement = document.documentElement;
+      const computedStyle = window.getComputedStyle(rootElement);
+      const scaleValue = computedStyle.getPropertyValue('--text-scale');
+      const scale = parseFloat(scaleValue) || 1;
+      
+      console.log('Text scale detected:', scale, 'CSS property:', scaleValue);
+      setTextScale(scale);
+    };
+
+    checkTextScale();
+    
+    // Listen for text size changes
+    const observer = new MutationObserver(() => {
+      setTimeout(checkTextScale, 100);
+    });
+    
+    observer.observe(document.documentElement, { 
+      attributes: true, 
+      attributeFilter: ['style'] 
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
+
+  const shouldShowIconOnly = textScale >= 1.15; // A+ and larger
 
   return (
     <>
@@ -36,7 +80,7 @@ export default function Header() {
       </a>
       
       <header className="sticky top-0 z-50 border-b border-vanillaCustard/15 bg-graphite/85 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-2 py-3 md:px-6">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-2 py-3 md:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <button
             type="button"
             onClick={() => navigate('/')}
@@ -64,7 +108,7 @@ export default function Header() {
             <NavItem to="/submit" label="Submit a Resource" />
           </nav>
 
-          <div className="flex items-center gap-3 flex-shrink-0">
+          <div className="flex items-center gap-3 flex-shrink-0 pr-4 md:pr-4 lg:pr-6">
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -89,14 +133,27 @@ export default function Header() {
             
             <button
               type="button"
-              className="rounded-xl bg-powderBlush px-2 py-2 text-base font-bold text-pitchBlack shadow-soft transition hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-2 focus:ring-offset-graphite flex-shrink-0"
+              className="rounded-xl bg-powderBlush px-3 py-2 text-base font-bold text-pitchBlack shadow-soft transition hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-2 focus:ring-offset-graphite flex-shrink-0 min-w-[44px] min-h-[44px] group relative"
               onClick={() => navigate('/newsletter')}
               aria-label="Subscribe to newsletter"
             >
-              <span className="hidden sm:inline">Newsletter</span>
-              <svg className="h-5 w-5 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
+              {shouldShowIconOnly ? (
+                <>
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs font-semibold text-vanillaCustard bg-pitchBlack/90 backdrop-blur-sm rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none border border-vanillaCustard/20 shadow-soft">
+                    Newsletter
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="hidden sm:inline">Newsletter</span>
+                  <svg className="h-5 w-5 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -112,8 +169,8 @@ export default function Header() {
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
         <div className="md:hidden fixed inset-0 z-40 bg-pitchBlack/95 backdrop-blur-sm animate-slide-in-right">
-          <div className="flex flex-col h-full transform transition-transform duration-300 ease-out">
-            <div className="flex items-center justify-between p-4 border-b border-vanillaCustard/15">
+          <div className="flex flex-col h-full transform transition-transform duration-300 ease-out overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b border-vanillaCustard/15 flex-shrink-0">
               <h2 className="text-lg font-extrabold text-vanillaCustard">Menu</h2>
               <button
                 type="button"
@@ -126,7 +183,7 @@ export default function Header() {
                 </svg>
               </button>
             </div>
-            <nav className="flex-1 p-4" aria-label="Mobile navigation">
+            <nav className="flex-1 overflow-y-auto p-4" aria-label="Mobile navigation">
               <div className="grid gap-2">
                 <button
                   type="button"
