@@ -92,7 +92,7 @@ function addStructuredData(post: BlogPost) {
       "name": "Fort Bend County LGBTQIA+ Community",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://res.cloudinary.com/dpus8jzix/image/upload/v1769212019/ftbend-lgbtqia-logo_erkzpu.jpg"
+        "url": "https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_1200/ftbend-lgbtqia-logo_erkzpu.jpg"
       }
     },
     "mainEntityOfPage": {
@@ -338,7 +338,7 @@ export default function BlogPostPage() {
   return (
     <div className="min-h-screen bg-pitchBlack">
       <BlogPostSEO post={post} />
-      <div className="max-w-4xl mx-auto px-6 py-12">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
         {/* Preview Banner */}
         {new URLSearchParams(window.location.search).get('preview') !== null && (
           <div className="mb-6 rounded-2xl border border-paleAmber/30 bg-paleAmber/10 p-4">
@@ -462,7 +462,7 @@ export default function BlogPostPage() {
 
           {/* Article Content */}
           <div 
-            className="prose prose-invert max-w-none text-vanillaCustard/90 [&>*]:mb-6 [&>h1]:text-3xl [&>h2]:text-2xl [&>h3]:text-xl [&>h1]:font-bold [&>h2]:font-bold [&>h3]:font-bold [&>h1]:text-vanillaCustard [&>h2]:text-vanillaCustard [&>h3]:text-vanillaCustard [&>ul]:list-disc [&>ol]:list-decimal [&>li]:ml-6 [&>p]:leading-relaxed [&>blockquote]:border-l-4 [&>blockquote]:border-powderBlush [&>blockquote]:pl-6 [&>blockquote]:italic [&>a]:text-paleAmber [&>a]:underline [&>a]:underline-offset-2 [&>a]:hover:no-underline [&>code]:bg-graphite [&>code]:px-2 [&>code]:py-1 [&>code]:rounded [&>code]:text-sm [&>pre]:bg-graphite [&>pre]:p-4 [&>pre]:rounded-lg [&>pre]:overflow-x-auto"
+            className="prose prose-invert max-w-none text-vanillaCustard/90 [&>*]:mb-6 [&>h1]:text-2xl [&>h2]:text-xl [&>h3]:text-lg [&>h1]:font-bold [&>h2]:font-bold [&>h3]:font-bold [&>h1]:text-vanillaCustard [&>h2]:text-vanillaCustard [&>h3]:text-vanillaCustard [&>ul]:list-disc [&>ol]:list-decimal [&>li]:ml-6 [&>p]:leading-relaxed [&>blockquote]:border-l-4 [&>blockquote]:border-powderBlush [&>blockquote]:pl-6 [&>blockquote]:italic [&>a]:text-paleAmber [&>a]:underline [&>a]:underline-offset-2 [&>a]:hover:no-underline [&>code]:bg-graphite [&>code]:px-2 [&>code]:py-1 [&>code]:rounded [&>code]:text-sm [&>pre]:bg-graphite [&>pre]:p-4 [&>pre]:rounded-lg [&>pre]:overflow-x-auto break-words"
           >
             <Suspense fallback={<div className="text-vanillaCustard/60">Loading content...</div>}>
               <MarkdownProcessor content={content} />

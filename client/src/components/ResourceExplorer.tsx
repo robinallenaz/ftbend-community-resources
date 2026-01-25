@@ -214,6 +214,7 @@ export default function ResourceExplorer(args: { initialQuery?: string; userLoca
     setSelectedAudiences(new Set());
   }
 
+  const [showFilters, setShowFilters] = useState(false);
   const hasActive = query.trim().length > 0 || selectedLocations.size > 0 || selectedTypes.size > 0 || selectedAudiences.size > 0;
 
   return (
@@ -245,14 +246,26 @@ export default function ResourceExplorer(args: { initialQuery?: string; userLoca
             <div className="text-base text-vanillaCustard/85" aria-live="polite">
               <>Showing <span className="font-extrabold text-vanillaCustard">{filtered.length}</span> result{filtered.length === 1 ? '' : 's'}</>
             </div>
-            <button
-              type="button"
-              onClick={clearAll}
-              disabled={!hasActive}
-              className="rounded-xl border border-vanillaCustard/20 bg-graphite px-3 py-2 text-base font-bold text-vanillaCustard/90 disabled:opacity-50"
-            >
-              Clear search & filters
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowFilters(!showFilters)}
+                className="lg:hidden rounded-xl border border-vanillaCustard/20 bg-graphite px-3 py-2 text-base font-bold text-vanillaCustard/90 flex items-center gap-2"
+              >
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                </svg>
+                {showFilters ? 'Hide Filters' : 'Show Filters'}
+              </button>
+              <button
+                type="button"
+                onClick={clearAll}
+                disabled={!hasActive}
+                className="rounded-xl border border-vanillaCustard/20 bg-graphite px-3 py-2 text-base font-bold text-vanillaCustard/90 disabled:opacity-50"
+              >
+                Clear search & filters
+              </button>
+            </div>
           </div>
 
           {isLoading ? (
@@ -288,9 +301,21 @@ export default function ResourceExplorer(args: { initialQuery?: string; userLoca
       </section>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-1">
+        {/* Filters - Hidden on mobile, visible on desktop */}
+        <div className={`${showFilters ? 'block' : 'hidden'} lg:block lg:col-span-1`}>
           <div className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-5 shadow-soft">
-            <h3 className="text-lg font-extrabold text-vanillaCustard mb-4">Filter Resources</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-extrabold text-vanillaCustard">Filter Resources</h3>
+              <button
+                type="button"
+                onClick={() => setShowFilters(false)}
+                className="lg:hidden rounded-xl border border-vanillaCustard/20 bg-graphite p-2 text-vanillaCustard/90"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
             <div className="space-y-4">
               <FilterGroup
                 title="Location"
@@ -320,6 +345,7 @@ export default function ResourceExplorer(args: { initialQuery?: string; userLoca
           </div>
         </div>
 
+        {/* Results - Full width on mobile, 2 cols on desktop */}
         <section className="grid gap-4 lg:col-span-2" aria-label="Search results">
           {filtered.length === 0 && !isLoading ? (
             <div className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-6 text-base text-vanillaCustard/90">

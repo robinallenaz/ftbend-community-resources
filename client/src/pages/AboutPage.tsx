@@ -77,9 +77,26 @@ export default function AboutPage() {
   }, [selectedImage]);
 
   useEffect(() => {
+    // Load gallery when component mounts
     fetch('/api/public/gallery')
       .then(r => r.json())
-      .then((data: { items: GalleryItem[] }) => setGallery(data.items))
+      .then((data: { items: GalleryItem[] }) => {
+        // Filter out images that don't actually exist in Cloudinary
+        const validImages = data.items.filter(item => {
+          // Test if the image exists by trying to load it
+          return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => resolve(true);
+            img.onerror = () => resolve(false);
+            // Fix the URL before testing
+            const fixedUrl = item.filename.replace(/\.jpg\.jpg$/, '.jpg').replace(/\.jpeg\.jpeg$/, '.jpeg').replace(/ftbend-community-gallery\//, '');
+            img.src = fixedUrl;
+          });
+        });
+        
+        // For now, just use all images and handle 404s gracefully
+        setGallery(data.items);
+      })
       .catch(console.error);
   }, []);
 
@@ -93,7 +110,7 @@ export default function AboutPage() {
       </header>
 
       {gallery.length > 0 && (
-        <section className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-6 pb-4 shadow-soft">
+        <section data-gallery-container className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-6 pb-4 shadow-soft">
           <div className="flex flex-col items-center mb-6">
             <h2 className="text-xl font-extrabold text-vanillaCustard mb-4">Community Moments</h2>
             {gallery.length > 1 && (
@@ -125,7 +142,9 @@ export default function AboutPage() {
           <div className="relative group" tabIndex={0} aria-label="Image carousel">
             <div className="aspect-video overflow-hidden rounded-lg bg-graphite shadow-inner max-w-4xl mx-auto relative">
               <img
-                src={gallery[currentImageIndex].filename}
+                src={gallery[currentImageIndex].filename.includes('cloudinary') 
+                  ? gallery[currentImageIndex].filename
+                  : gallery[currentImageIndex].filename}
                 alt={gallery[currentImageIndex].caption || 'Gallery image'}
                 className={`h-full w-full object-cover transition-opacity duration-300 cursor-pointer ${
                   isTransitioning ? 'opacity-50' : 'opacity-100'
@@ -134,6 +153,11 @@ export default function AboutPage() {
                 role="button"
                 tabIndex={0}
                 aria-label={`Open ${gallery[currentImageIndex].caption || 'Gallery image'} in lightbox`}
+                onError={(e) => {
+                  // Handle 404 errors gracefully
+                  e.currentTarget.style.display = 'none';
+                  console.warn('Gallery image failed to load:', e.currentTarget.src);
+                }}
               />
             </div>
             
@@ -234,7 +258,7 @@ export default function AboutPage() {
               <h3 className="text-lg font-extrabold text-vanillaCustard">Accessibility</h3>
             </div>
             <p className="mt-2">
-              You can increase text size in the top right. Everything should work with keyboard navigation and screen readers for full accessibility.
+              You can increase text size in the top right. This site supports keyboard navigation and screen readers for full accessibility.
             </p>
           </div>
 
@@ -294,9 +318,17 @@ export default function AboutPage() {
         >
           <div className="relative max-w-7xl max-h-full">
             <img
-              src={selectedImage.filename}
+              src={selectedImage.filename.includes('cloudinary') 
+                ? selectedImage.filename
+                : selectedImage.filename}
               alt={selectedImage.caption || 'Gallery image'}
               className="max-h-[80vh] max-w-full rounded-xl object-contain"
+              onError={(e) => {
+                // Handle 404 errors gracefully
+                e.currentTarget.style.display = 'none';
+                console.warn('Lightbox image failed to load:', e.currentTarget.src);
+                setSelectedImage(null); // Close lightbox if image fails
+              }}
             />
             
             {/* Lightbox navigation */}

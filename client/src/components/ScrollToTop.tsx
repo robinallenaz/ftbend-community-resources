@@ -44,8 +44,14 @@ export default function ScrollToTop() {
         });
         setTimeout(() => searchInput.focus(), 500);
       }
+    } else if (pathname === '/events' || pathname === '/about') {
+      // Handle events/about pages - scroll to top
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
     } else {
-      // Original behavior - scroll to resource search
+      // Handle homepage and resources page - scroll to resource search
       const searchInput = document.getElementById('resource-search');
       if (searchInput) {
         searchInput.scrollIntoView({ 
@@ -65,8 +71,10 @@ export default function ScrollToTop() {
       return 'Scroll to Content';
     } else if (pathname.startsWith('/blog')) {
       return 'Back to Search';
+    } else if (pathname === '/events' || pathname === '/about') {
+      return 'Back to Top';
     } else {
-      return 'Back to Search';
+      return 'Back to Search'; // For homepage and resources page
     }
   };
 

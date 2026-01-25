@@ -265,7 +265,7 @@ export default function BlogPage() {
   return (
     <div className="min-h-screen bg-pitchBlack">
       <BlogPageSEO />
-      <div className="max-w-6xl mx-auto px-6 py-12">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
         {/* Header */}
         <header className="text-center mb-6">
           <h1 className="text-4xl sm:text-5xl font-extrabold text-vanillaCustard mb-4">
@@ -349,7 +349,7 @@ export default function BlogPage() {
 
         {/* Search and Filters Section */}
         <div className="bg-pitchBlack/95 backdrop-blur-sm border-b border-vanillaCustard/10">
-          <div className="max-w-6xl mx-auto px-6">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="py-2">
             {/* Search - Always Visible */}
             <div className="relative mb-2">
@@ -367,14 +367,14 @@ export default function BlogPage() {
             </div>
 
             {/* Filters - Ultra Compact Single Row */}
-            <div className="flex items-center gap-1 text-xs">
+            <div className="flex flex-wrap items-center gap-1 text-xs max-w-full overflow-hidden">
               <select
                 value={sortBy}
                 onChange={(e) => {
                   setSortBy(e.target.value as 'recent' | 'popular' | 'trending');
                   setCurrentPage(1);
                 }}
-                className="rounded-md border border-vanillaCustard/20 bg-graphite px-2 py-1 text-vanillaCustard focus:border-paleAmber focus:outline-none focus:ring-1 focus:ring-paleAmber/50 transition-all"
+                className="rounded-md border border-vanillaCustard/20 bg-graphite px-2 py-1 text-vanillaCustard focus:border-paleAmber focus:outline-none focus:ring-1 focus:ring-paleAmber/50 transition-all flex-shrink-0"
               >
                 <option value="recent">Recent</option>
                 <option value="popular">Popular</option>
@@ -387,7 +387,7 @@ export default function BlogPage() {
                   setSelectedCategory(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="rounded-md border border-vanillaCustard/20 bg-graphite px-2 py-1 text-vanillaCustard focus:border-paleAmber focus:outline-none focus:ring-1 focus:ring-paleAmber/50 transition-all"
+                className="rounded-md border border-vanillaCustard/20 bg-graphite px-2 py-1 text-vanillaCustard focus:border-paleAmber focus:outline-none focus:ring-1 focus:ring-paleAmber/50 transition-all flex-shrink-0"
               >
                 <option value="">Categories</option>
                 {getAllCategories().map(category => (
@@ -403,7 +403,7 @@ export default function BlogPage() {
                   setSelectedTag(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="rounded-md border border-vanillaCustard/20 bg-graphite px-2 py-1 text-vanillaCustard focus:border-paleAmber focus:outline-none focus:ring-1 focus:ring-paleAmber/50 transition-all"
+                className="rounded-md border border-vanillaCustard/20 bg-graphite px-2 py-1 text-vanillaCustard focus:border-paleAmber focus:outline-none focus:ring-1 focus:ring-paleAmber/50 transition-all flex-shrink-0"
               >
                 <option value="">All Tags</option>
                 {getAllTags().map(tag => (
@@ -418,7 +418,7 @@ export default function BlogPage() {
         </div>
 
         {/* Content Section */}
-        <div className="space-y-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
 
         {/* Loading State */}
         {loading && (
@@ -488,7 +488,7 @@ export default function BlogPage() {
                         </Link>
                       )}
 
-                      <div className="p-6">
+                      <div className="p-4 sm:p-6">
                         {/* Title */}
                         <Link
                           to={`/blog/${post.slug}`}
@@ -597,7 +597,6 @@ export default function BlogPage() {
             </Link>
           </div>
         </div>
-
       </div>
     </div>
   );

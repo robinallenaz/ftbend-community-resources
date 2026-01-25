@@ -29,7 +29,7 @@ export default function HomePage() {
         "url": "https://ftbend-lgbtqia-community.org",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://res.cloudinary.com/dpus8jzix/image/upload/v1769212019/ftbend-lgbtqia-logo_erkzpu.jpg",
+          "url": "https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_1200/ftbend-lgbtqia-logo_erkzpu.jpg",
           "width": 1200,
           "height": 630
         },
@@ -90,10 +90,10 @@ export default function HomePage() {
       >
         <div className="absolute inset-0 opacity-25">
           <picture>
-            <source type="image/webp" srcSet="https://res.cloudinary.com/dpus8jzix/image/upload/v1769209299/pride-flag-banner_b1zdiz.webp" />
+            <source type="image/webp" srcSet="https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_1200/pride-flag-banner_b1zdiz.webp" />
             <img 
-              src="https://res.cloudinary.com/dpus8jzix/image/upload/v1769209208/pride-flag-banner_r7z55k.jpg" 
-              srcSet="https://res.cloudinary.com/dpus8jzix/image/upload/v1769209208/pride-flag-banner_r7z55k.jpg&w=400 400w, https://res.cloudinary.com/dpus8jzix/image/upload/v1769209208/pride-flag-banner_r7z55k.jpg&w=800 800w, https://res.cloudinary.com/dpus8jzix/image/upload/v1769209208/pride-flag-banner_r7z55k.jpg&w=1200 1200w"
+              src="https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_800/pride-flag-banner_r7z55k.jpg" 
+              srcSet="https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_400/pride-flag-banner_r7z55k.jpg 400w, https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_800/pride-flag-banner_r7z55k.jpg 800w, https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_1200/pride-flag-banner_r7z55k.jpg 1200w"
               sizes="100vw"
               alt="Pride flag banner with rainbow colors representing LGBTQIA+ community" 
               className="h-full w-full object-cover"
@@ -104,10 +104,10 @@ export default function HomePage() {
         <div className="relative grid gap-5 p-6 md:p-10">
           <div className="flex flex-col items-start gap-4 md:flex-row md:items-center">
             <picture>
-              <source type="image/webp" srcSet="https://res.cloudinary.com/dpus8jzix/image/upload/v1769212033/ftbend-lgbtqia-logo_y4sgtp.webp" />
+              <source type="image/webp" srcSet="https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_128,h_128,c_fill/ftbend-lgbtqia-logo_y4sgtp.webp" />
               <img 
-                src="https://res.cloudinary.com/dpus8jzix/image/upload/v1769212019/ftbend-lgbtqia-logo_erkzpu.jpg"
-                srcSet="https://res.cloudinary.com/dpus8jzix/image/upload/v1769212019/ftbend-lgbtqia-logo_erkzpu.jpg&w=64 64w, https://res.cloudinary.com/dpus8jzix/image/upload/v1769212019/ftbend-lgbtqia-logo_erkzpu.jpg&w=128 128w"
+                src="https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_64,h_64,c_fill/ftbend-lgbtqia-logo_erkzpu.jpg"
+                srcSet="https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_64,h_64,c_fill/ftbend-lgbtqia-logo_erkzpu.jpg 64w, https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_128,h_128,c_fill/ftbend-lgbtqia-logo_erkzpu.jpg 128w"
                 sizes="(max-width: 768px) 64px, 128px"
                 alt="Fort Bend County LGBTQIA+ Community logo"
                 className="h-16 w-16 rounded-2xl object-cover"

@@ -55,11 +55,6 @@ function addResourcesStructuredData() {
 export default function ResourcesPage() {
   const [userLocation, setUserLocation] = useState<Coordinates | null>(null);
 
-  // Add structured data when component mounts
-  useEffect(() => {
-    addResourcesStructuredData();
-  }, []);
-
   const handleLocationFound = (location: Coordinates) => {
     setUserLocation(location);
   };
@@ -82,8 +77,10 @@ export default function ResourcesPage() {
       </header>
 
       <Suspense fallback={<div className="text-vanillaCustard/60">Loading resource search...</div>}>
-          <ResourceExplorer userLocation={ENABLE_LOCATION_FEATURES ? userLocation : null} />
-        </Suspense>
+        <ResourceExplorer 
+          userLocation={ENABLE_LOCATION_FEATURES ? userLocation : null}
+        />
+      </Suspense>
     </div>
   );
 }
