@@ -294,32 +294,46 @@ export default function BlogPage() {
                   {/* Featured Image */}
                   <div className="aspect-video overflow-hidden rounded-xl bg-graphite border border-vanillaCustard/15">
                     {posts[0].featuredImage ? (
-                      <img
-                        src={posts[0].featuredImage}
-                        alt={posts[0].title}
-                        className="w-full h-full object-cover"
-                      />
+                      <picture>
+                        <source 
+                          type="image/webp" 
+                          srcSet={`https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_800/ftbend-community-gallery/${posts[0].featuredImage.split('/').pop()}`}
+                        />
+                        <img
+                          src={`https://res.cloudinary.com/dpus8jizix/image/upload/q_auto,f_auto,w_800/ftbend-community-gallery/${posts[0].featuredImage.split('/').pop()}`}
+                          alt={posts[0].title}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                          onError={(e) => {
+                            // Fallback to original URL if Cloudinary fails
+                            if (posts[0].featuredImage) {
+                              (e.target as HTMLImageElement).src = posts[0].featuredImage;
+                            }
+                          }}
+                        />
+                      </picture>
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <svg className="h-12 w-12 text-vanillaCustard/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                        </svg>
+                      <div className="w-full h-full flex items-center justify-center text-vanillaCustard/50">
+                        <div className="text-center">
+                          <div className="text-4xl mb-2">📝</div>
+                          <div className="text-sm">No featured image</div>
+                        </div>
                       </div>
                     )}
                   </div>
 
                   {/* Content */}
-                  <div className="flex flex-col justify-center">
+                  <div className="flex flex-col justify-center min-w-0">
                     <Link to={`/blog/${posts[0].slug}`} className="group">
-                      <h2 className="text-2xl font-bold text-vanillaCustard mb-3 group-hover:text-paleAmber transition-colors">
+                      <h2 className="text-2xl font-bold text-vanillaCustard mb-3 group-hover:text-paleAmber transition-colors break-words">
                         {posts[0].title}
                       </h2>
-                      <div className="flex items-center gap-4 text-sm text-vanillaCustard/60 mb-4">
-                        <span className="px-2 py-1 rounded-lg bg-powderBlush/10 text-powderBlush font-medium border border-powderBlush/20">By {posts[0].authorName}</span>
-                        <span>{formatDate(posts[0].publishedAt || posts[0].createdAt)}</span>
-                        <span>{getReadingTime(posts[0].content)} min read</span>
+                      <div className="flex flex-wrap items-center gap-2 text-sm text-vanillaCustard/60 mb-4">
+                        <span className="px-2 py-1 rounded-lg bg-powderBlush/10 text-powderBlush font-medium border border-powderBlush/20 whitespace-nowrap">By {posts[0].authorName}</span>
+                        <span className="whitespace-nowrap">{formatDate(posts[0].publishedAt || posts[0].createdAt)}</span>
+                        <span className="whitespace-nowrap">{getReadingTime(posts[0].content)} min read</span>
                         {posts[0].likeCount !== undefined && (
-                          <span className="flex items-center gap-1 text-paleAmber">
+                          <span className="flex items-center gap-1 text-paleAmber whitespace-nowrap">
                             <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
                               <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                             </svg>
@@ -328,8 +342,8 @@ export default function BlogPage() {
                         )}
                       </div>
                       {posts[0].excerpt && (
-                        <p className="text-vanillaCustard/80 mb-4 line-clamp-2">
-                          {truncateExcerpt(posts[0].excerpt, 200)}
+                        <p className="text-vanillaCustard/90 mb-4 line-clamp-3 break-words">
+                          {truncateExcerpt(posts[0].excerpt)}
                         </p>
                       )}
                       <div className="flex items-center gap-2 text-paleAmber hover:text-vanillaCustard transition-colors">
@@ -480,11 +494,24 @@ export default function BlogPage() {
                           to={`/blog/${post.slug}`}
                           className="block aspect-video overflow-hidden bg-graphite"
                         >
-                          <img
-                            src={post.featuredImage}
-                            alt={post.title}
-                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                          />
+                          <picture>
+                            <source 
+                              type="image/webp" 
+                              srcSet={`https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_400/ftbend-community-gallery/${post.featuredImage.split('/').pop()}`}
+                            />
+                            <img
+                              src={`https://res.cloudinary.com/dpus8jizix/image/upload/q_auto,f_auto,w_400/ftbend-community-gallery/${post.featuredImage.split('/').pop()}`}
+                              alt={post.title}
+                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                              loading="lazy"
+                              onError={(e) => {
+                                // Fallback to original URL if Cloudinary fails
+                                if (post.featuredImage) {
+                                  (e.target as HTMLImageElement).src = post.featuredImage;
+                                }
+                              }}
+                            />
+                          </picture>
                         </Link>
                       )}
 

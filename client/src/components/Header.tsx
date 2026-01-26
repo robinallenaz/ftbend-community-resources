@@ -39,7 +39,12 @@ export default function Header() {
       setTextScale(scale);
     };
 
-    checkTextScale();
+    // Delay initial check to ensure TextSizeToggle has initialized
+    const timeoutId = setTimeout(checkTextScale, 1000);
+    
+    // Also check periodically for the first few seconds
+    const intervalId = setInterval(checkTextScale, 2000);
+    setTimeout(() => clearInterval(intervalId), 6000);
     
     // Listen for text size changes
     const observer = new MutationObserver(() => {
@@ -51,7 +56,11 @@ export default function Header() {
       attributeFilter: ['style'] 
     });
 
-    return () => observer.disconnect();
+    return () => {
+      clearTimeout(timeoutId);
+      clearInterval(intervalId);
+      observer.disconnect();
+    };
   }, []);
 
   // Prevent body scroll when mobile menu is open
@@ -68,6 +77,7 @@ export default function Header() {
   }, [mobileMenuOpen]);
 
   const shouldShowIconOnly = textScale >= 1.15; // A+ and larger
+const shouldHideNewsletter = textScale >= 1.25; // A++ and larger
 
   return (
     <>
@@ -131,6 +141,7 @@ export default function Header() {
               <TextSizeToggle />
             </div>
             
+            {!shouldHideNewsletter && (
             <button
               type="button"
               className="rounded-xl bg-powderBlush px-3 py-2 text-base font-bold text-pitchBlack shadow-soft transition hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-2 focus:ring-offset-graphite flex-shrink-0 min-w-[44px] min-h-[44px] group relative"
@@ -155,13 +166,14 @@ export default function Header() {
                 </>
               )}
             </button>
+          )}
           </div>
         </div>
       </header>
 
       {/* Mobile site name below header */}
-      <div className="md:hidden px-4 py-3">
-        <div className="text-center text-sm font-extrabold leading-tight text-vanillaCustard">
+      <div className="md:hidden px-4 py-2 bg-pitchBlack/50 border-b border-vanillaCustard/10">
+        <div className="text-center text-xs font-extrabold leading-tight text-vanillaCustard">
           Fort Bend County LGBTQIA+ Community
         </div>
       </div>
