@@ -863,7 +863,7 @@ This is a paragraph with **bold** and *italic* text.
                   {/* Content */}
                   {content && (
                     <Suspense fallback={<div className="text-vanillaCustard/60">Loading preview...</div>}>
-                      <div className="prose prose-invert max-w-none text-vanillaCustard/90 [&>*]:mb-4 [&>h1]:text-2xl [&>h2]:text-xl [&>h3]:text-lg [&>h1]:font-bold [&>h2]:font-bold [&>h3]:font-bold [&>h1]:text-vanillaCustard [&>h2]:text-vanillaCustard [&>h3]:text-vanillaCustard [&>ul]:list-disc [&>ol]:list-decimal [&>li]:ml-6">
+                      <div className="prose prose-invert max-w-none text-vanillaCustard/90 [&_p]:leading-relaxed [&_p]:whitespace-pre-wrap [&_li]:whitespace-pre-wrap [&_*]:break-words [&_h1]:text-2xl [&_h2]:text-xl [&_h3]:text-lg [&_h1]:font-bold [&_h2]:font-bold [&_h3]:font-bold [&_h1]:text-vanillaCustard [&_h2]:text-vanillaCustard [&_h3]:text-vanillaCustard [&_ul]:list-disc [&_ol]:list-decimal [&_li]:ml-6 [&_blockquote]:border-l-4 [&_blockquote]:border-powderBlush [&_blockquote]:pl-6 [&_blockquote]:italic [&_a]:text-paleAmber [&_a]:underline [&_code]:bg-graphite [&_code]:px-2 [&_code]:py-1 [&_code]:rounded [&_code]:text-sm [&_pre]:bg-graphite [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:overflow-x-auto">
                         <MarkdownProcessor content={content} />
                       </div>
                     </Suspense>

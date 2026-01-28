@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 export default function ScrollToTop() {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
 
   // Scroll to top when route changes
@@ -12,18 +13,38 @@ export default function ScrollToTop() {
 
   useEffect(() => {
     const toggleVisibility = () => {
-      if (window.pageYOffset > 1200) {
-        setIsVisible(true);
+      const isBlogPost = pathname.startsWith('/blog') && pathname !== '/blog';
+      
+      if (isBlogPost) {
+        // On blog posts, show button when user reaches near the end of the article
+        const shareSection = document.querySelector('[class*="Share this post"]')?.parentElement?.parentElement;
+        const articleContent = document.getElementById('article-content');
+        
+        if (articleContent) {
+          const articleRect = articleContent.getBoundingClientRect();
+          // Show when bottom of article content is visible (user has read the article)
+          const articleEndVisible = articleRect.bottom < window.innerHeight + 200;
+          setIsVisible(articleEndVisible);
+        } else {
+          // Fallback: show when scrolled 80% of the page
+          const scrollPercent = (window.scrollY + window.innerHeight) / document.documentElement.scrollHeight;
+          setIsVisible(scrollPercent > 0.8);
+        }
       } else {
-        setIsVisible(false);
+        // Other pages: use fixed threshold
+        if (window.pageYOffset > 1200) {
+          setIsVisible(true);
+        } else {
+          setIsVisible(false);
+        }
       }
     };
 
     window.addEventListener('scroll', toggleVisibility);
     return () => window.removeEventListener('scroll', toggleVisibility);
-  }, []);
+  }, [pathname]);
 
-  const scrollToSearch = () => {
+   const scrollToSearch = () => {
     // Check if we're on the blog submission page
     if (pathname === '/submit' || pathname === '/submit-blog-contribution') {
       const contentTextarea = document.getElementById('content');
@@ -35,7 +56,16 @@ export default function ScrollToTop() {
         setTimeout(() => contentTextarea.focus(), 500);
       }
     } else if (pathname.startsWith('/blog')) {
-      // Handle blog pages - scroll to blog search
+      // Handle blog pages
+      if (pathname !== '/blog') {
+        // On individual blog post pages, scroll to top of page
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+        return;
+      }
+      // On blog list page, scroll to search
       const searchInput = document.getElementById('search');
       if (searchInput) {
         searchInput.scrollIntoView({ 
@@ -64,12 +94,13 @@ export default function ScrollToTop() {
   };
 
   const getButtonLabel = () => {
-    // Debug: log the current pathname
-    console.log('ScrollToTop pathname:', pathname);
-    
     if (pathname === '/submit' || pathname === '/submit-blog-contribution') {
       return 'Scroll to Content';
-    } else if (pathname.startsWith('/blog')) {
+    } else if (pathname.startsWith('/blog') && pathname !== '/blog') {
+      // Individual blog post pages
+      return 'Back to Top';
+    } else if (pathname === '/blog') {
+      // Blog list page
       return 'Back to Search';
     } else if (pathname === '/events' || pathname === '/about') {
       return 'Back to Top';

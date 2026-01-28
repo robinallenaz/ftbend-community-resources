@@ -1,5 +1,5 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 
 const MarkdownProcessor = lazy(() => import('../components/MarkdownProcessor'));
 
@@ -163,6 +163,7 @@ const saveLikedPosts = (likedPosts: string[]) => {
 
 export default function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
   const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -276,7 +277,6 @@ export default function BlogPostPage() {
       twitter: `https://twitter.com/intent/tweet?text=${title}&url=${url}`,
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
       linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`,
-      reddit: `https://reddit.com/submit?url=${url}&title=${title}`,
       email: `mailto:?subject=${title}&body=${excerpt}%0A%0A${url}`
     };
   }
@@ -291,23 +291,8 @@ export default function BlogPostPage() {
 
   // Scroll to search function
   function scrollToSearch() {
-    // Navigate to blog page and scroll to search
-    window.location.href = '/blog#search';
+    navigate('/blog#search', { state: { scrollTo: 'search' } });
   }
-
-  // Add scroll to search on page load if hash is present
-  useEffect(() => {
-    if (window.location.hash === '#search') {
-      // Small delay to ensure page is loaded
-      setTimeout(() => {
-        const searchElement = document.getElementById('search') as HTMLInputElement;
-        if (searchElement) {
-          searchElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          searchElement.focus();
-        }
-      }, 100);
-    }
-  }, []);
 
   if (loading) {
     return (
@@ -462,7 +447,8 @@ export default function BlogPostPage() {
 
           {/* Article Content */}
           <div 
-            className="prose prose-invert max-w-none text-vanillaCustard/90 [&>*]:mb-6 [&>h1]:text-2xl [&>h2]:text-xl [&>h3]:text-lg [&>h1]:font-bold [&>h2]:font-bold [&>h3]:font-bold [&>h1]:text-vanillaCustard [&>h2]:text-vanillaCustard [&>h3]:text-vanillaCustard [&>ul]:list-disc [&>ol]:list-decimal [&>li]:ml-6 [&>p]:leading-relaxed [&>blockquote]:border-l-4 [&>blockquote]:border-powderBlush [&>blockquote]:pl-6 [&>blockquote]:italic [&>a]:text-paleAmber [&>a]:underline [&>a]:underline-offset-2 [&>a]:hover:no-underline [&>code]:bg-graphite [&>code]:px-2 [&>code]:py-1 [&>code]:rounded [&>code]:text-sm [&>pre]:bg-graphite [&>pre]:p-4 [&>pre]:rounded-lg [&>pre]:overflow-x-auto break-words"
+            id="article-content"
+            className="prose prose-invert max-w-none text-vanillaCustard/90 [&_p]:leading-relaxed [&_p]:whitespace-pre-wrap [&_li]:whitespace-pre-wrap [&_*]:break-words [&_h1]:text-2xl [&_h2]:text-xl [&_h3]:text-lg [&_h1]:font-bold [&_h2]:font-bold [&_h3]:font-bold [&_h1]:text-vanillaCustard [&_h2]:text-vanillaCustard [&_h3]:text-vanillaCustard [&_ul]:list-disc [&_ol]:list-decimal [&_li]:ml-6 [&_blockquote]:border-l-4 [&_blockquote]:border-powderBlush [&_blockquote]:pl-6 [&_blockquote]:italic [&_a]:text-paleAmber [&_a]:underline [&_a]:underline-offset-2 [&_a]:hover:no-underline [&_code]:bg-graphite [&_code]:px-2 [&_code]:py-1 [&_code]:rounded [&_code]:text-sm [&_pre]:bg-graphite [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:overflow-x-auto"
           >
             <Suspense fallback={<div className="text-vanillaCustard/60">Loading content...</div>}>
               <MarkdownProcessor content={content} />
@@ -496,12 +482,12 @@ export default function BlogPostPage() {
                   href={getShareUrls().twitter}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-vanillaCustard/20 text-vanillaCustard/80 hover:border-vanillaCustard/40 hover:text-vanillaCustard transition"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-vanillaCustard/20 text-vanillaCustard/80 hover:border-vanillaCustard/40 hover:text-vanillaCustard transition !no-underline"
                 >
                   <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                   </svg>
-                  <span className="text-sm">Share</span>
+                  <span className="text-sm !no-underline">Share</span>
                 </a>
 
                 {/* Facebook */}
@@ -509,12 +495,12 @@ export default function BlogPostPage() {
                   href={getShareUrls().facebook}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-vanillaCustard/20 text-vanillaCustard/80 hover:border-vanillaCustard/40 hover:text-vanillaCustard transition"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-vanillaCustard/20 text-vanillaCustard/80 hover:border-vanillaCustard/40 hover:text-vanillaCustard transition !no-underline"
                 >
                   <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                   </svg>
-                  <span className="text-sm">Share</span>
+                  <span className="text-sm !no-underline">Share</span>
                 </a>
 
                 {/* LinkedIn */}
@@ -522,36 +508,23 @@ export default function BlogPostPage() {
                   href={getShareUrls().linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-vanillaCustard/20 text-vanillaCustard/80 hover:border-vanillaCustard/40 hover:text-vanillaCustard transition"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-vanillaCustard/20 text-vanillaCustard/80 hover:border-vanillaCustard/40 hover:text-vanillaCustard transition !no-underline"
                 >
                   <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
                   </svg>
-                  <span className="text-sm">Share</span>
-                </a>
-
-                {/* Reddit */}
-                <a
-                  href={getShareUrls().reddit}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-vanillaCustard/20 text-vanillaCustard/80 hover:border-vanillaCustard/40 hover:text-vanillaCustard transition"
-                >
-                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249s-.562 1.249-1.25 1.249c-.687 0-1.248-.561-1.248-1.249s.561-1.249 1.248-1.249zM2.839 18.536c-.688 0-1.248-.56-1.248-1.248s.56-1.249 1.248-1.249c.688 0 1.249.561 1.249 1.249s-.561 1.248-1.249 1.248zm10.816-4.949c.688 0 1.248.56 1.248 1.248s-.56 1.249-1.248 1.249c-.687 0-1.249-.56-1.249-1.249s.562-1.248 1.249-1.248zm-5.502-9.245c.688 0 1.249.561 1.249 1.249s-.561 1.248-1.249 1.248c-.688 0-1.248-.56-1.248-1.248s.56-1.249 1.248-1.249zm9.839 6.196c0-.688.56-1.249 1.248-1.249.688 0 1.249.561 1.249 1.249s-.561 1.248-1.249 1.248c-.688 0-1.248-.56-1.248-1.248s.56-1.249 1.248-1.249zm-4.848-1.249c-.688 0-1.248.56-1.248 1.249s.56 1.248 1.248 1.248c.688 0 1.249-.56 1.249-1.248s-.561-1.249-1.249-1.249z"/>
-                  </svg>
-                  <span className="text-sm">Share</span>
+                  <span className="text-sm !no-underline">Share</span>
                 </a>
 
                 {/* Email */}
                 <a
                   href={getShareUrls().email}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-vanillaCustard/20 text-vanillaCustard/80 hover:border-vanillaCustard/40 hover:text-vanillaCustard transition"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-vanillaCustard/20 text-vanillaCustard/80 hover:border-vanillaCustard/40 hover:text-vanillaCustard transition !no-underline"
                 >
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
-                  <span className="text-sm">Email</span>
+                  <span className="text-sm !no-underline">Email</span>
                 </a>
               </div>
             </div>

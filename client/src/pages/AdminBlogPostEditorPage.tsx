@@ -56,9 +56,28 @@ export default function AdminBlogPostEditorPage() {
     reviewNotes: ''
   });
 
+  const isNewPost = id === 'new';
+
   useEffect(() => {
-    if (id) {
+    if (id && id !== 'new') {
       fetchPost(id);
+    } else if (id === 'new') {
+      // For new posts, set default values and skip loading
+      setFormData({
+        title: '',
+        content: '',
+        authorName: 'Admin',
+        authorEmail: '',
+        status: 'pending',
+        categories: '',
+        tags: '',
+        slug: '',
+        excerpt: '',
+        featuredImage: '',
+        metaDescription: '',
+        reviewNotes: ''
+      });
+      setLoading(false);
     }
   }, [id]);
 
@@ -157,7 +176,7 @@ export default function AdminBlogPostEditorPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!post) return;
+    if (!isNewPost && !post) return;
     
     setSaving(true);
     setError(null);
@@ -166,32 +185,37 @@ export default function AdminBlogPostEditorPage() {
       const payload = {
         title: (formData.title || '').trim(),
         content: (formData.content || '').trim(),
-        authorName: (formData.authorName || '').trim() || 'Anonymous',
+        authorName: (formData.authorName || '').trim() || 'Admin',
         authorEmail: (formData.authorEmail || '').trim() || '',
         status: formData.status,
         categories: (formData.categories || '').split(',').map(c => c.trim()).filter(c => c.length > 0),
         tags: (formData.tags || '').split(',').map(t => t.trim()).filter(t => t.length > 0),
-        slug: (formData.slug || '').trim(),
         excerpt: (formData.excerpt || '').trim(),
         featuredImage: (formData.featuredImage || '').trim(),
         metaDescription: (formData.metaDescription || '').trim(),
-        reviewNotes: (formData.reviewNotes || '').trim()
+        ...(isNewPost ? {} : { 
+          slug: (formData.slug || '').trim(),
+          reviewNotes: (formData.reviewNotes || '').trim()
+        })
       };
 
-      const res = await fetch(`/api/admin/blog-posts/${post._id}`, {
-        method: 'PATCH',
+      const url = isNewPost ? '/api/admin/blog-posts' : `/api/admin/blog-posts/${post!._id}`;
+      const method = isNewPost ? 'POST' : 'PATCH';
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to update post');
+        throw new Error(errorData.error || `Failed to ${isNewPost ? 'create' : 'update'} post`);
       }
 
       navigate('/admin/blog-posts');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update post');
+      setError(err instanceof Error ? err.message : `Failed to ${isNewPost ? 'create' : 'update'} post`);
     } finally {
       setSaving(false);
     }
@@ -207,7 +231,7 @@ export default function AdminBlogPostEditorPage() {
     );
   }
 
-  if (error && !post) {
+  if (error && !post && !isNewPost) {
     return (
       <div className="rounded-2xl bg-red-900/20 border border-red-500/30 p-4 text-red-200">
         <p>Error: {error}</p>
@@ -221,7 +245,7 @@ export default function AdminBlogPostEditorPage() {
     );
   }
 
-  if (!post) {
+  if (!post && !isNewPost) {
     return (
       <div className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack p-8 text-center">
         <div className="text-vanillaCustard/90">Blog post not found.</div>
@@ -232,7 +256,7 @@ export default function AdminBlogPostEditorPage() {
   return (
     <div className="max-w-full mx-auto space-y-8 p-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-extrabold text-vanillaCustard">Edit Blog Post</h1>
+        <h2 className="text-2xl font-extrabold text-vanillaCustard">{isNewPost ? 'Create New Blog Post' : 'Edit Blog Post'}</h2>
         <button
           onClick={() => navigate('/admin/blog-posts')}
           className="rounded-xl bg-pitchBlack border border-vanillaCustard/20 px-4 py-2 text-vanillaCustard hover:bg-pitchBlack/80 transition"
@@ -514,9 +538,9 @@ export default function AdminBlogPostEditorPage() {
             )}
             
             {/* Title */}
-            <h1 className="text-3xl font-bold text-vanillaCustard mb-4">
+            <h2 className="text-3xl font-bold text-vanillaCustard mb-4">
               {formData.title || 'Blog Post Title'}
-            </h1>
+            </h2>
             
             {/* Meta Information */}
             <div className="text-sm text-vanillaCustard/70 mb-6">
@@ -549,7 +573,7 @@ export default function AdminBlogPostEditorPage() {
             
             {/* Content */}
             <div 
-              className="prose prose-invert max-w-none text-vanillaCustard/90 [&>*]:mb-4 [&>h1]:text-2xl [&>h2]:text-xl [&>h3]:text-lg [&>h1]:font-bold [&>h2]:font-bold [&>h3]:font-bold [&>h1]:text-vanillaCustard [&>h2]:text-vanillaCustard [&>h3]:text-vanillaCustard [&>ul]:list-disc [&>ol]:list-decimal [&>li]:ml-6"
+              className="prose prose-invert max-w-none text-vanillaCustard/90 [&_p]:leading-relaxed [&_p]:whitespace-pre-wrap [&_li]:whitespace-pre-wrap [&_*]:break-words [&_h1]:text-2xl [&_h2]:text-xl [&_h3]:text-lg [&_h1]:font-bold [&_h2]:font-bold [&_h3]:font-bold [&_h1]:text-vanillaCustard [&_h2]:text-vanillaCustard [&_h3]:text-vanillaCustard [&_ul]:list-disc [&_ol]:list-decimal [&_li]:ml-6 [&_blockquote]:border-l-4 [&_blockquote]:border-powderBlush [&_blockquote]:pl-6 [&_blockquote]:italic [&_a]:text-paleAmber [&_a]:underline [&_code]:bg-graphite [&_code]:px-2 [&_code]:py-1 [&_code]:rounded [&_code]:text-sm [&_pre]:bg-graphite [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:overflow-x-auto"
               dangerouslySetInnerHTML={{ __html: previewHtml || '<p class="text-vanillaCustard/50">Start typing to see your content preview here...</p>' }}
             />
           </div>
@@ -575,9 +599,11 @@ export default function AdminBlogPostEditorPage() {
             </button>
           </div>
           
-          <div className="text-sm text-vanillaCustard/60">
-            Created: {new Date(post.createdAt).toLocaleString()}
-          </div>
+          {post && (
+            <div className="text-sm text-vanillaCustard/60">
+              Created: {new Date(post.createdAt).toLocaleString()}
+            </div>
+          )}
         </div>
       </form>
     </div>

@@ -116,6 +116,12 @@ export default function AdminBlogPostsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-extrabold text-vanillaCustard">Blog Posts</h1>
         <div className="flex items-center gap-2">
+          <Link
+            to="/admin/blog-posts/new"
+            className="rounded-xl bg-powderBlush px-4 py-2 text-sm font-bold text-pitchBlack hover:brightness-95 transition"
+          >
+            + New Post
+          </Link>
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}

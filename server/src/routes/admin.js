@@ -969,6 +969,59 @@ router.patch('/blog-posts/:id', requireAuth, async (req, res, next) => {
   }
 });
 
+// Create a new blog post (admin-only, bypasses public submission)
+router.post('/blog-posts', requireAuth, async (req, res, next) => {
+  try {
+    const input = validate(
+      z.object({
+        title: z.string().min(2).max(200),
+        content: z.string().min(50).max(10000),
+        authorName: z.string().max(100).optional().default('Admin'),
+        authorEmail: z.string().max(255).optional().default(''),
+        categories: z.array(z.string().max(50)).optional().default([]),
+        tags: z.array(z.string().max(30)).optional().default([]),
+        status: z.enum(['pending', 'approved', 'rejected', 'published']).optional().default('pending'),
+        excerpt: z.string().max(500).optional().default(''),
+        featuredImage: z.string().max(500).optional().default(''),
+        metaDescription: z.string().max(160).optional().default('')
+      }),
+      req.body
+    );
+
+    // Generate slug from title
+    const slug = input.title
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '') + `-${Date.now().toString(36)}`;
+
+    const blogPost = await BlogPost.create({
+      title: input.title,
+      slug: slug,
+      content: input.content,
+      authorName: input.authorName,
+      authorEmail: input.authorEmail,
+      categories: input.categories,
+      tags: input.tags,
+      excerpt: input.excerpt,
+      metaDescription: input.metaDescription,
+      featuredImage: input.featuredImage,
+      status: input.status,
+      submissionConsent: true,
+      privacyConsent: true,
+      publishedAt: input.status === 'published' ? new Date() : null,
+      reviewedByUserId: req.auth.sub,
+      reviewedAt: new Date()
+    });
+
+    res.status(201).json({ post: blogPost });
+  } catch (e) {
+    console.error('Error creating blog post:', e);
+    next(e);
+  }
+});
+
 router.delete('/blog-posts/:id', requireAuth, async (req, res, next) => {
   try {
     const post = await BlogPost.findById(req.params.id);

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 // SEO Meta Tags Component
 function BlogPageSEO() {
@@ -92,6 +92,7 @@ interface BlogListResponse {
 }
 
 export default function BlogPage() {
+  const location = useLocation();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -104,6 +105,21 @@ export default function BlogPage() {
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
 
   const postsPerPage = 12;
+
+  useEffect(() => {
+    const state = location.state as { scrollTo?: string } | null;
+    const shouldScrollToSearch = location.hash === '#search' || state?.scrollTo === 'search';
+    if (!shouldScrollToSearch) return;
+
+    const timer = setTimeout(() => {
+      const searchInput = document.getElementById('search') as HTMLInputElement | null;
+      if (!searchInput) return;
+      searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      searchInput.focus();
+    }, 150);
+
+    return () => clearTimeout(timer);
+  }, [location.hash, location.state]);
 
   useEffect(() => {
     // Only fetch posts if not the initial load

@@ -3,13 +3,12 @@ import { useState, useEffect } from 'react';
 import TextSizeToggle from './TextSizeToggle';
 
 function NavItem({ to, label }: { to: string; label: string }) {
-  const location = useLocation();
   return (
     <NavLink
       to={to}
       className={({ isActive }: { isActive: boolean }) =>
         [
-          'rounded-xl px-3 py-2 text-base font-semibold transition focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-2 focus:ring-offset-graphite',
+          'rounded-xl px-3 py-2 text-base font-semibold transition outline-none focus-visible:ring-2 focus-visible:ring-paleAmber focus-visible:ring-offset-2 focus-visible:ring-offset-graphite',
           'hover:bg-pitchBlack/70 hover:text-vanillaCustard',
           isActive ? 'bg-pitchBlack text-vanillaCustard shadow-soft border border-paleAmber/30' : 'text-vanillaCustard/95'
         ].join(' ')
@@ -94,7 +93,7 @@ const shouldHideNewsletter = textScale >= 1.25; // A++ and larger
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="flex items-center gap-3 rounded-xl px-2 py-2 text-left hover:bg-pitchBlack/60 focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-2 focus:ring-offset-graphite transition"
+            className="flex items-center gap-3 rounded-xl px-2 py-2 text-left hover:bg-pitchBlack/60 outline-none focus-visible:ring-2 focus-visible:ring-paleAmber focus-visible:ring-offset-2 focus-visible:ring-offset-graphite transition"
             aria-label="Go to homepage"
           >
             <img
@@ -144,7 +143,7 @@ const shouldHideNewsletter = textScale >= 1.25; // A++ and larger
             {!shouldHideNewsletter && (
             <button
               type="button"
-              className="rounded-xl bg-powderBlush px-3 py-2 text-base font-bold text-pitchBlack shadow-soft transition hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-2 focus:ring-offset-graphite flex-shrink-0 min-w-[44px] min-h-[44px] group relative"
+              className="rounded-xl bg-powderBlush px-3 py-2 text-base font-bold text-pitchBlack shadow-soft transition hover:brightness-95 outline-none focus-visible:ring-2 focus-visible:ring-paleAmber focus-visible:ring-offset-2 focus-visible:ring-offset-graphite flex-shrink-0 min-w-[44px] min-h-[44px] group relative"
               onClick={() => navigate('/newsletter')}
               aria-label="Subscribe to newsletter"
             >
