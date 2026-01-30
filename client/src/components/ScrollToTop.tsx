@@ -120,7 +120,7 @@ export default function ScrollToTop() {
       onClick={scrollToSearch}
       className="
         fixed bottom-8 right-8 z-50
-        w-12 h-12 md:w-14 md:h-14
+        w-14 h-14
         rounded-full
         bg-gradient-to-r from-paleAmber via-vanillaCustard to-powderBlush
         shadow-lg hover:shadow-xl
@@ -130,6 +130,7 @@ export default function ScrollToTop() {
         group
         border border-vanillaCustard/20
         backdrop-blur-sm
+        touch-manipulation
       "
       aria-label={buttonLabel}
       style={{
@@ -152,8 +153,8 @@ export default function ScrollToTop() {
         <path d="M18 15l-6-6-6 6" />
       </svg>
       
-      {/* Visible text label for better accessibility */}
-      <span className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs text-pitchBlack bg-vanillaCustard/90 px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+      {/* Visible text label for better accessibility - desktop only */}
+      <span className="hidden md:absolute md:-bottom-6 md:left-1/2 md:transform md:-translate-x-1/2 text-xs text-pitchBlack bg-vanillaCustard/90 px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
         {buttonLabel}
       </span>
       
