@@ -120,6 +120,17 @@ export default function AdminSubmissionsPage() {
                 />
               </label>
 
+              <label className="grid gap-1">
+                <span className="text-sm font-bold text-vanillaCustard">Public Site URL</span>
+                <input
+                  type="url"
+                  value={publicSiteUrl}
+                  onChange={(e) => setPublicSiteUrl(e.target.value)}
+                  placeholder="https://your-domain.com"
+                  className="w-full rounded-xl border border-vanillaCustard/20 bg-graphite px-3 py-2 text-base font-semibold text-vanillaCustard placeholder:text-vanillaCustard/60"
+                />
+              </label>
+
               <button
                 type="button"
                 className="w-fit rounded-xl bg-powderBlush px-4 py-3 text-base font-bold text-pitchBlack shadow-soft transition hover:brightness-95"
