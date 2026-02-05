@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { api } from '../admin/api';
+import { safeGetItem } from '../utils/storageUtils';
 
 type GalleryItem = {
   _id: string;
@@ -43,9 +44,10 @@ export default function AdminGalleryPage() {
       formData.append('file', file);
       formData.append('caption', '');
 
+      const token = await safeGetItem('authToken', '');
       const uploadRes = await fetch('/api/admin/gallery/upload', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` },
+        headers: { Authorization: `Bearer ${token}` },
         body: formData
       });
       if (!uploadRes.ok) throw new Error('Upload failed');

@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import TextSizeToggle from './TextSizeToggle';
 
 function NavItem({ to, label }: { to: string; label: string }) {
@@ -8,9 +8,10 @@ function NavItem({ to, label }: { to: string; label: string }) {
       to={to}
       className={({ isActive }: { isActive: boolean }) =>
         [
-          'rounded-xl px-3 py-2 text-base font-semibold transition outline-none focus-visible:ring-2 focus-visible:ring-paleAmber focus-visible:ring-offset-2 focus-visible:ring-offset-graphite',
+          'rounded-xl px-3 py-2 text-base font-semibold transition outline-none',
           'hover:bg-pitchBlack/70 hover:text-vanillaCustard',
-          isActive ? 'bg-pitchBlack text-vanillaCustard shadow-soft border border-paleAmber/30' : 'text-vanillaCustard/95'
+          isActive ? 'bg-pitchBlack text-vanillaCustard shadow-soft border border-paleAmber/30' : 'text-vanillaCustard/95',
+          'focus-visible:ring-2 focus-visible:ring-paleAmber focus-visible:ring-offset-2 focus-visible:ring-offset-graphite'
         ].join(' ')
       }
     >
@@ -24,54 +25,87 @@ export default function Header() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [textScale, setTextScale] = useState(1);
+  const previousOverflowRef = useRef('');
 
-  // Check text scale on mount and when it changes
-  useEffect(() => {
-    const checkTextScale = () => {
+  // Memoize text scale check to prevent excessive re-computation
+  const checkTextScale = useCallback(() => {
+    try {
       // Check the CSS custom property set by TextSizeToggle
       const rootElement = document.documentElement;
       const computedStyle = window.getComputedStyle(rootElement);
       const scaleValue = computedStyle.getPropertyValue('--text-scale');
       const scale = parseFloat(scaleValue) || 1;
       
-      console.log('Text scale detected:', scale, 'CSS property:', scaleValue);
+      if (import.meta.env.DEV) {
+        console.log('Text scale detected:', scale, 'CSS property:', scaleValue);
+      }
       setTextScale(scale);
+    } catch (error) {
+      console.error('Error checking text scale:', error);
+      setTextScale(1); // Fallback to default
+    }
+  }, []);
+
+  // Check text scale on mount and when it changes
+  useEffect(() => {
+    // Initial check
+    checkTextScale();
+    
+    // Listen for text scale changes via custom event
+    const handleTextScaleChange = (event: Event) => {
+      try {
+        const customEvent = event as CustomEvent<{ scale?: number }>;
+        
+        // Validate event structure
+        if (!customEvent.detail || typeof customEvent.detail.scale !== 'number') {
+          if (import.meta.env.DEV) {
+            console.warn('Invalid text scale event structure:', customEvent.detail);
+          }
+          checkTextScale(); // Re-sync with CSS
+          return;
+        }
+        
+        const { scale } = customEvent.detail;
+        
+        // Validate scale value to match usage thresholds
+        if (scale >= 0.8 && scale <= 1.4) {
+          if (import.meta.env.DEV) {
+          console.log('Text scale changed via event:', scale);
+        }
+          setTextScale(scale);
+        } else {
+          if (import.meta.env.DEV) {
+          console.warn('Invalid scale value received:', scale);
+        }
+          checkTextScale(); // Re-sync with CSS
+        }
+      } catch (error) {
+        console.error('Error handling text scale change:', error);
+        checkTextScale(); // Re-sync with CSS on error
+      }
     };
 
-    // Delay initial check to ensure TextSizeToggle has initialized
-    const timeoutId = setTimeout(checkTextScale, 1000);
-    
-    // Also check periodically for the first few seconds
-    const intervalId = setInterval(checkTextScale, 2000);
-    setTimeout(() => clearInterval(intervalId), 6000);
-    
-    // Listen for text size changes
-    const observer = new MutationObserver(() => {
-      setTimeout(checkTextScale, 100);
-    });
-    
-    observer.observe(document.documentElement, { 
-      attributes: true, 
-      attributeFilter: ['style'] 
-    });
+    window.addEventListener('textScaleChange', handleTextScaleChange);
 
     return () => {
-      clearTimeout(timeoutId);
-      clearInterval(intervalId);
-      observer.disconnect();
+      window.removeEventListener('textScaleChange', handleTextScaleChange);
     };
-  }, []);
+  }, [checkTextScale]);
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (mobileMenuOpen) {
+      // Store the current overflow value when menu opens
+      previousOverflowRef.current = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = '';
+      // Restore the stored overflow value when menu closes
+      document.body.style.overflow = previousOverflowRef.current;
     }
 
     return () => {
-      document.body.style.overflow = '';
+      // Always restore the stored overflow value on cleanup
+      document.body.style.overflow = previousOverflowRef.current;
     };
   }, [mobileMenuOpen]);
 
@@ -93,7 +127,7 @@ const shouldHideNewsletter = textScale >= 1.25; // A++ and larger
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="flex items-center gap-3 rounded-xl px-2 py-2 text-left hover:bg-pitchBlack/60 outline-none focus-visible:ring-2 focus-visible:ring-paleAmber focus-visible:ring-offset-2 focus-visible:ring-offset-graphite transition"
+            className="flex items-center gap-3 rounded-xl px-2 py-2 text-left hover:bg-pitchBlack/60 outline-none transition focus-visible:ring-2 focus-visible:ring-paleAmber focus-visible:ring-offset-2 focus-visible:ring-offset-graphite"
             aria-label="Go to homepage"
           >
             <img
@@ -121,7 +155,7 @@ const shouldHideNewsletter = textScale >= 1.25; // A++ and larger
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden rounded-xl border border-vanillaCustard/20 bg-graphite p-3 text-vanillaCustard/90 min-w-[44px] min-h-[44px]"
+              className="md:hidden rounded-xl border border-vanillaCustard/20 bg-graphite p-3 text-vanillaCustard/90 min-w-[44px] min-h-[44px] outline-none focus-visible:ring-2 focus-visible:ring-paleAmber focus-visible:ring-offset-2 focus-visible:ring-offset-graphite"
               aria-label="Toggle menu"
               aria-expanded={mobileMenuOpen}
             >
@@ -186,7 +220,7 @@ const shouldHideNewsletter = textScale >= 1.25; // A++ and larger
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(false)}
-                className="rounded-xl border border-vanillaCustard/20 bg-graphite p-2 text-vanillaCustard/90 transform transition-transform duration-150 active:scale-95 hover:scale-105"
+                className="rounded-xl border border-vanillaCustard/20 bg-graphite p-2 text-vanillaCustard/90 transform transition-transform duration-150 active:scale-95 hover:scale-105 outline-none focus-visible:ring-2 focus-visible:ring-paleAmber focus-visible:ring-offset-2 focus-visible:ring-offset-graphite"
                 aria-label="Close menu"
               >
                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -241,20 +275,6 @@ const shouldHideNewsletter = textScale >= 1.25; // A++ and larger
                 <button
                   type="button"
                   onClick={() => {
-                    navigate('/submit');
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`w-full rounded-xl border px-4 py-3 text-left text-base font-semibold transition-all duration-200 transform active:scale-95 hover:translate-x-1 ${
-                    location.pathname === '/submit' 
-                      ? 'border-paleAmber bg-paleAmber/20 text-paleAmber shadow-soft' 
-                      : 'border-vanillaCustard/20 bg-graphite text-vanillaCustard hover:bg-pitchBlack/60'
-                  }`}
-                >
-                  Submit a Resource
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
                     navigate('/blog');
                     setMobileMenuOpen(false);
                   }}
@@ -279,6 +299,20 @@ const shouldHideNewsletter = textScale >= 1.25; // A++ and larger
                   }`}
                 >
                   About
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigate('/submit');
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full rounded-xl border px-4 py-3 text-left text-base font-semibold transition-all duration-200 transform active:scale-95 hover:translate-x-1 ${
+                    location.pathname === '/submit' 
+                      ? 'border-paleAmber bg-paleAmber/20 text-paleAmber shadow-soft' 
+                      : 'border-vanillaCustard/20 bg-graphite text-vanillaCustard hover:bg-pitchBlack/60'
+                  }`}
+                >
+                  Submit a Resource
                 </button>
               </div>
               

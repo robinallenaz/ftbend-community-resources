@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 import type { NewsletterCampaign, NewsletterSubscriber } from '../types';
 import { api } from '../admin/api';
 
@@ -8,6 +9,67 @@ type CampaignDraft = {
   htmlContent: string;
   textContent: string;
 };
+
+// Sanitization configuration for newsletter content
+const newsletterSanitizeConfig = {
+  ALLOWED_TAGS: [
+    'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+    'p', 'br', 'strong', 'em', 'u', 's', 'del', 'ins',
+    'ul', 'ol', 'li',
+    'blockquote', 'pre', 'code',
+    'a', 'img',
+    'div', 'span',
+    'hr', 'table', 'thead', 'tbody', 'tr', 'th', 'td'
+  ],
+  ALLOWED_ATTR: [
+    'href', 'title', 'alt', 'class', 'id', 'src', 'width', 'height',
+    'target', 'rel', 'style'
+  ],
+  ALLOWED_URI_REGEXP: /^https:\/\/(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?::\d{1,5})?(?:\/[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*)?(?:\?[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*)?(?:#[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*)?$|^\/(?:[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*|\.\/[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*)*$/,
+  FORBID_TAGS: ['script', 'object', 'embed', 'iframe', 'form', 'input', 'button', 'style', 'link', 'meta', 'svg', 'math', 'video', 'audio', 'canvas'],
+  FORBID_ATTR: ['onclick', 'onload', 'onerror', 'onmouseover', 'onfocus', 'onblur', 'onsubmit', 'onchange', 'data-', 'xlink:href', 'xmlns', 'javascript:', 'vbscript:', 'data:text/html'],
+  SANITIZE_DOM: true,
+  KEEP_CONTENT: true,
+  FORBID_SCRIPT: true,
+  SANITIZE_NAMED_PROPS: true,
+  SANITIZE_NAMED_PROPS_WITH_PREFIX: ['data'],
+  WHOLE_DOCUMENT: false,
+  RETURN_DOM: false,
+  RETURN_DOM_FRAGMENT: false,
+  RETURN_DOM_IMPORT: false,
+  ADD_ATTR: ['target'],
+  ADD_URI_SAFE_ATTR: ['href', 'src'],
+  CUSTOM_ELEMENT_HANDLING: {
+    tagNameCheck: null,
+    attributeNameCheck: null,
+    allowCustomizedBuiltInElements: false
+  }
+};
+
+// Sanitize HTML content for safe rendering
+function sanitizeNewsletterHtml(html: string): string {
+  if (!html || typeof html !== 'string') {
+    return '';
+  }
+  
+  try {
+    // Additional security checks
+    if (html.includes('<script') || 
+        html.includes('javascript:') || 
+        html.includes('vbscript:') || 
+        html.includes('data:text/html') ||
+        html.includes('onerror=') ||
+        html.includes('onload=')) {
+      console.warn('Potentially dangerous content detected in newsletter HTML');
+      return DOMPurify.sanitize('<p>Content contains potentially unsafe elements</p>', newsletterSanitizeConfig);
+    }
+    
+    return DOMPurify.sanitize(html, newsletterSanitizeConfig);
+  } catch (error) {
+    console.error('Error sanitizing newsletter HTML:', error);
+    return '<p>Error processing content</p>';
+  }
+}
 
 export default function AdminNewsletterPage() {
   const [campaigns, setCampaigns] = useState<NewsletterCampaign[]>([]);
@@ -27,8 +89,11 @@ export default function AdminNewsletterPage() {
   // Sync markdown to htmlContent when toggled
   useEffect(() => {
     if (useMarkdown) {
-      const html = marked(markdown);
-      setDraft(prev => ({ ...prev, htmlContent: html }));
+      const processMarkdown = async () => {
+        const html = await marked(markdown);
+        setDraft(prev => ({ ...prev, htmlContent: html }));
+      };
+      processMarkdown();
     }
   }, [markdown, useMarkdown]);
 
@@ -68,7 +133,7 @@ export default function AdminNewsletterPage() {
     setMessage('');
     try {
       const finalDraft = useMarkdown
-        ? { ...draft, htmlContent: marked(markdown) }
+        ? { ...draft, htmlContent: await marked(markdown) }
         : draft;
       const res = await api.post<{ campaign: NewsletterCampaign }>('/api/admin/newsletter/campaigns', finalDraft);
       setCampaigns([res.campaign, ...campaigns]);
@@ -111,7 +176,20 @@ export default function AdminNewsletterPage() {
     }
   }
 
-  const currentHtml = useMarkdown ? marked(markdown) : draft.htmlContent;
+  const [currentHtml, setCurrentHtml] = useState<string>('');
+
+  // Update currentHtml when markdown or draft changes
+  useEffect(() => {
+    const updateHtml = async () => {
+      if (useMarkdown) {
+        const html = await marked(markdown);
+        setCurrentHtml(html);
+      } else {
+        setCurrentHtml(draft.htmlContent);
+      }
+    };
+    updateHtml();
+  }, [markdown, draft.htmlContent, useMarkdown]);
 
   function insertImage() {
     if (!imageUrl) return;
@@ -230,7 +308,7 @@ export default function AdminNewsletterPage() {
               <span className="text-sm font-semibold text-vanillaCustard/85">Live Preview</span>
               <div className="rounded-2xl border border-vanillaCustard/15 bg-graphite p-4 prose prose-invert max-w-none min-h-[12rem]">
                 {currentHtml ? (
-                  <div dangerouslySetInnerHTML={{ __html: currentHtml }} />
+                  <div dangerouslySetInnerHTML={{ __html: sanitizeNewsletterHtml(currentHtml) }} />
                 ) : (
                   <div className="text-vanillaCustard/50 italic">Preview will appear here...</div>
                 )}
@@ -349,7 +427,7 @@ export default function AdminNewsletterPage() {
                     <div className="mb-2 text-sm font-bold text-gray-600">HTML Preview (Gmail-style):</div>
                     <div
                       className="text-black"
-                      dangerouslySetInnerHTML={{ __html: c.htmlContent }}
+                      dangerouslySetInnerHTML={{ __html: sanitizeNewsletterHtml(c.htmlContent) }}
                     />
                   </div>
                 )}

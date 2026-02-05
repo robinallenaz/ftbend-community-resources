@@ -273,13 +273,34 @@ router.post('/blog-submissions', async (req, res, next) => {
       req.body
     );
 
-    // Generate slug from title
+    // Generate slug from title with proper sanitization
     const slug = input.title
       .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
+      .trim()
+      // Remove HTML tags and scripts
+      .replace(/<[^>]*>/g, '')
+      // Remove dangerous characters and scripts
+      .replace(/[<>:"\\|?*]/g, '')
+      // Remove JavaScript and data protocols
+      .replace(/javascript:/gi, '')
+      .replace(/data:/gi, '')
+      // Remove control characters
+      .replace(/[\x00-\x1f\x7f]/g, '')
+      // Replace spaces and special chars with hyphens
+      .replace(/[^\w\s-]/g, '')
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-')
-      .trim('-') + `-${Date.now().toString(36)}`;
+      // Remove leading/trailing hyphens
+      .replace(/^-+|-+$/g, '')
+      // Add timestamp to ensure uniqueness
+      + `-${Date.now().toString(36)}`;
+
+    // Validate the generated slug
+    if (!slug || slug.length > 200) {
+      const error = new Error('Invalid slug generated from title');
+      error.status = 400;
+      throw error;
+    }
 
     const blogPost = await BlogPost.create({
       title: input.title,
@@ -370,8 +391,9 @@ router.post('/blog-submissions', async (req, res, next) => {
 // Get published blog posts
 router.get('/blog-posts', async (req, res, next) => {
   try {
-    // Add response caching for public API
-    res.set('Cache-Control', 'public, max-age=300'); // 5 minutes cache for blog posts
+    // Add response caching with shorter duration for dynamic content
+    const cacheMaxAge = process.env.NODE_ENV === 'production' ? 60 : 30; // 1 minute prod, 30 seconds dev
+    res.set('Cache-Control', `public, max-age=${cacheMaxAge}, stale-while-revalidate=120`);
     
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -403,6 +425,9 @@ router.get('/blog-posts', async (req, res, next) => {
 
     const total = await BlogPost.countDocuments(filter);
 
+    // Add cache invalidation headers for dynamic content
+    res.set('ETag', `"${JSON.stringify({ page, total, timestamp: Date.now() })}"`);
+    
     res.json({
       posts,
       pagination: {
@@ -420,8 +445,9 @@ router.get('/blog-posts', async (req, res, next) => {
 // Get single blog post
 router.get('/blog-posts/:slug', async (req, res, next) => {
   try {
-    // Add response caching for public API
-    res.set('Cache-Control', 'public, max-age=600'); // 10 minutes cache for individual posts
+    // Add shorter cache for individual posts to allow view count updates
+    const cacheMaxAge = process.env.NODE_ENV === 'production' ? 120 : 60; // 2 minutes prod, 1 minute dev
+    res.set('Cache-Control', `public, max-age=${cacheMaxAge}, stale-while-revalidate=300`);
     
     const post = await BlogPost.findOne({ 
       slug: req.params.slug, 
@@ -432,11 +458,29 @@ router.get('/blog-posts/:slug', async (req, res, next) => {
       return res.status(404).json({ error: 'Blog post not found' });
     }
 
-    // Increment view count
-    await BlogPost.updateOne(
-      { _id: post._id },
-      { $inc: { viewCount: 1 } }
-    );
+    // Increment view count asynchronously (don't wait for it)
+    setImmediate(async () => {
+      try {
+        await BlogPost.updateOne(
+          { _id: post._id },
+          { $inc: { viewCount: 1 } }
+        );
+      } catch (error) {
+        console.error('Failed to increment view count:', error);
+      }
+    });
+
+    // Add cache headers with content hash
+    const contentHash = require('crypto')
+      .createHash('md5')
+      .update(JSON.stringify({ 
+        slug: post.slug, 
+        viewCount: post.viewCount,
+        updatedAt: post.updatedAt 
+      }))
+      .digest('hex');
+    
+    res.set('ETag', `"${contentHash}"`);
 
     res.json({ post });
   } catch (e) {

@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { api } from './api';
+import { safeGetItem, safeSetItem, safeRemoveItem } from '../utils/storageUtils';
 
 type Role = 'admin' | 'editor';
 
@@ -20,22 +21,53 @@ type AuthState = {
 
 const AuthContext = createContext<AuthState | null>(null);
 
-function getStoredToken() {
-  return localStorage.getItem('authToken') || '';
+async function getStoredToken() {
+  return await safeGetItem('authToken', '');
 }
 
-function setStoredToken(token: string) {
-  if (token) localStorage.setItem('authToken', token);
-  else localStorage.removeItem('authToken');
+async function setStoredToken(token: string) {
+  if (token) await safeSetItem('authToken', token);
+  else await safeRemoveItem('authToken');
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [token, setToken] = useState(getStoredToken());
+  const [token, setToken] = useState('');
+
+  // Initialize token from storage - consolidated initialization
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        setLoading(true);
+        const storedToken = await getStoredToken();
+        setToken(storedToken);
+        
+        if (storedToken) {
+          try {
+            const res = await api.get<{ user: AuthUser }>('/api/auth/me');
+            setUser(res.user);
+          } catch {
+            await setStoredToken('');
+            setToken('');
+            setUser(null);
+          }
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.error('Failed to initialize auth:', error);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    initializeAuth();
+  }, []); // Single initialization effect
 
   async function refresh() {
-    const t = getStoredToken();
+    const t = await getStoredToken();
     setToken(t);
     if (!t) {
       setUser(null);
@@ -46,7 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const res = await api.get<{ user: AuthUser }>('/api/auth/me');
       setUser(res.user);
     } catch {
-      setStoredToken('');
+      await setStoredToken('');
       setToken('');
       setUser(null);
     }
@@ -57,7 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email,
       password
     });
-    setStoredToken(res.token);
+    await setStoredToken(res.token);
     setToken(res.token);
     setUser(res.user);
   }
@@ -66,19 +98,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await api.post<void>('/api/auth/logout');
     } finally {
-      setStoredToken('');
+      await setStoredToken('');
       setToken('');
       setUser(null);
     }
   }
 
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
-      await refresh();
-      setLoading(false);
-    })();
-  }, []);
+  // Remove duplicate initialization effect - consolidated above
 
   const value = useMemo<AuthState>(
     () => ({ loading, user, token, login, logout, refresh }),

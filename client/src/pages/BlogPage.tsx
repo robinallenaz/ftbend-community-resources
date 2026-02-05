@@ -1,65 +1,130 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { updateMetaTag, updateCanonicalUrl, updateDocumentTitle, updateMetaDescription, cleanupMetaTags, getSiteUrl } from '../utils/seoUtils';
+import { safeGetItem, safeSetItem } from '../utils/storageUtils';
 
-// SEO Meta Tags Component
+// SEO Meta Tags Component with proper cleanup tracking
 function BlogPageSEO() {
+  const createdMetaTags = useRef<Set<HTMLMetaElement>>(new Set());
+  
   useEffect(() => {
-    // Update document title
-    document.title = 'Community Blog | Fort Bend County LGBTQIA+ Community';
+    const siteUrl = getSiteUrl();
     
-    // Update or create meta description
-    let metaDesc = document.querySelector('meta[name="description"]') as HTMLMetaElement;
-    if (!metaDesc) {
-      metaDesc = document.createElement('meta');
-      metaDesc.name = 'description';
-      document.head.appendChild(metaDesc);
-    }
-    metaDesc.content = 'Read stories, insights, and experiences from the Fort Bend LGBTQIA+ community. Personal narratives, community news, and resources shared by local voices.';
+    // Helper function to create or update meta tag safely
+    const createOrUpdateMetaTag = (property: string, content: string): HTMLMetaElement => {
+      let tag: HTMLMetaElement | null = null;
+      
+      // Safely get document head with validation
+      if (!document || !document.head) {
+        console.error('Document head not available');
+        return null as any;
+      }
+      
+      const head = document.head;
+      
+      // Find existing tag using safe DOM methods
+      try {
+        const metaTags = head.getElementsByTagName('meta');
+        for (let i = 0; i < metaTags.length; i++) {
+          const meta = metaTags[i];
+          
+          // Comprehensive validation to prevent DOM clobbering
+          if (!meta || 
+              meta.nodeType !== Node.ELEMENT_NODE || 
+              meta.tagName?.toLowerCase() !== 'meta' ||
+              typeof meta.getAttribute !== 'function' || 
+              typeof meta.setAttribute !== 'function') {
+            continue;
+          }
+          
+          const metaElement = meta as HTMLMetaElement;
+          
+          // Check for matching attribute
+          if (property.startsWith('twitter:')) {
+            const nameAttr = metaElement.getAttribute('name');
+            if (typeof nameAttr === 'string' && nameAttr === property) {
+              tag = metaElement;
+              break;
+            }
+          } else if (property.startsWith('og:')) {
+            const propertyAttr = metaElement.getAttribute('property');
+            if (typeof propertyAttr === 'string' && propertyAttr === property) {
+              tag = metaElement;
+              break;
+            }
+          } else {
+            const nameAttr = metaElement.getAttribute('name');
+            if (typeof nameAttr === 'string' && nameAttr === property) {
+              tag = metaElement;
+              break;
+            }
+          }
+        }
+        
+        // Create new tag if not found
+        if (!tag) {
+          tag = document.createElement('meta') as HTMLMetaElement;
+          
+          if (property.startsWith('twitter:')) {
+            tag.setAttribute('name', property);
+          } else if (property.startsWith('og:')) {
+            tag.setAttribute('property', property);
+          } else {
+            tag.setAttribute('name', property);
+          }
+          
+          head.appendChild(tag);
+          createdMetaTags.current.add(tag);
+        }
+        
+        // Set content
+        tag.setAttribute('content', content);
+        
+        return tag;
+      } catch (error) {
+        console.error('Error creating meta tag:', error);
+        return null as any;
+      }
+    };
+    
+    // Update document title
+    updateDocumentTitle('Community Blog | Fort Bend County LGBTQIA+ Community');
+    
+    // Update meta description
+    updateMetaDescription('Read stories, insights, and experiences from the Fort Bend LGBTQIA+ community. Personal narratives, community news, and resources shared by local voices.');
     
     // Update Open Graph tags
-    updateMetaTag('og:title', 'Community Blog | Fort Bend County LGBTQIA+ Community');
-    updateMetaTag('og:description', 'Read stories, insights, and experiences from the Fort Bend LGBTQIA+ community. Personal narratives, community news, and resources shared by local voices.');
-    updateMetaTag('og:url', 'https://ftbend-lgbtqia-community.org/blog');
-    updateMetaTag('og:type', 'website');
+    createOrUpdateMetaTag('og:title', 'Community Blog | Fort Bend County LGBTQIA+ Community');
+    createOrUpdateMetaTag('og:description', 'Read stories, insights, and experiences from the Fort Bend LGBTQIA+ community. Personal narratives, community news, and resources shared by local voices.');
+    createOrUpdateMetaTag('og:url', `${siteUrl}/blog`);
+    createOrUpdateMetaTag('og:type', 'website');
     
     // Update Twitter Card tags
-    updateMetaTag('twitter:title', 'Community Blog | Fort Bend County LGBTQIA+ Community');
-    updateMetaTag('twitter:description', 'Read stories, insights, and experiences from the Fort Bend LGBTQIA+ community.');
+    createOrUpdateMetaTag('twitter:title', 'Community Blog | Fort Bend County LGBTQIA+ Community');
+    createOrUpdateMetaTag('twitter:description', 'Read stories, insights, and experiences from the Fort Bend LGBTQIA+ community.');
     
     // Update canonical URL
-    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
-    if (!canonical) {
-      canonical = document.createElement('link');
-      canonical.rel = 'canonical';
-      document.head.appendChild(canonical);
-    }
-    canonical.href = 'https://ftbend-lgbtqia-community.org/blog';
+    updateCanonicalUrl(`${siteUrl}/blog`);
     
     return () => {
-      // Cleanup function to remove meta tags when component unmounts
-      const createdTags = ['meta[name="description"]', 'meta[property^="og:"]', 'meta[property^="twitter:"]', 'link[rel="canonical"]'];
-      createdTags.forEach(selector => {
-        const elements = document.head.querySelectorAll(selector);
-        elements.forEach(el => el.remove());
+      // Cleanup only the meta tags created by this component
+      createdMetaTags.current.forEach(tag => {
+        try {
+          if (tag.parentNode) {
+            tag.parentNode.removeChild(tag);
+          }
+        } catch (error) {
+          console.error('Error removing meta tag:', error);
+        }
       });
+      createdMetaTags.current.clear();
+      
+      // Call general cleanup for other meta operations
+      cleanupMetaTags();
     };
   }, []);
   
   return null;
-}
-
-function updateMetaTag(property: string, content: string) {
-  let tag = document.querySelector(`meta[property="${property}"], meta[name="${property}"]`) as HTMLMetaElement;
-  if (!tag) {
-    tag = document.createElement('meta');
-    if (property.startsWith('twitter:')) {
-      tag.name = property;
-    } else {
-      tag.setAttribute('property', property);
-    }
-    document.head.appendChild(tag);
-  }
-  tag.content = content;
 }
 
 interface BlogPost {
@@ -103,6 +168,14 @@ export default function BlogPage() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortBy, setSortBy] = useState<'recent' | 'popular' | 'trending'>('recent');
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [scrollPosition, setScrollPosition] = useState(0);
+  const [isMounted, setIsMounted] = useState(true);
+  const [likingPostId, setLikingPostId] = useState<string | null>(null);
+  
+  // Single abort controller for the component lifecycle
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const currentRequestIdRef = useRef<number>(0);
 
   const postsPerPage = 12;
 
@@ -122,23 +195,42 @@ export default function BlogPage() {
   }, [location.hash, location.state]);
 
   useEffect(() => {
-    // Only fetch posts if not the initial load
-    if (posts.length > 0) {
-      const scrollY = window.scrollY;
-      fetchPosts().then(() => {
-        // Restore scroll position after data loads
+    const loadData = async () => {
+      // Save scroll position for non-initial loads
+      if (!isInitialLoad) {
+        setScrollPosition(window.scrollY);
+      }
+      
+      // Always fetch posts
+      await fetchPosts();
+      
+      // Restore scroll position after data loads for non-initial loads
+      if (!isInitialLoad && isMounted && scrollPosition > 0) {
         setTimeout(() => {
-          window.scrollTo(0, scrollY);
+          if (isMounted) {
+            window.scrollTo(0, scrollPosition);
+          }
         }, 100);
-      });
-    } else {
-      fetchPosts();
-    }
-    // Load liked posts from localStorage
-    const savedLikedPosts = localStorage.getItem('likedBlogPosts');
-    if (savedLikedPosts) {
-      setLikedPosts(new Set(JSON.parse(savedLikedPosts)));
-    }
+      }
+      
+      // Load liked posts from localStorage safely (only on initial load)
+      if (isInitialLoad) {
+        safeGetItem('likedBlogPosts', [])
+          .then(savedLikedPosts => {
+            if (Array.isArray(savedLikedPosts)) {
+              setLikedPosts(new Set(savedLikedPosts));
+            }
+          })
+          .catch(error => {
+            console.error('Failed to load liked posts:', error);
+          })
+          .finally(() => {
+            setIsInitialLoad(false);
+          });
+      }
+    };
+    
+    loadData();
   }, [currentPage, selectedCategory, selectedTag, searchQuery, sortBy]);
 
   async function handlePageChange(newPage: number) {
@@ -146,6 +238,16 @@ export default function BlogPage() {
   }
 
   async function fetchPosts() {
+    // Cancel any ongoing request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    // Create new AbortController for this request
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+    const requestId = ++currentRequestIdRef.current;
+    
     try {
       setLoading(true);
       const params = new URLSearchParams({
@@ -165,23 +267,60 @@ export default function BlogPage() {
         params.append('q', searchQuery.trim());
       }
 
-      const response = await fetch(`/api/public/blog-posts?${params}`);
+      const response = await fetch(`/api/public/blog-posts?${params}`, {
+        signal: controller.signal
+      });
+      
+      // Check if request was aborted or component unmounted
+      if (controller.signal.aborted || !isMounted || requestId !== currentRequestIdRef.current) {
+        return;
+      }
+      
       if (!response.ok) throw new Error('Failed to fetch blog posts');
       
       const data: BlogListResponse = await response.json();
-      setPosts(data.posts);
-      setTotalPages(data.pagination.pages);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load blog posts');
-      setPosts([]);
+      
+      // Only update state if this is still the current request and component is mounted
+      if (!controller.signal.aborted && isMounted && requestId === currentRequestIdRef.current) {
+        setPosts(data.posts);
+        setTotalPages(data.pagination.pages);
+        setError(null);
+      }
+    } catch (err: any) {
+      // Don't update state if request was aborted or component unmounted
+      if (err.name === 'AbortError' || !isMounted || requestId !== currentRequestIdRef.current) {
+        return;
+      }
+      
+      if (isMounted) {
+        setError(err instanceof Error ? err.message : 'Failed to load blog posts');
+        setPosts([]);
+      }
     } finally {
-      setLoading(false);
+      // Only clear loading if this is still the current request and component is mounted
+      if (!controller.signal.aborted && isMounted && requestId === currentRequestIdRef.current) {
+        setLoading(false);
+        abortControllerRef.current = null;
+      }
     }
   }
 
+  // Cleanup function for component unmount
+  useEffect(() => {
+    return () => {
+      setIsMounted(false);
+      // Abort any ongoing request when component unmounts
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
+
   async function handleLike(postId: string) {
+    if (likingPostId) return; // Prevent concurrent likes
+    
     try {
+      setLikingPostId(postId);
       const isLiked = likedPosts.has(postId);
       const action = isLiked ? 'unlike' : 'like';
       
@@ -208,28 +347,35 @@ export default function BlogPage() {
         newLikedPosts.add(postId);
       }
       setLikedPosts(newLikedPosts);
-      localStorage.setItem('likedBlogPosts', JSON.stringify(Array.from(newLikedPosts)));
+      
+      // Save to localStorage safely
+      safeSetItem('likedBlogPosts', Array.from(newLikedPosts))
+        .catch(error => {
+          console.error('Failed to save liked posts:', error);
+        });
       
     } catch (err) {
       console.error('Like error:', err);
+    } finally {
+      setLikingPostId(null);
     }
   }
 
-  function getAllCategories() {
+  const getAllCategories = useMemo(() => {
     const categories = new Set<string>();
     posts.forEach(post => {
       post.categories.forEach(cat => categories.add(cat));
     });
     return Array.from(categories).sort();
-  }
+  }, [posts]);
 
-  function getAllTags() {
+  const getAllTags = useMemo(() => {
     const tags = new Set<string>();
     posts.forEach(post => {
       post.tags.forEach(tag => tags.add(tag));
     });
     return Array.from(tags).sort();
-  }
+  }, [posts]);
 
   function formatDate(dateString: string) {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -265,6 +411,22 @@ export default function BlogPage() {
     };
   }
 
+  // Sanitize Cloudinary image filename to prevent path traversal
+  function sanitizeImageFilename(filename: string): string {
+    if (!filename) return '';
+    
+    // Extract filename from URL path
+    const extractedFilename = filename.split('/').pop() || filename;
+    
+    // Remove any path traversal attempts and allow only safe characters
+    const sanitized = extractedFilename
+      .replace(/\.\./g, '') // Remove path traversal
+      .replace(/[\/\\]/g, '') // Remove directory separators
+      .replace(/[^a-zA-Z0-9._-]/g, ''); // Allow only alphanumeric, dots, hyphens, underscores
+    
+    return sanitized.substring(0, 100); // Limit length
+  }
+
   function getPopularPosts() {
     return posts
       .filter(post => post.likeCount && post.likeCount > 0)
@@ -294,6 +456,37 @@ export default function BlogPage() {
 
         {/* Featured Content Section */}
         <div className="mb-12">
+          {/* Featured Post Skeleton */}
+          {loading && (
+            <div className="rounded-2xl border border-vanillaCustard/20 bg-pitchBlack overflow-hidden shadow-lg animate-pulse">
+              <div className="p-4 border-b border-vanillaCustard/10 bg-pitchBlack relative z-10">
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 bg-paleAmber/30 rounded"></div>
+                  <div className="w-24 h-4 bg-paleAmber/30 rounded"></div>
+                </div>
+              </div>
+              <div className="p-6 relative z-10">
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Featured Image Skeleton */}
+                  <div className="aspect-video overflow-hidden rounded-xl bg-graphite border border-vanillaCustard/15">
+                    <div className="w-full h-full bg-gradient-to-br from-graphite to-pitchBlack animate-pulse"></div>
+                  </div>
+                  {/* Content Skeleton */}
+                  <div className="flex flex-col justify-center min-w-0 space-y-3">
+                    <div className="h-8 bg-vanillaCustard/20 rounded w-3/4"></div>
+                    <div className="h-4 bg-vanillaCustard/10 rounded w-1/2"></div>
+                    <div className="h-4 bg-vanillaCustard/10 rounded w-1/3"></div>
+                    <div className="space-y-2">
+                      <div className="h-4 bg-vanillaCustard/10 rounded"></div>
+                      <div className="h-4 bg-vanillaCustard/10 rounded w-5/6"></div>
+                    </div>
+                    <div className="h-6 bg-paleAmber/20 rounded w-32"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
           {/* Featured Post */}
           {!loading && !error && posts.length > 0 && (
             <div className="rounded-2xl border border-vanillaCustard/20 bg-pitchBlack overflow-hidden shadow-lg">
@@ -313,13 +506,44 @@ export default function BlogPage() {
                       <picture>
                         <source 
                           type="image/webp" 
-                          srcSet={`https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_800/ftbend-community-gallery/${posts[0].featuredImage.split('/').pop()}`}
+                          media="(min-width: 768px)"
+                          srcSet={`
+                            https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_1200,h_675,c_fill/ftbend-community-gallery/${sanitizeImageFilename(posts[0].featuredImage)} 1200w,
+                            https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_800,h_450,c_fill/ftbend-community-gallery/${sanitizeImageFilename(posts[0].featuredImage)} 800w
+                          `}
+                        />
+                        <source 
+                          type="image/webp" 
+                          media="(max-width: 767px)"
+                          srcSet={`
+                            https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_400,h_225,c_fill/ftbend-community-gallery/${sanitizeImageFilename(posts[0].featuredImage)} 400w
+                          `}
+                        />
+                        <source 
+                          type="image/jpeg" 
+                          media="(min-width: 768px)"
+                          srcSet={`
+                            https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_1200,h_675,c_fill/ftbend-community-gallery/${sanitizeImageFilename(posts[0].featuredImage)} 1200w,
+                            https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_800,h_450,c_fill/ftbend-community-gallery/${sanitizeImageFilename(posts[0].featuredImage)} 800w
+                          `}
+                        />
+                        <source 
+                          type="image/jpeg" 
+                          media="(max-width: 767px)"
+                          srcSet={`
+                            https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_400,h_225,c_fill/ftbend-community-gallery/${sanitizeImageFilename(posts[0].featuredImage)} 400w
+                          `}
                         />
                         <img
-                          src={`https://res.cloudinary.com/dpus8jizix/image/upload/q_auto,f_auto,w_800/ftbend-community-gallery/${posts[0].featuredImage.split('/').pop()}`}
+                          src={`https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_800,h_450,c_fill/ftbend-community-gallery/${sanitizeImageFilename(posts[0].featuredImage)}`}
                           alt={posts[0].title}
+                          width={800}
+                          height={450}
                           className="w-full h-full object-cover"
-                          loading="lazy"
+                          fetchPriority="high"
+                          loading="eager"
+                          decoding="sync"
+                          sizes="(max-width: 767px) 400px, (min-width: 768px) 800px"
                           onError={(e) => {
                             // Fallback to original URL if Cloudinary fails
                             if (posts[0].featuredImage) {
@@ -420,7 +644,7 @@ export default function BlogPage() {
                 className="rounded-md border border-vanillaCustard/20 bg-graphite px-2 py-1 text-vanillaCustard focus:border-paleAmber focus:outline-none focus:ring-1 focus:ring-paleAmber/50 transition-all flex-shrink-0"
               >
                 <option value="">Categories</option>
-                {getAllCategories().map(category => (
+                {getAllCategories.map((category: string) => (
                   <option key={category} value={category}>
                     {category.length > 10 ? category.substring(0, 10) + '...' : category}
                   </option>
@@ -436,7 +660,7 @@ export default function BlogPage() {
                 className="rounded-md border border-vanillaCustard/20 bg-graphite px-2 py-1 text-vanillaCustard focus:border-paleAmber focus:outline-none focus:ring-1 focus:ring-paleAmber/50 transition-all flex-shrink-0"
               >
                 <option value="">All Tags</option>
-                {getAllTags().map(tag => (
+                {getAllTags.map((tag: string) => (
                   <option key={tag} value={tag}>
                     #{tag.length > 8 ? tag.substring(0, 8) + '...' : tag}
                   </option>
@@ -460,10 +684,48 @@ export default function BlogPage() {
         {/* Error State */}
         {error && (
           <div className="text-center py-12">
-            <div className="rounded-2xl border border-red-500/30 bg-red-900/20 p-8 max-w-md mx-auto">
-              <div className="text-red-200 mb-4">⚠️</div>
-              <div className="text-red-200">{error}</div>
+            <div className="rounded-2xl border border-vanillaCustard/20 bg-pitchBlack/50 p-8 max-w-md mx-auto">
+              <h3 className="text-vanillaCustard font-semibold mb-2">Unable to Load Blog Posts</h3>
+              <p className="text-vanillaCustard/70 mb-4">
+                We're having trouble loading our blog posts right now. 
+                Please try refreshing the page or check back later.
+              </p>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 bg-paleAmber text-pitchBlack rounded-lg hover:bg-vanillaCustard transition-colors"
+              >
+                Try Again
+              </button>
             </div>
+          </div>
+        )}
+
+        {/* Blog Posts Grid Skeletons */}
+        {loading && (
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }, (_, index) => (
+              <div key={`skeleton-${index}`} className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack overflow-hidden animate-pulse">
+                {/* Image Skeleton */}
+                <div className="aspect-video bg-graphite border-b border-vanillaCustard/15">
+                  <div className="w-full h-full bg-gradient-to-br from-graphite to-pitchBlack animate-pulse"></div>
+                </div>
+                {/* Content Skeleton */}
+                <div className="p-4 sm:p-6 space-y-3">
+                  <div className="h-6 bg-vanillaCustard/20 rounded w-3/4"></div>
+                  <div className="flex flex-wrap gap-2">
+                    <div className="h-3 bg-vanillaCustard/10 rounded w-16"></div>
+                    <div className="h-3 bg-vanillaCustard/10 rounded w-20"></div>
+                    <div className="h-3 bg-vanillaCustard/10 rounded w-16"></div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="h-4 bg-vanillaCustard/10 rounded"></div>
+                    <div className="h-4 bg-vanillaCustard/10 rounded w-5/6"></div>
+                    <div className="h-4 bg-vanillaCustard/10 rounded w-4/6"></div>
+                  </div>
+                  <div className="h-5 bg-paleAmber/20 rounded w-20"></div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
@@ -495,7 +757,7 @@ export default function BlogPage() {
             ) : (
               <>
                 <div className="text-sm text-vanillaCustard/70 mb-6">
-                  Showing {posts.length} of {totalPages * postsPerPage} blog posts
+                  Showing {posts.length} blog posts
                 </div>
 
                 <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
@@ -513,13 +775,45 @@ export default function BlogPage() {
                           <picture>
                             <source 
                               type="image/webp" 
-                              srcSet={`https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_400/ftbend-community-gallery/${post.featuredImage.split('/').pop()}`}
+                              media="(min-width: 1024px)"
+                              srcSet={`
+                                https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_600,h_338,c_fill/ftbend-community-gallery/${sanitizeImageFilename(post.featuredImage)} 600w,
+                                https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_400,h_225,c_fill/ftbend-community-gallery/${sanitizeImageFilename(post.featuredImage)} 400w
+                              `}
+                            />
+                            <source 
+                              type="image/webp" 
+                              media="(max-width: 1023px)"
+                              srcSet={`
+                                https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_400,h_225,c_fill/ftbend-community-gallery/${sanitizeImageFilename(post.featuredImage)} 400w,
+                                https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_300,h_169,c_fill/ftbend-community-gallery/${sanitizeImageFilename(post.featuredImage)} 300w
+                              `}
+                            />
+                            <source 
+                              type="image/jpeg" 
+                              media="(min-width: 1024px)"
+                              srcSet={`
+                                https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_600,h_338,c_fill/ftbend-community-gallery/${sanitizeImageFilename(post.featuredImage)} 600w,
+                                https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_400,h_225,c_fill/ftbend-community-gallery/${sanitizeImageFilename(post.featuredImage)} 400w
+                              `}
+                            />
+                            <source 
+                              type="image/jpeg" 
+                              media="(max-width: 1023px)"
+                              srcSet={`
+                                https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_400,h_225,c_fill/ftbend-community-gallery/${sanitizeImageFilename(post.featuredImage)} 400w,
+                                https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_300,h_169,c_fill/ftbend-community-gallery/${sanitizeImageFilename(post.featuredImage)} 300w
+                              `}
                             />
                             <img
-                              src={`https://res.cloudinary.com/dpus8jizix/image/upload/q_auto,f_auto,w_400/ftbend-community-gallery/${post.featuredImage.split('/').pop()}`}
+                              src={`https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_400,h_225,c_fill/ftbend-community-gallery/${sanitizeImageFilename(post.featuredImage)}`}
                               alt={post.title}
+                              width={400}
+                              height={225}
                               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                               loading="lazy"
+                              decoding="async"
+                              sizes="(max-width: 1023px) 400px, (min-width: 1024px) 600px"
                               onError={(e) => {
                                 // Fallback to original URL if Cloudinary fails
                                 if (post.featuredImage) {
@@ -547,14 +841,21 @@ export default function BlogPage() {
                           <span>By {post.authorName}</span>
                           <span>{formatDate(post.publishedAt || post.createdAt)}</span>
                           <span>{getReadingTime(post.content)} min read</span>
-                          {post.likeCount !== undefined && (
-                            <span className="flex items-center gap-1">
-                              <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                              </svg>
-                              {post.likeCount}
-                            </span>
-                          )}
+                        {/* Like Button */}
+                        <button
+                          onClick={() => handleLike(post._id)}
+                          disabled={likingPostId === post._id}
+                          className={`flex items-center gap-1 text-sm transition-colors ${
+                            likingPostId === post._id
+                              ? 'opacity-50 cursor-not-allowed'
+                              : 'hover:text-paleAmber cursor-pointer'
+                          } ${likedPosts.has(post._id) ? 'text-paleAmber' : 'text-vanillaCustard/70'}`}
+                        >
+                          <svg className="h-3 w-3" fill={likedPosts.has(post._id) ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                            <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                          </svg>
+                          {post.likeCount !== undefined ? post.likeCount : 0}
+                        </button>
                         </div>
 
                         {/* Excerpt */}

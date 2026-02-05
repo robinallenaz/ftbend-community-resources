@@ -50,15 +50,73 @@ body {
   scroll-margin-top: 90px;
 }
 
-@keyframes fadeInSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+/* Basic markdown styling */
+#article-content {
+  color: #D1DA9C;
+  line-height: 1.6;
+}
+
+#article-content h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 2rem 0 1rem 0;
+  color: #D1DA9C;
+}
+
+#article-content h2 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 1.5rem 0 0.75rem 0;
+  color: #D1DA9C;
+}
+
+#article-content h3 {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin: 1rem 0 0.5rem 0;
+  color: #D1DA9C;
+}
+
+#article-content p {
+  margin: 0 0 1rem 0;
+  color: #D1DA9C;
+}
+
+#article-content em {
+  font-style: italic;
+  color: #D1DA9C;
+}
+
+#article-content strong {
+  font-weight: bold;
+  color: #D1DA9C;
+}
+
+#article-content a {
+  color: #D2DC76;
+  text-decoration: underline;
+  text-decoration-color: rgba(210, 220, 118, 0.5);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+#article-content a:hover {
+  color: #D1DA9C;
+  text-decoration-color: #D1DA9C;
+  text-decoration-thickness: 2px;
+}
+
+#article-content br {
+  display: block;
+  margin: 0.5rem 0;
+}
+
+#article-content hr {
+  border: none;
+  border-top: 1px solid rgba(210, 220, 118, 0.3);
+  margin: 2rem 0;
 }
 
 /* Alert blocks for extended markdown */
