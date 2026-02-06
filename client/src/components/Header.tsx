@@ -70,13 +70,13 @@ export default function Header() {
         // Validate scale value to match usage thresholds
         if (scale >= 0.8 && scale <= 1.4) {
           if (import.meta.env.DEV) {
-          console.log('Text scale changed via event:', scale);
-        }
+            console.log('Text scale changed via event:', scale);
+          }
           setTextScale(scale);
         } else {
           if (import.meta.env.DEV) {
-          console.warn('Invalid scale value received:', scale);
-        }
+            console.warn('Invalid scale value received:', scale);
+          }
           checkTextScale(); // Re-sync with CSS
         }
       } catch (error) {
@@ -134,6 +134,17 @@ const shouldHideNewsletter = textScale >= 1.25; // A++ and larger
               src="https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_64,h_64,c_fill/ftbend-lgbtqia-logo_erkzpu.jpg"
               alt="Fort Bend County LGBTQIA+ Community logo"
               className="h-10 w-10 rounded-xl object-cover flex-shrink-0"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const parent = target.parentElement;
+                if (parent) {
+                  const fallback = document.createElement('div');
+                  fallback.className = 'h-10 w-10 rounded-xl bg-paleAmber flex items-center justify-center text-pitchBlack font-bold text-lg flex-shrink-0';
+                  fallback.textContent = 'FT';
+                  parent.insertBefore(fallback, target);
+                }
+              }}
             />
             <div className="hidden sm:block">
               <div className="text-base font-extrabold leading-tight text-vanillaCustard">

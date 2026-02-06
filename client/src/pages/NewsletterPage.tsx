@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { trackCommunityEvent } from '../utils/analytics-simple';
 
 export default function NewsletterPage() {
   const [email, setEmail] = useState('');
@@ -21,9 +22,15 @@ export default function NewsletterPage() {
       setStatus('success');
       setMessage("You're subscribed! Check your inbox for a welcome email (it may go to your spam folder - mark us 'not spam' to ensure delivery).");
       setEmail('');
+      
+      // Track successful newsletter subscription
+      trackCommunityEvent('newsletter-subscription', 'success');
     } catch (e: any) {
       setStatus('error');
       setMessage(e?.message || 'Something went wrong. Try again.');
+      
+      // Track failed newsletter subscription attempt
+      trackCommunityEvent('newsletter-subscription', 'error');
     }
   }
 

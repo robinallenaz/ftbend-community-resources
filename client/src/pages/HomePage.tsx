@@ -97,7 +97,7 @@ export default function HomePage() {
               sizes="100vw"
               alt="Pride flag banner with rainbow colors representing LGBTQIA+ community" 
               className="h-full w-full object-cover"
-              fetchPriority="high"
+              {...({ fetchpriority: "high" } as any)}
             />
           </picture>
         </div>

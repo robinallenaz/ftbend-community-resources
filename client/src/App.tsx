@@ -14,6 +14,7 @@ import EventsPage from './pages/EventsPage';
 import HomePage from './pages/HomePage';
 import NewsletterPage from './pages/NewsletterPage';
 import NotFoundPage from './pages/NotFoundPage';
+import PrivacyPage from './pages/PrivacyPage';
 import ResourcesPage from './pages/ResourcesPage';
 import SubmitResourcePage from './pages/SubmitResourcePage';
 import SubmitBlogPostPage from './pages/SubmitBlogPostPage';
@@ -26,6 +27,7 @@ const AdminBlogPostsPage = lazy(() => import('./pages/AdminBlogPostsPage'));
 const AdminBlogPostEditorPage = lazy(() => import('./pages/AdminBlogPostEditorPage'));
 const AdminSubmissionsPage = lazy(() => import('./pages/AdminSubmissionsPage'));
 const AdminNewsletterPage = lazy(() => import('./pages/AdminNewsletterPage'));
+const AdminTaxonomyPage = lazy(() => import('./pages/AdminTaxonomyPage'));
 
 export default function App() {
   return (
@@ -67,6 +69,16 @@ export default function App() {
               <AdminNewsletterPage />
             </Suspense>
           } />
+          <Route path="categories" element={
+            <Suspense fallback={<div>Loading...</div>}>
+              <AdminTaxonomyPage />
+            </Suspense>
+          } />
+          <Route path="taxonomy" element={
+            <Suspense fallback={<div>Loading...</div>}>
+              <AdminTaxonomyPage />
+            </Suspense>
+          } />
           <Route path="*" element={<Navigate to="/admin" replace />} />
         </Route>
       </Route>
@@ -82,6 +94,7 @@ export default function App() {
             <AboutPage />
           </Suspense>
         } />
+        <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/newsletter" element={<NewsletterPage />} />
         <Route path="/submit" element={<SubmitResourcePage />} />
         <Route path="/submit-blog-contribution" element={<SubmitBlogPostPage />} />

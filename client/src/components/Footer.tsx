@@ -16,17 +16,19 @@ export default function Footer() {
                 <h3 className="text-lg font-extrabold text-vanillaCustard">Connect With Us</h3>
                 <div className="flex flex-wrap gap-4">
                   <a
-                    href="https://instagram.com/ftbend_lgbtqia"
+                    href={import.meta.env.VITE_INSTAGRAM_URL || 'https://instagram.com/ftbend_lgbtqia'}
                     target="_blank"
                     rel="noreferrer"
+                    aria-label="Follow us on Instagram"
                     className="inline-flex items-center gap-2 rounded-xl border border-vanillaCustard/15 bg-graphite/60 px-4 py-3 text-base font-semibold text-vanillaCustard hover:border-vanillaCustard/35 focus-within:ring-2 focus-within:ring-paleAmber focus-within:ring-offset-2 focus-within:ring-offset-pitchBlack transition min-h-[48px] min-w-[48px]"
                   >
                     Instagram
                   </a>
                   <a
-                    href="https://www.facebook.com/share/16a6rc4XjY/?mibextid=wwXIfr"
+                    href={import.meta.env.VITE_FACEBOOK_URL || 'https://www.facebook.com/share/16a6rc4XjY/?mibextid=wwXIfr'}
                     target="_blank"
                     rel="noreferrer"
+                    aria-label="Follow us on Facebook"
                     className="inline-flex items-center gap-2 rounded-xl border border-vanillaCustard/15 bg-graphite/60 px-4 py-3 text-base font-semibold text-vanillaCustard hover:border-vanillaCustard/35 focus-within:ring-2 focus-within:ring-paleAmber focus-within:ring-offset-2 focus-within:ring-offset-pitchBlack transition min-h-[48px] min-w-[48px]"
                   >
                     Facebook
@@ -41,6 +43,7 @@ export default function Footer() {
               <li><Link to="/resources" className="hover:text-paleAmber underline-offset-4 hover:underline">LGBTQIA+ Resources</Link></li>
               <li><Link to="/events" className="hover:text-paleAmber underline-offset-4 hover:underline">Community Events</Link></li>
               <li><Link to="/about" className="hover:text-paleAmber underline-offset-4 hover:underline">About Us</Link></li>
+              <li><Link to="/privacy" className="hover:text-paleAmber underline-offset-4 hover:underline">Privacy Policy</Link></li>
               <li><Link to="/submit" className="hover:text-paleAmber underline-offset-4 hover:underline">Submit a Resource</Link></li>
             </ul>
           </div>
@@ -49,6 +52,11 @@ export default function Footer() {
         </div>
         <div className="mt-8 text-sm text-vanillaCustard/70">
           If you need support right now, call The LGBT National Hotline: (888) 843-4564 or Trans Lifeline: (877) 565-8860.
+        </div>
+        <div className="mt-4 text-sm" style={{ fontSize: "0.8rem", opacity: 0.7 }}>
+          We improve our community services by using Microsoft Clarity to see how you use our website. 
+          By using our site, you agree that we and Microsoft can collect and use this data. 
+          Our <Link to="/privacy" className="underline hover:text-paleAmber">privacy statement</Link> has more details.
         </div>
       </div>
     </footer>

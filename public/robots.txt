@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://ftbend-lgbtqia-community.org/sitemap.xml
+
+# Allow search engines to crawl all content
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Block unnecessary crawling of admin areas
+User-agent: *
+Disallow: /admin/
+Disallow: /api/
+Disallow: /admin-login
+Disallow: /admin-dashboard

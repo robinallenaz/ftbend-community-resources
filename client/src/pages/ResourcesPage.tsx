@@ -3,6 +3,7 @@ const ResourceExplorer = lazy(() => import('../components/ResourceExplorer'));
 import LocationButton from '../components/LocationButton';
 import LocationInfo from '../components/LocationInfo';
 import type { Coordinates } from '../types';
+import { trackCommunityEvent } from '../utils/analytics-simple';
 
 // Feature flag - only enable when you have enough resources with exact coordinates
 // This is hardcoded and not exposed to users for security
@@ -13,13 +14,13 @@ function addResourcesStructuredData() {
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
-    '@id': 'https://ftbend-community-resources.netlify.app/resources/#collectionpage',
+    '@id': 'https://ftbend-lgbtqia-community.org/resources/#collectionpage',
     name: 'LGBTQIA+ Resources - Fort Bend County',
     description: 'Search LGBTQIA+ resources by location, type, and audience. Find support groups, healthcare providers, legal services, and more.',
-    url: 'https://ftbend-community-resources.netlify.app/resources',
+    url: 'https://ftbend-lgbtqia-community.org/resources',
     isPartOf: {
       '@type': 'WebSite',
-      '@id': 'https://ftbend-community-resources.netlify.app/#website'
+      '@id': 'https://ftbend-lgbtqia-community.org/#website'
     },
     mainEntity: {
       '@type': 'ItemList',
@@ -57,6 +58,8 @@ export default function ResourcesPage() {
 
   const handleLocationFound = (location: Coordinates) => {
     setUserLocation(location);
+    // Track when users successfully enable location features
+    trackCommunityEvent('location-feature-used', 'location-detected');
   };
 
   return (

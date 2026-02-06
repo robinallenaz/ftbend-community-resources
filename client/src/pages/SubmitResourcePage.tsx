@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { trackResourceSubmission, trackCommunityEvent } from '../utils/analytics-simple';
 
 export default function SubmitResourcePage() {
   const [name, setName] = useState('');
@@ -52,12 +53,21 @@ export default function SubmitResourcePage() {
         }
         setErrorMessage(message);
         setStatus('error');
+        
+        // Track failed submission attempt
+        trackCommunityEvent('resource-submission-attempt', 'validation-error');
         return;
       }
       setStatus('sent');
+      
+      // Track successful resource submission
+      trackResourceSubmission('community-resource');
     } catch {
       setErrorMessage('Sorry—your submission could not be sent right now. Please try again later.');
       setStatus('error');
+      
+      // Track failed submission attempt due to network/server error
+      trackCommunityEvent('resource-submission-attempt', 'network-error');
       return;
     }
 

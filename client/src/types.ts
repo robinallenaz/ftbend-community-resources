@@ -1,5 +1,7 @@
+// @deprecated - Use dynamic taxonomy system via TaxonomyItem instead
 export type ResourceLocation = 'Fort Bend' | 'Houston' | 'Virtual' | 'South TX' | 'TX';
 
+// @deprecated - Use dynamic taxonomy system via TaxonomyItem instead  
 export type ResourceType =
   | 'Mental Health'
   | 'Legal'
@@ -14,7 +16,24 @@ export type ResourceType =
   | 'Events'
   | 'Medical';
 
+// @deprecated - Use dynamic taxonomy system via TaxonomyItem instead
 export type AudienceTag = 'Trans' | 'Youth' | 'Seniors' | 'Families' | 'All';
+
+// Dynamic taxonomy types for admin-managed system
+export type TaxonomyType = 'location' | 'resourceType' | 'audience';
+
+export interface TaxonomyItem {
+  _id: string;
+  type: TaxonomyType;
+  value: string;
+  label: string;
+  description?: string;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string; // MongoDB ObjectId reference
+}
 
 export type Coordinates = {
   latitude: number;

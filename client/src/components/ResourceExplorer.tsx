@@ -3,39 +3,15 @@ import type { AudienceTag, Resource, ResourceLocation, ResourceType, Coordinates
 import FilterGroup from './FilterGroup';
 import ResourceCard from './ResourceCard';
 import { filterResourcesByDistance } from '../utils/locationUtils';
+import { trackResourceSearch } from '../utils/analytics-simple';
+import { useAllTaxonomy } from '../hooks/useTaxonomy';
 
-const RESOURCE_CACHE_KEY = 'ftbend_resources_cache_v1';
+const RESOURCE_CACHE_KEY = 'ftbend_resources_cache_v2';
 const RESOURCE_CACHE_TTL_MS = 1000 * 60 * 30;
-
-const LOCATION_OPTIONS: { label: string; value: ResourceLocation }[] = [
-  { label: 'Fort Bend', value: 'Fort Bend' },
-  { label: 'Houston', value: 'Houston' },
-  { label: 'Virtual', value: 'Virtual' },
-  { label: 'South TX', value: 'South TX' },
-  { label: 'TX', value: 'TX' }
-];
-
-const TYPE_OPTIONS: { label: string; value: ResourceType }[] = [
-  { label: 'Mental Health', value: 'Mental Health' },
-  { label: 'Legal', value: 'Legal' },
-  { label: 'Self Care', value: 'Self Care' },
-  { label: 'Faith', value: 'Faith' },
-  { label: 'Business', value: 'Business' },
-  { label: 'Community', value: 'Community' },
-  { label: 'Pride Orgs', value: 'Pride Orgs' },
-  { label: 'Arts', value: 'Arts' },
-  { label: 'Youth', value: 'Youth' },
-  { label: 'Family', value: 'Family' },
-  { label: 'Events', value: 'Events' },
-  { label: 'Medical', value: 'Medical' }
-];
-
-const AUDIENCE_OPTIONS: { label: string; value: AudienceTag }[] = [
-  { label: 'Trans', value: 'Trans' },
-  { label: 'Youth', value: 'Youth' },
-  { label: 'Seniors', value: 'Seniors' },
-  { label: 'Families', value: 'Families' }
-];
+const MAX_CACHE_SIZE = 1024 * 1024; // 1MB limit
+const API_LIMIT = 50;
+const LOCATION_FILTER_RADIUS = 50; // miles
+const TEXT_ENCODER = new TextEncoder(); // Create once for performance
 
 function toSortedArray(set: Set<string>) {
   return Array.from(set.values()).sort((a, b) => a.localeCompare(b));
@@ -48,30 +24,75 @@ export default function ResourceExplorer(args: { initialQuery?: string; userLoca
   const [selectedTypes, setSelectedTypes] = useState<Set<string>>(new Set());
   const [selectedAudiences, setSelectedAudiences] = useState<Set<string>>(new Set());
 
-  const prevQueryRef = useRef<string | null>(null);
+  // Get dynamic taxonomy data
+  const { locations, resourceTypes, audiences, isLoading: taxonomyLoading } = useAllTaxonomy();
+
+  const prevSearchKeyRef = useRef<string | null>(null);
+  const cacheHydrationAttemptedRef = useRef(false);
 
   const [items, setItems] = useState<Resource[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [isCacheHydrated, setIsCacheHydrated] = useState(false);
+
+  const searchParams = useMemo(() => {
+    const q = query.trim();
+    const locations = Array.from(selectedLocations).filter(loc => loc.trim().length > 0).sort();
+    const types = Array.from(selectedTypes).filter(type => type.trim().length > 0).sort();
+    const audiences = Array.from(selectedAudiences).filter(aud => aud.trim().length > 0).sort();
+    
+    return { q, locations, types, audiences };
+  }, [query, selectedLocations, selectedTypes, selectedAudiences]);
 
   useEffect(() => {
     let cancelled = false;
     const controller = new AbortController();
 
     async function load() {
+      if (cancelled) return;
+      
       setIsLoading(true);
       setLoadError(null);
 
       try {
-        const q = query.trim();
+        const q = searchParams.q;
+        const locations = searchParams.locations;
+        const types = searchParams.types;
+        const audiences = searchParams.audiences;
 
+        // Check if we should hydrate from cache (only for initial empty search)
+        const shouldHydrateFromCache =
+          !q && locations.length === 0 && types.length === 0 && audiences.length === 0 && 
+          items === null && !isCacheHydrated && !cacheHydrationAttemptedRef.current;
+
+        if (shouldHydrateFromCache) {
+          cacheHydrationAttemptedRef.current = true;
+          
+          try {
+            const raw = sessionStorage.getItem(RESOURCE_CACHE_KEY);
+            if (raw) {
+              const parsed = JSON.parse(raw) as { ts?: unknown; items?: unknown; version?: string };
+              if (
+                typeof parsed.ts === 'number' &&
+                Date.now() - parsed.ts <= RESOURCE_CACHE_TTL_MS &&
+                Array.isArray(parsed.items) &&
+                (parsed.version === undefined || parsed.version === 'v2')
+              ) {
+                setItems(parsed.items as Resource[]);
+                setIsCacheHydrated(true);
+                setIsLoading(false);
+                return; // Skip API call when cache is valid
+              }
+            }
+          } catch {
+            // Ignore cache errors and proceed with API call
+          }
+        }
+
+        // Proceed with API call
         const params = new URLSearchParams();
         if (q) params.set('q', q);
-        params.set('limit', '50'); // Load fewer resources for faster initial load
-
-        const locations = Array.from(selectedLocations);
-        const types = Array.from(selectedTypes);
-        const audiences = Array.from(selectedAudiences);
+        params.set('limit', API_LIMIT.toString());
 
         if (locations.length) params.set('locations', locations.join(','));
         if (types.length) params.set('types', types.join(','));
@@ -84,7 +105,13 @@ export default function ResourceExplorer(args: { initialQuery?: string; userLoca
         }
 
         const json: unknown = await res.json();
-        const rawItems = (json as { items?: unknown[] }).items;
+        const responseData = json as { items?: unknown[]; success?: boolean; error?: string };
+        
+        if (responseData.success === false && responseData.error) {
+          throw new Error(`Server error: ${responseData.error}`);
+        }
+        
+        const rawItems = responseData.items;
         
         if (!Array.isArray(rawItems)) {
           throw new Error('Unexpected response from server');
@@ -92,6 +119,8 @@ export default function ResourceExplorer(args: { initialQuery?: string; userLoca
 
         const mapped: Resource[] = rawItems
           .map((r) => {
+            if (cancelled) return null;
+            
             const item = r as {
               _id?: string;
               name?: string;
@@ -103,29 +132,75 @@ export default function ResourceExplorer(args: { initialQuery?: string; userLoca
               tags?: string[];
             };
 
+            // Validate required fields
+            if (!item._id || typeof item._id !== 'string' || 
+                !item.name || typeof item.name !== 'string' || 
+                !item.description || typeof item.description !== 'string' || 
+                !item.url || typeof item.url !== 'string') {
+              return null;
+            }
+
+            // Validate URL format
+            try {
+              new URL(item.url);
+            } catch {
+              return null;
+            }
+
+            // Validate enum values using dynamic taxonomy
+            // Fallback to empty arrays if taxonomy is still loading or failed to load
+            const validLocations = taxonomyLoading ? [] : locations.map(loc => loc.value);
+            const validTypes = taxonomyLoading ? [] : resourceTypes.map(type => type.value);
+            const validAudiences = taxonomyLoading ? [] : audiences.map(aud => aud.value);
+
+            // If taxonomy is loading, keep original values for now
+            // They will be filtered when taxonomy loads successfully
+            const itemLocations = taxonomyLoading 
+              ? (item.locations || [])
+              : (item.locations || []).filter(loc => validLocations.includes(loc));
+            const itemTypes = taxonomyLoading 
+              ? (item.types || [])
+              : (item.types || []).filter(type => validTypes.includes(type));
+            const itemAudiences = taxonomyLoading 
+              ? (item.audiences || [])
+              : (item.audiences || []).filter(aud => validAudiences.includes(aud));
+
             return {
-              id: item._id ? String(item._id) : '',
-              name: item.name || '',
-              description: item.description || '',
-              url: item.url || '',
-              locations: (item.locations || []) as ResourceLocation[],
-              types: (item.types || []) as ResourceType[],
-              audiences: (item.audiences || []) as AudienceTag[],
-              tags: item.tags || []
+              id: item._id,
+              name: item.name,
+              description: item.description,
+              url: item.url,
+              locations: itemLocations,
+              types: itemTypes,
+              audiences: itemAudiences,
+              tags: Array.isArray(item.tags) ? item.tags : []
             };
           })
-          .filter((r) => Boolean(r.id) && Boolean(r.name) && Boolean(r.description) && Boolean(r.url));
+          .filter((r): r is Resource => r !== null);
 
         if (!cancelled) {
           setItems(mapped);
 
+          // Track analytics for resource searches
+          const hasSearchQuery = q.length > 0;
+          const hasFilters = locations.length > 0 || types.length > 0 || audiences.length > 0;
+          
+          if (hasSearchQuery || hasFilters) {
+            const primaryType = types.length > 0 ? types[0] : undefined;
+            const primaryAudience = audiences.length > 0 ? audiences[0] : undefined;
+            trackResourceSearch(primaryType, primaryAudience);
+          }
+
+          // Cache results for empty searches only
           const shouldCache = !q && locations.length === 0 && types.length === 0 && audiences.length === 0;
           if (shouldCache) {
             try {
-              sessionStorage.setItem(
-                RESOURCE_CACHE_KEY,
-                JSON.stringify({ ts: Date.now(), items: mapped })
-              );
+              const cacheData = JSON.stringify({ version: 'v2', ts: Date.now(), items: mapped });
+              // Use pre-created TextEncoder for accurate UTF-8 byte counting
+              const byteSize = TEXT_ENCODER.encode(cacheData).length;
+              if (byteSize < MAX_CACHE_SIZE) {
+                sessionStorage.setItem(RESOURCE_CACHE_KEY, cacheData);
+              }
             } catch {
               // ignore cache failures
             }
@@ -137,53 +212,41 @@ export default function ResourceExplorer(args: { initialQuery?: string; userLoca
         const message = e instanceof Error ? e.message : 'Failed to load resources';
         setLoadError(message);
       } finally {
-        if (!cancelled) setIsLoading(false);
-      }
-    }
-
-    const q = query.trim();
-    const locations = Array.from(selectedLocations);
-    const types = Array.from(selectedTypes);
-    const audiences = Array.from(selectedAudiences);
-
-    const shouldHydrateFromCache =
-      !q && locations.length === 0 && types.length === 0 && audiences.length === 0 && items === null;
-
-    if (shouldHydrateFromCache) {
-      try {
-        const raw = sessionStorage.getItem(RESOURCE_CACHE_KEY);
-        if (raw) {
-          const parsed = JSON.parse(raw) as { ts?: unknown; items?: unknown };
-          if (
-            typeof parsed.ts === 'number' &&
-            Date.now() - parsed.ts < RESOURCE_CACHE_TTL_MS &&
-            Array.isArray(parsed.items)
-          ) {
-            setItems(parsed.items as Resource[]);
-          }
+        // Always ensure loading state is reset
+        if (!cancelled) {
+          setIsLoading(false);
         }
-      } catch {
-        // ignore cache failures
       }
     }
 
-    const debounceMs = prevQueryRef.current !== null && prevQueryRef.current !== q ? 250 : 0;
-    prevQueryRef.current = q;
-    const t = window.setTimeout(load, debounceMs);
+    // Create a stable key for all search parameters to detect any changes
+    const searchKey = JSON.stringify({
+      q: searchParams.q,
+      locations: searchParams.locations,
+      types: searchParams.types,
+      audiences: searchParams.audiences
+    });
+    const prevSearchKey = prevSearchKeyRef.current;
+    prevSearchKeyRef.current = searchKey;
+    
+    // Apply debounce when any search parameter changes
+    const debounceTimeMs = prevSearchKey !== null && prevSearchKey !== searchKey ? 250 : 0;
+
+    const t = window.setTimeout(load, debounceTimeMs);
 
     return () => {
+      controller.abort();
       cancelled = true;
       window.clearTimeout(t);
-      controller.abort();
     };
-  }, [query, selectedLocations, selectedTypes, selectedAudiences]);
+  }, [searchParams, isCacheHydrated]);
 
   const filtered = useMemo(() => {
     let filteredItems = items || [];
     
     // Apply location-based filtering if user location is available
     if (userLocation) {
-      filteredItems = filterResourcesByDistance(filteredItems, userLocation, 50); // 50 miles radius
+      filteredItems = filterResourcesByDistance(filteredItems, userLocation, LOCATION_FILTER_RADIUS);
     }
     
     // Sort by name
@@ -320,7 +383,7 @@ export default function ResourceExplorer(args: { initialQuery?: string; userLoca
               <FilterGroup
                 title="Location"
                 description="Choose one or more."
-                options={LOCATION_OPTIONS}
+                options={locations.map(item => ({ label: item.label, value: item.value }))}
                 selected={selectedLocations}
                 onToggle={(v) => toggle(setSelectedLocations, v)}
                 shortcutKey="L"
@@ -328,7 +391,7 @@ export default function ResourceExplorer(args: { initialQuery?: string; userLoca
               <FilterGroup
                 title="Resource Type"
                 description="Choose one or more."
-                options={TYPE_OPTIONS}
+                options={resourceTypes.map(item => ({ label: item.label, value: item.value }))}
                 selected={selectedTypes}
                 onToggle={(v) => toggle(setSelectedTypes, v)}
                 shortcutKey="T"
@@ -336,7 +399,7 @@ export default function ResourceExplorer(args: { initialQuery?: string; userLoca
               <FilterGroup
                 title="Audience"
                 description="Choose one or more."
-                options={AUDIENCE_OPTIONS}
+                options={audiences.map(item => ({ label: item.label, value: item.value }))}
                 selected={selectedAudiences}
                 onToggle={(v) => toggle(setSelectedAudiences, v)}
                 shortcutKey="A"

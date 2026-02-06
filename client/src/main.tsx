@@ -4,7 +4,11 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import { AuthProvider } from './admin/auth';
 import { registerServiceWorker, setupNetworkStatusMonitoring } from './utils/serviceWorker';
+import { initializeClarity } from './utils/analytics-simple';
 import './styles.css';
+
+// Initialize analytics (production only, respects Do Not Track)
+initializeClarity();
 
 // Register service worker for performance and offline support
 registerServiceWorker();

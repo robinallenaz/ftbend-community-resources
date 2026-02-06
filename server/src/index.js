@@ -15,6 +15,7 @@ const { buildCorsOptions } = require('./lib/cors');
 const publicRoutes = require('./routes/public');
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
+const taxonomyRoutes = require('./routes/taxonomy');
 
 // Debug: Check if environment variables are loaded
 console.log('Environment check:', {
@@ -38,6 +39,7 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/public', publicRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/taxonomy', taxonomyRoutes);
 app.use('/api/public/gallery', publicRoutes);
 
 app.use((err, _req, res, _next) => {
