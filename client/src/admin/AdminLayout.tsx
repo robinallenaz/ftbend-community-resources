@@ -26,15 +26,18 @@ export default function AdminLayout() {
     <div className="min-h-dvh">
       <header className="sticky top-0 z-40 border-b border-vanillaCustard/15 bg-graphite/85 backdrop-blur">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3 md:px-6">
-          <button
-            type="button"
-            onClick={() => navigate('/')}
-            className="flex items-center gap-3 rounded-xl px-2 py-2 text-left hover:bg-pitchBlack/60"
-            aria-label="Go to public site"
-          >
-            <div className="text-base font-extrabold leading-tight text-vanillaCustard">Admin Dashboard</div>
-            <div className="text-sm text-vanillaCustard/80 hidden sm:block">{user?.email}</div>
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => navigate('/')}
+              className="flex items-center gap-3 rounded-xl px-2 py-2 text-left hover:bg-pitchBlack/60"
+              aria-label="Go to public site"
+            >
+              <div className="text-base font-extrabold leading-tight text-vanillaCustard">Admin Dashboard</div>
+              <div className="text-sm text-vanillaCustard/80 hidden sm:block">{user?.email}</div>
+            </button>
+            <h1 className="sr-only">Admin Dashboard</h1>
+          </div>
 
           <nav aria-label="Admin" className="flex flex-wrap items-center gap-1">
             <NavItem to="/admin" label="Overview" />
@@ -44,6 +47,7 @@ export default function AdminLayout() {
             <NavItem to="/admin/gallery" label="Gallery" />
             <NavItem to="/admin/submissions" label="Submissions" />
             <NavItem to="/admin/newsletter" label="Newsletter" />
+            <NavItem to="/admin/categories" label="Categories & Tags" />
           </nav>
 
           <div className="flex items-center gap-2">
