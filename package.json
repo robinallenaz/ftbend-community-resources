@@ -18,6 +18,9 @@
   "dependencies": {
     "@headlessui/react": "^2.2.9",
     "@heroicons/react": "^2.2.0",
-    "@sendgrid/mail": "^8.1.6"
+    "@microsoft/clarity": "^1.0.2",
+    "@sendgrid/mail": "^8.1.6",
+    "@types/dompurify": "^3.0.5",
+    "dompurify": "^3.3.1"
   }
 }
