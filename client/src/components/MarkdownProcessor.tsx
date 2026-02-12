@@ -46,6 +46,11 @@ export function processExtendedMarkdown(markdown: string) {
     // Simple markdown processing - just convert basic markdown to HTML
     let processed = markdown;
     
+    // Convert blockquotes (handle multi-line)
+    processed = processed.replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>');
+    processed = processed.replace(/(<\/blockquote>)\s*<blockquote>/g, ' ');
+    processed = processed.replace(/<blockquote>(.*?)<\/blockquote>\s*<blockquote>(.*?)<\/blockquote>/g, '<blockquote>$1 $2</blockquote>');
+    
     // Convert horizontal rules
     processed = processed.replace(/^---$/gm, '<hr>');
     
@@ -86,6 +91,8 @@ export function processExtendedMarkdown(markdown: string) {
     processed = processed.replace(/(<\/h[1-6]>)<\/p><p>/g, '$1<p>');
     processed = processed.replace(/<p>(<hr>)/g, '$1<p>');
     processed = processed.replace(/(<hr>)<\/p><p>/g, '$1<p>');
+    processed = processed.replace(/<p>(<blockquote>)/g, '$1<p>');
+    processed = processed.replace(/(<\/blockquote>)<\/p><p>/g, '$1<p>');
     
     return DOMPurify.sanitize(processed, purifyConfig);
   } catch (error) {

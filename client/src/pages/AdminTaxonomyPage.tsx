@@ -3,6 +3,7 @@ import type { TaxonomyItem, TaxonomyType } from '../types';
 import { api } from '../admin/api';
 import { useNavigate } from 'react-router-dom';
 import { sanitizeText, sanitizeCode } from '../utils/sanitize';
+import { useAuth } from '../admin/auth';
 
 interface TaxonomyFormData {
   type: TaxonomyType;
@@ -14,6 +15,7 @@ interface TaxonomyFormData {
 
 export default function AdminTaxonomyPage() {
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
   const [activeType, setActiveType] = useState<TaxonomyType>('location');
   const [items, setItems] = useState<TaxonomyItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -37,6 +39,20 @@ export default function AdminTaxonomyPage() {
       isSubmittingRef.current = false;
     };
   }, []);
+
+  // Redirect if not authenticated
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-pitchBlack flex items-center justify-center">
+        <div className="text-vanillaCustard/90">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    navigate('/admin/login');
+    return null;
+  }
 
   // Client-side validation matching server-side regex exactly
   const validateValueField = useCallback((value: string): string | null => {

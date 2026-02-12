@@ -1,11 +1,13 @@
 type ApiError = Error & { status?: number };
 
-function getToken() {
-  return localStorage.getItem('authToken') || '';
+import { safeGetItem } from '../utils/storageUtils';
+
+async function getToken() {
+  return await safeGetItem('authToken', '');
 }
 
 async function request<T>(path: string, init?: RequestInit & { signal?: AbortSignal }): Promise<T> {
-  const token = getToken();
+  const token = await getToken();
   const headers = new Headers(init?.headers || undefined);
   if (!headers.has('Content-Type') && init?.body) headers.set('Content-Type', 'application/json');
   if (token) headers.set('Authorization', `Bearer ${token}`);

@@ -876,7 +876,7 @@ export default function BlogPostPage() {
 
                   </svg>
 
-                  <span className="text-sm !no-underline">Share</span>
+                  <span className="text-sm !no-underline">Post on X</span>
 
                 </a>
 
@@ -902,7 +902,7 @@ export default function BlogPostPage() {
 
                   </svg>
 
-                  <span className="text-sm !no-underline">Share</span>
+                  <span className="text-sm !no-underline">Share on Facebook</span>
 
                 </a>
 
@@ -928,7 +928,7 @@ export default function BlogPostPage() {
 
                   </svg>
 
-                  <span className="text-sm !no-underline">Share</span>
+                  <span className="text-sm !no-underline">Share on LinkedIn</span>
 
                 </a>
 
