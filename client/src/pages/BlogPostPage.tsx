@@ -31,7 +31,7 @@ function BlogPostSEO({ post }: { post: BlogPost }) {
 
       updateMetaTag('og:image', post.featuredImage);
 
-      updateMetaTag('og:image:alt', post.title);
+      updateMetaTag('og:image:alt', post.featuredImageAlt || post.title);
 
     }
 
@@ -187,6 +187,8 @@ interface BlogPost {
   excerpt?: string;
 
   featuredImage?: string;
+
+  featuredImageAlt?: string;
 
   metaDescription?: string;
 
@@ -634,7 +636,7 @@ export default function BlogPostPage() {
 
                   src={post.featuredImage}
 
-                  alt={post.title}
+                  alt={post.featuredImageAlt || post.title}
 
                   className="w-full h-64 sm:h-96 object-cover rounded-2xl border border-vanillaCustard/20"
 

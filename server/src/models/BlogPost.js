@@ -17,6 +17,7 @@ const BlogPostSchema = new mongoose.Schema(
     slug: { type: String, required: true, unique: true },
     excerpt: { type: String, trim: true, maxlength: 500 },
     featuredImage: { type: String, trim: true, maxlength: 500, default: '' },
+    featuredImageAlt: { type: String, trim: true, maxlength: 200, default: '' },
     metaDescription: { type: String, trim: true, maxlength: 160 },
     publishedAt: { type: Date, default: null },
     reviewedByUserId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
@@ -52,9 +53,11 @@ BlogPostSchema.pre('save', function(next) {
       .replace(/-+/g, '-')
       .trim('-');
     
-    // Add random suffix if slug exists
+    // Add random suffix if slug exists to prevent collisions
     if (this.isNew) {
-      this.slug += `-${Date.now().toString(36)}`;
+      // Use crypto.randomUUID() for better uniqueness than timestamp
+      const randomSuffix = require('crypto').randomUUID().slice(0, 8);
+      this.slug += `-${randomSuffix}`;
     }
   }
   next();

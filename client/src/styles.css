@@ -119,6 +119,84 @@ body {
   margin: 2rem 0;
 }
 
+/* Performance optimizations for LCP */
+img {
+  content-visibility: auto;
+  contain-intrinsic-size: 300px 200px;
+}
+
+/* Critical image loading */
+img[fetchPriority="high"] {
+  contain-intrinsic-size: 800px 450px;
+}
+
+/* Improve font loading performance */
+* {
+  font-display: swap;
+}
+
+/* Reduce layout shift during loading */
+.skeleton-image {
+  background: linear-gradient(90deg, rgba(210, 220, 118, 0.05) 25%, rgba(210, 220, 118, 0.1) 50%, rgba(210, 220, 118, 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading 3s ease-in-out infinite;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  50% { background-position: 0% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Optimize blog post cards for LCP */
+.blog-post-card {
+  contain: layout style paint;
+  content-visibility: auto;
+  contain-intrinsic-size: 400px 500px;
+}
+
+.blog-post-card:hover {
+  contain: layout style paint;
+}
+
+/* Enhanced blockquote styling */
+#article-content blockquote {
+  margin: 1.5rem 0;
+  padding: 1rem 1.5rem;
+  border-left: 4px solid var(--pale-amber);
+  background: linear-gradient(135deg, rgba(210, 220, 118, 0.1) 0%, rgba(247, 163, 161, 0.05) 100%);
+  border-radius: 0.5rem;
+  font-style: italic;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#article-content blockquote::before {
+  content: '"';
+  position: absolute;
+  top: -0.5rem;
+  left: 0.5rem;
+  font-size: 3rem;
+  color: var(--pale-amber);
+  opacity: 0.3;
+  font-family: Georgia, serif;
+}
+
+#article-content blockquote p {
+  margin: 0;
+  color: var(--vanilla-custard);
+  font-size: 1.1rem;
+  line-height: 1.7;
+}
+
+#article-content blockquote p:first-of-type {
+  margin-top: 0.5rem;
+}
+
+#article-content blockquote p:last-of-type {
+  margin-bottom: 0.5rem;
+}
+
 /* Alert blocks for extended markdown */
 .alert {
   border-radius: 0.75rem;

@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { updateMetaTag, updateCanonicalUrl, updateDocumentTitle, updateMetaDescription, cleanupMetaTags, getSiteUrl } from '../utils/seoUtils';
 import { safeGetItem, safeSetItem } from '../utils/storageUtils';
+import { trackCommunityEvent } from '../utils/analytics-simple';
 
 // SEO Meta Tags Component with proper cleanup tracking
 function BlogPageSEO() {
@@ -94,14 +95,14 @@ function BlogPageSEO() {
     updateMetaDescription('Read stories, insights, and experiences from the Fort Bend LGBTQIA+ community. Personal narratives, community news, and resources shared by local voices.');
     
     // Update Open Graph tags
-    createOrUpdateMetaTag('og:title', 'Community Blog | Fort Bend County LGBTQIA+ Community');
-    createOrUpdateMetaTag('og:description', 'Read stories, insights, and experiences from the Fort Bend LGBTQIA+ community. Personal narratives, community news, and resources shared by local voices.');
+    createOrUpdateMetaTag('og:title', 'Community Blog | Fort Bend County LGBTQIA+ Resources & Support');
+    createOrUpdateMetaTag('og:description', 'Read stories, insights, and experiences from the Fort Bend LGBTQIA+ community. Personal narratives, mental health support, and community resources shared by local voices.');
     createOrUpdateMetaTag('og:url', `${siteUrl}/blog`);
     createOrUpdateMetaTag('og:type', 'website');
     
     // Update Twitter Card tags
-    createOrUpdateMetaTag('twitter:title', 'Community Blog | Fort Bend County LGBTQIA+ Community');
-    createOrUpdateMetaTag('twitter:description', 'Read stories, insights, and experiences from the Fort Bend LGBTQIA+ community.');
+    createOrUpdateMetaTag('twitter:title', 'Community Blog | Fort Bend County LGBTQIA+ Resources & Support');
+    createOrUpdateMetaTag('twitter:description', 'Read stories, insights, and experiences from the Fort Bend LGBTQIA+ community. Personal narratives, mental health support, and community resources.');
     
     // Update canonical URL
     updateCanonicalUrl(`${siteUrl}/blog`);
@@ -139,6 +140,7 @@ interface BlogPost {
   slug: string;
   excerpt?: string;
   featuredImage?: string;
+  featuredImageAlt?: string;
   metaDescription?: string;
   createdAt: string;
   publishedAt?: string;
@@ -173,9 +175,35 @@ export default function BlogPage() {
   const [isMounted, setIsMounted] = useState(true);
   const [likingPostId, setLikingPostId] = useState<string | null>(null);
   
+  // Preload critical resources for LCP
+  useEffect(() => {
+    if (isInitialLoad) {
+      // Preload critical CSS
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'style';
+      link.href = '/blog-critical.css';
+      document.head.appendChild(link);
+      
+      // Preload font for blog titles
+      const fontLink = document.createElement('link');
+      fontLink.rel = 'preload';
+      fontLink.as = 'font';
+      fontLink.type = 'font/woff2';
+      fontLink.crossOrigin = 'anonymous';
+      document.head.appendChild(fontLink);
+    }
+  }, [isInitialLoad]);
+  
   // Single abort controller for the component lifecycle
   const abortControllerRef = useRef<AbortController | null>(null);
   const currentRequestIdRef = useRef<number>(0);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const imageTimeoutRefs = useRef<Map<string, NodeJS.Timeout>>(new Map());
+  
+  // Race condition prevention: Track ongoing requests to prevent duplicates
+  const ongoingRequestRef = useRef<string | null>(null);
+  const requestDeduplicationMap = useRef<Map<string, Promise<any>>>(new Map());
 
   const postsPerPage = 12;
 
@@ -204,9 +232,17 @@ export default function BlogPage() {
       // Always fetch posts
       await fetchPosts();
       
+      // Track analytics for blog searches and filters
+      const hasSearchQuery = searchQuery.trim().length > 0;
+      const hasFilters = selectedCategory.length > 0 || selectedTag.length > 0;
+      
+      if (hasSearchQuery || hasFilters) {
+        trackCommunityEvent('blog-search', hasSearchQuery ? 'text-search' : 'filter-search');
+      }
+      
       // Restore scroll position after data loads for non-initial loads
       if (!isInitialLoad && isMounted && scrollPosition > 0) {
-        setTimeout(() => {
+        scrollTimeoutRef.current = setTimeout(() => {
           if (isMounted) {
             window.scrollTo(0, scrollPosition);
           }
@@ -238,18 +274,45 @@ export default function BlogPage() {
   }
 
   async function fetchPosts() {
+    // Create request key for deduplication
+    const requestKey = `${currentPage}-${selectedCategory}-${selectedTag}-${searchQuery}-${sortBy}`;
+    
+    // Check if identical request is already in progress
+    if (ongoingRequestRef.current === requestKey) {
+      return; // Skip duplicate request
+    }
+    
     // Cancel any ongoing request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
+    }
+    
+    // Check if we have a cached promise for this request
+    const cachedPromise = requestDeduplicationMap.current.get(requestKey);
+    if (cachedPromise) {
+      try {
+        const data = await cachedPromise;
+        if (isMounted) {
+          setPosts(data.posts);
+          setTotalPages(data.pagination.pages);
+          setError(null);
+          setLoading(false);
+        }
+        return;
+      } catch (error) {
+        // Remove failed cached request
+        requestDeduplicationMap.current.delete(requestKey);
+      }
     }
     
     // Create new AbortController for this request
     const controller = new AbortController();
     abortControllerRef.current = controller;
     const requestId = ++currentRequestIdRef.current;
+    ongoingRequestRef.current = requestKey;
     
-    try {
-      setLoading(true);
+    // Create the request promise
+    const requestPromise = (async () => {
       const params = new URLSearchParams({
         page: currentPage.toString(),
         limit: postsPerPage.toString(),
@@ -273,7 +336,7 @@ export default function BlogPage() {
       
       // Check if request was aborted or component unmounted
       if (controller.signal.aborted || !isMounted || requestId !== currentRequestIdRef.current) {
-        return;
+        throw new Error('Request aborted');
       }
       
       if (!response.ok) throw new Error('Failed to fetch blog posts');
@@ -286,6 +349,16 @@ export default function BlogPage() {
         setTotalPages(data.pagination.pages);
         setError(null);
       }
+      
+      return data;
+    })();
+    
+    // Cache the promise
+    requestDeduplicationMap.current.set(requestKey, requestPromise);
+    
+    try {
+      setLoading(true);
+      await requestPromise;
     } catch (err: any) {
       // Don't update state if request was aborted or component unmounted
       if (err.name === 'AbortError' || !isMounted || requestId !== currentRequestIdRef.current) {
@@ -297,11 +370,17 @@ export default function BlogPage() {
         setPosts([]);
       }
     } finally {
-      // Only clear loading if this is still the current request and component is mounted
+      // Only clear loading and request tracking if this is still the current request
       if (!controller.signal.aborted && isMounted && requestId === currentRequestIdRef.current) {
         setLoading(false);
         abortControllerRef.current = null;
+        ongoingRequestRef.current = null;
       }
+      
+      // Clean up cached promise after a delay to allow for immediate retries
+      setTimeout(() => {
+        requestDeduplicationMap.current.delete(requestKey);
+      }, 1000);
     }
   }
 
@@ -313,16 +392,45 @@ export default function BlogPage() {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
+      // Clear scroll timeout
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+      // Clear all image upgrade timeouts
+      imageTimeoutRefs.current.forEach(timeout => clearTimeout(timeout));
+      imageTimeoutRefs.current.clear();
+      // Clear request deduplication cache
+      requestDeduplicationMap.current.clear();
+      ongoingRequestRef.current = null;
     };
   }, []);
 
   async function handleLike(postId: string) {
     if (likingPostId) return; // Prevent concurrent likes
     
+    // Store original state for rollback outside try block
+    const originalLikedPosts = likedPosts;
+    const originalPost = posts.find(p => p._id === postId);
+    const originalLikeCount = originalPost?.likeCount || 0;
+    
     try {
       setLikingPostId(postId);
       const isLiked = likedPosts.has(postId);
       const action = isLiked ? 'unlike' : 'like';
+      
+      // Optimistic UI update
+      const newLikedPosts = new Set(likedPosts);
+      if (isLiked) {
+        newLikedPosts.delete(postId);
+      } else {
+        newLikedPosts.add(postId);
+      }
+      setLikedPosts(newLikedPosts);
+      
+      // Update post count optimistically
+      setPosts(prev => prev.map(post => 
+        post._id === postId ? { ...post, likeCount: isLiked ? Math.max(0, (post.likeCount || 0) - 1) : (post.likeCount || 0) + 1 } : post
+      ));
       
       const res = await fetch(`/api/public/blog-posts/${postId}/like`, {
         method: 'POST',
@@ -334,19 +442,13 @@ export default function BlogPage() {
       
       const data = await res.json();
       
-      // Update local state
+      // Update with server response to ensure consistency
       setPosts(prev => prev.map(post => 
         post._id === postId ? { ...post, likeCount: data.likeCount } : post
       ));
       
-      // Update liked posts
-      const newLikedPosts = new Set(likedPosts);
-      if (isLiked) {
-        newLikedPosts.delete(postId);
-      } else {
-        newLikedPosts.add(postId);
-      }
-      setLikedPosts(newLikedPosts);
+      // Track analytics for blog post interaction
+      trackCommunityEvent('blog-post-like', action);
       
       // Save to localStorage safely
       safeSetItem('likedBlogPosts', Array.from(newLikedPosts))
@@ -356,6 +458,12 @@ export default function BlogPage() {
       
     } catch (err) {
       console.error('Like error:', err);
+      
+      // Rollback on failure
+      setLikedPosts(originalLikedPosts);
+      setPosts(prev => prev.map(post => 
+        post._id === postId ? { ...post, likeCount: originalLikeCount } : post
+      ));
     } finally {
       setLikingPostId(null);
     }
@@ -458,7 +566,7 @@ export default function BlogPage() {
         <div className="mb-12">
           {/* Featured Post Skeleton */}
           {loading && (
-            <div className="rounded-2xl border border-vanillaCustard/20 bg-pitchBlack overflow-hidden shadow-lg animate-pulse">
+            <div className="rounded-2xl border border-vanillaCustard/20 bg-pitchBlack overflow-hidden shadow-lg">
               <div className="p-4 border-b border-vanillaCustard/10 bg-pitchBlack relative z-10">
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 bg-paleAmber/30 rounded"></div>
@@ -467,7 +575,7 @@ export default function BlogPage() {
               </div>
               <div className="p-6 relative z-10">
                 <div className="grid md:grid-cols-2 gap-6">
-                  {/* Featured Image Skeleton */}
+                  {/* Featured Image Skeleton - Fixed aspect ratio */}
                   <div className="aspect-video overflow-hidden rounded-xl bg-graphite border border-vanillaCustard/15">
                     <div className="w-full h-full bg-gradient-to-br from-graphite to-pitchBlack animate-pulse"></div>
                   </div>
@@ -506,44 +614,47 @@ export default function BlogPage() {
                       <picture>
                         <source 
                           type="image/webp" 
-                          media="(min-width: 768px)"
                           srcSet={`
-                            https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_1200,h_675,c_fill/ftbend-community-gallery/${sanitizeImageFilename(posts[0].featuredImage)} 1200w,
-                            https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_800,h_450,c_fill/ftbend-community-gallery/${sanitizeImageFilename(posts[0].featuredImage)} 800w
+                            https://res.cloudinary.com/dpus8jzix/image/upload/q_auto:low,w_400,h_225,c_fill/ftbend-community-gallery/${sanitizeImageFilename(posts[0].featuredImage)} 400w,
+                            https://res.cloudinary.com/dpus8jzix/image/upload/q_auto:low,w_800,h_450,c_fill/ftbend-community-gallery/${sanitizeImageFilename(posts[0].featuredImage)} 800w
                           `}
-                        />
-                        <source 
-                          type="image/webp" 
-                          media="(max-width: 767px)"
-                          srcSet={`
-                            https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_400,h_225,c_fill/ftbend-community-gallery/${sanitizeImageFilename(posts[0].featuredImage)} 400w
-                          `}
+                          sizes="(max-width: 767px) 400px, 800px"
                         />
                         <source 
                           type="image/jpeg" 
-                          media="(min-width: 768px)"
                           srcSet={`
-                            https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_1200,h_675,c_fill/ftbend-community-gallery/${sanitizeImageFilename(posts[0].featuredImage)} 1200w,
-                            https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_800,h_450,c_fill/ftbend-community-gallery/${sanitizeImageFilename(posts[0].featuredImage)} 800w
+                            https://res.cloudinary.com/dpus8jzix/image/upload/q_auto:low,w_400,h_225,c_fill/ftbend-community-gallery/${sanitizeImageFilename(posts[0].featuredImage)} 400w,
+                            https://res.cloudinary.com/dpus8jzix/image/upload/q_auto:low,w_800,h_450,c_fill/ftbend-community-gallery/${sanitizeImageFilename(posts[0].featuredImage)} 800w
                           `}
-                        />
-                        <source 
-                          type="image/jpeg" 
-                          media="(max-width: 767px)"
-                          srcSet={`
-                            https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_400,h_225,c_fill/ftbend-community-gallery/${sanitizeImageFilename(posts[0].featuredImage)} 400w
-                          `}
+                          sizes="(max-width: 767px) 400px, 800px"
                         />
                         <img
-                          src={`https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_800,h_450,c_fill/ftbend-community-gallery/${sanitizeImageFilename(posts[0].featuredImage)}`}
-                          alt={posts[0].title}
-                          width={800}
-                          height={450}
-                          className="w-full h-full object-cover"
+                          src={`https://res.cloudinary.com/dpus8jzix/image/upload/q_auto:low,w_400,h_225,c_fill/ftbend-community-gallery/${sanitizeImageFilename(posts[0].featuredImage)}`}
+                          alt={posts[0].featuredImageAlt || posts[0].title}
+                          width={400}
+                          height={225}
+                          className="w-full h-full object-cover transition-opacity duration-300"
                           fetchPriority="high"
                           loading="eager"
-                          decoding="sync"
-                          sizes="(max-width: 767px) 400px, (min-width: 768px) 800px"
+                          decoding="async"
+                          sizes="(max-width: 767px) 400px, 800px"
+                          style={{
+                            contentVisibility: 'auto',
+                            contain: 'layout'
+                          }}
+                          onLoad={(e) => {
+                            // Upgrade to higher quality after initial load
+                            const img = e.target as HTMLImageElement;
+                            const featuredImage = posts[0].featuredImage;
+                            if (featuredImage && isMounted) {
+                              const timeoutId = setTimeout(() => {
+                                if (isMounted) {
+                                  img.src = `https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_800,h_450,c_fill/ftbend-community-gallery/${sanitizeImageFilename(featuredImage)}`;
+                                }
+                              }, 100);
+                              imageTimeoutRefs.current.set(`featured-${posts[0]._id}`, timeoutId);
+                            }
+                          }}
                           onError={(e) => {
                             // Fallback to original URL if Cloudinary fails
                             if (posts[0].featuredImage) {
@@ -704,8 +815,8 @@ export default function BlogPage() {
         {loading && (
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }, (_, index) => (
-              <div key={`skeleton-${index}`} className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack overflow-hidden animate-pulse">
-                {/* Image Skeleton */}
+              <div key={`skeleton-${index}`} className="rounded-2xl border border-vanillaCustard/15 bg-pitchBlack overflow-hidden">
+                {/* Image Skeleton - Fixed aspect ratio */}
                 <div className="aspect-video bg-graphite border-b border-vanillaCustard/15">
                   <div className="w-full h-full bg-gradient-to-br from-graphite to-pitchBlack animate-pulse"></div>
                 </div>
@@ -764,7 +875,7 @@ export default function BlogPage() {
                   {posts.map((post) => (
                     <article
                       key={post._id}
-                      className="group rounded-2xl border border-vanillaCustard/15 bg-pitchBlack overflow-hidden transition-all duration-300 hover:border-vanillaCustard/25 hover:shadow-lg hover:shadow-powderBlush/10"
+                      className="blog-post-card group rounded-2xl border border-vanillaCustard/15 bg-pitchBlack overflow-hidden transition-all duration-300 hover:border-vanillaCustard/25 hover:shadow-lg hover:shadow-powderBlush/10"
                     >
                       {/* Featured Image */}
                       {post.featuredImage && (
@@ -772,48 +883,43 @@ export default function BlogPage() {
                           to={`/blog/${post.slug}`}
                           className="block aspect-video overflow-hidden bg-graphite"
                         >
+                          <div className="skeleton-image w-full h-full absolute inset-0" />
                           <picture>
                             <source 
                               type="image/webp" 
-                              media="(min-width: 1024px)"
-                              srcSet={`
-                                https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_600,h_338,c_fill/ftbend-community-gallery/${sanitizeImageFilename(post.featuredImage)} 600w,
-                                https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_400,h_225,c_fill/ftbend-community-gallery/${sanitizeImageFilename(post.featuredImage)} 400w
-                              `}
-                            />
-                            <source 
-                              type="image/webp" 
-                              media="(max-width: 1023px)"
-                              srcSet={`
-                                https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_400,h_225,c_fill/ftbend-community-gallery/${sanitizeImageFilename(post.featuredImage)} 400w,
-                                https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_300,h_169,c_fill/ftbend-community-gallery/${sanitizeImageFilename(post.featuredImage)} 300w
-                              `}
+                              srcSet={`https://res.cloudinary.com/dpus8jzix/image/upload/q_auto:low,w_300,h_169,c_fill/ftbend-community-gallery/${sanitizeImageFilename(post.featuredImage)} 300w`}
+                              sizes="300px"
                             />
                             <source 
                               type="image/jpeg" 
-                              media="(min-width: 1024px)"
-                              srcSet={`
-                                https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_600,h_338,c_fill/ftbend-community-gallery/${sanitizeImageFilename(post.featuredImage)} 600w,
-                                https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_400,h_225,c_fill/ftbend-community-gallery/${sanitizeImageFilename(post.featuredImage)} 400w
-                              `}
-                            />
-                            <source 
-                              type="image/jpeg" 
-                              media="(max-width: 1023px)"
-                              srcSet={`
-                                https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_400,h_225,c_fill/ftbend-community-gallery/${sanitizeImageFilename(post.featuredImage)} 400w,
-                                https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_300,h_169,c_fill/ftbend-community-gallery/${sanitizeImageFilename(post.featuredImage)} 300w
-                              `}
+                              srcSet={`https://res.cloudinary.com/dpus8jzix/image/upload/q_auto:low,w_300,h_169,c_fill/ftbend-community-gallery/${sanitizeImageFilename(post.featuredImage)} 300w`}
+                              sizes="300px"
                             />
                             <img
-                              src={`https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_400,h_225,c_fill/ftbend-community-gallery/${sanitizeImageFilename(post.featuredImage)}`}
-                              alt={post.title}
-                              width={400}
-                              height={225}
-                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                              src={`https://res.cloudinary.com/dpus8jzix/image/upload/q_auto:low,w_300,h_169,c_fill/ftbend-community-gallery/${sanitizeImageFilename(post.featuredImage)}`}
+                              alt={post.featuredImageAlt || post.title}
+                              width={300}
+                              height={169}
+                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 relative z-10"
                               loading="lazy"
                               decoding="async"
-                              sizes="(max-width: 1023px) 400px, (min-width: 1024px) 600px"
+                              sizes="300px"
+                              style={{
+                                contentVisibility: 'auto',
+                                contain: 'layout'
+                              }}
+                              onLoad={(e) => {
+                                // Upgrade to higher quality after initial load
+                                const img = e.target as HTMLImageElement;
+                                if (post.featuredImage && isMounted) {
+                                  const timeoutId = setTimeout(() => {
+                                    if (isMounted) {
+                                      img.src = `https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_400,h_225,c_fill/ftbend-community-gallery/${sanitizeImageFilename(post.featuredImage)}`;
+                                    }
+                                  }, 200);
+                                  imageTimeoutRefs.current.set(`post-${post._id}`, timeoutId);
+                                }
+                              }}
                               onError={(e) => {
                                 // Fallback to original URL if Cloudinary fails
                                 if (post.featuredImage) {

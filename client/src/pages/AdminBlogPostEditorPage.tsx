@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { marked } from '../utils/markedConfig';
+import MarkdownProcessor from '../components/MarkdownProcessor';
 import { safeSetItem, safeGetItem, safeRemoveItem, tryToFreeStorageSpace } from '../utils/storageUtils';
 import { sanitizeInput } from '../utils/validationUtils';
 
@@ -18,6 +18,7 @@ interface BlogPost {
   slug: string;
   excerpt?: string;
   featuredImage?: string;
+  featuredImageAlt?: string;
   metaDescription?: string;
   submissionConsent: boolean;
   privacyConsent: boolean;
@@ -84,6 +85,8 @@ export default function AdminBlogPostEditorPage() {
 
     featuredImage: '',
 
+    featuredImageAlt: '',
+
     metaDescription: '',
 
     reviewNotes: ''
@@ -94,35 +97,52 @@ export default function AdminBlogPostEditorPage() {
 
   const isNewPost = id === 'new';
 
-  // Memoize form data string to prevent excessive re-renders
+  // Memoize individual form fields to prevent excessive re-renders
+  const titleValue = useMemo(() => formData.title, [formData.title]);
+  const contentValue = useMemo(() => formData.content, [formData.content]);
+  const authorNameValue = useMemo(() => formData.authorName, [formData.authorName]);
+  const authorEmailValue = useMemo(() => formData.authorEmail, [formData.authorEmail]);
+  const statusValue = useMemo(() => formData.status, [formData.status]);
+  const categoriesValue = useMemo(() => formData.categories, [formData.categories]);
+  const tagsValue = useMemo(() => formData.tags, [formData.tags]);
+  const slugValue = useMemo(() => formData.slug, [formData.slug]);
+  const excerptValue = useMemo(() => formData.excerpt, [formData.excerpt]);
+  const featuredImageValue = useMemo(() => formData.featuredImage, [formData.featuredImage]);
+  const featuredImageAltValue = useMemo(() => formData.featuredImageAlt, [formData.featuredImageAlt]);
+  const metaDescriptionValue = useMemo(() => formData.metaDescription, [formData.metaDescription]);
+  const reviewNotesValue = useMemo(() => formData.reviewNotes, [formData.reviewNotes]);
+  
+  // Memoize form data string for auto-save (more focused dependencies)
   const formDataString = useMemo(() => {
     return JSON.stringify({
-      title: formData.title,
-      content: formData.content,
-      authorName: formData.authorName,
-      authorEmail: formData.authorEmail,
-      status: formData.status,
-      categories: formData.categories,
-      tags: formData.tags,
-      slug: formData.slug,
-      excerpt: formData.excerpt,
-      featuredImage: formData.featuredImage,
-      metaDescription: formData.metaDescription,
-      reviewNotes: formData.reviewNotes
+      title: titleValue,
+      content: contentValue,
+      authorName: authorNameValue,
+      authorEmail: authorEmailValue,
+      status: statusValue,
+      categories: categoriesValue,
+      tags: tagsValue,
+      slug: slugValue,
+      excerpt: excerptValue,
+      featuredImage: featuredImageValue,
+      featuredImageAlt: featuredImageAltValue,
+      metaDescription: metaDescriptionValue,
+      reviewNotes: reviewNotesValue
     });
   }, [
-    formData.title,
-    formData.content,
-    formData.authorName,
-    formData.authorEmail,
-    formData.status,
-    formData.categories,
-    formData.tags,
-    formData.slug,
-    formData.excerpt,
-    formData.featuredImage,
-    formData.metaDescription,
-    formData.reviewNotes
+    titleValue,
+    contentValue,
+    authorNameValue,
+    authorEmailValue,
+    statusValue,
+    categoriesValue,
+    tagsValue,
+    slugValue,
+    excerptValue,
+    featuredImageValue,
+    featuredImageAltValue,
+    metaDescriptionValue,
+    reviewNotesValue
   ]);
 
 
@@ -159,6 +179,8 @@ export default function AdminBlogPostEditorPage() {
 
         featuredImage: '',
 
+        featuredImageAlt: '',
+
         metaDescription: '',
 
         reviewNotes: ''
@@ -186,7 +208,7 @@ export default function AdminBlogPostEditorPage() {
   // Auto-save every 10 seconds with proper cleanup
   useEffect(() => {
     const interval = setInterval(() => {
-      const hasContent = formData.title || formData.content || formData.authorName || formData.authorEmail || formData.categories || formData.tags || formData.excerpt || formData.featuredImage || formData.metaDescription || formData.reviewNotes;
+      const hasContent = formData.title || formData.content || formData.authorName || formData.authorEmail || formData.categories || formData.tags || formData.excerpt || formData.featuredImage || formData.featuredImageAlt || formData.metaDescription || formData.reviewNotes;
       
       if (hasContent && !isSavingDraft && document.visibilityState === 'visible') {
         saveDraft();
@@ -269,6 +291,8 @@ export default function AdminBlogPostEditorPage() {
 
         featuredImage: data.post.featuredImage || '',
 
+        featuredImageAlt: data.post.featuredImageAlt || '',
+
         metaDescription: data.post.metaDescription || '',
 
         reviewNotes: data.post.reviewNotes || ''
@@ -307,11 +331,20 @@ export default function AdminBlogPostEditorPage() {
         slug: formData.slug,
         excerpt: formData.excerpt,
         featuredImage: formData.featuredImage,
+        featuredImageAlt: formData.featuredImageAlt,
         metaDescription: formData.metaDescription,
         reviewNotes: formData.reviewNotes,
         postId: id,
         savedAt: new Date().toISOString()
       };
+
+      // Check draft size before saving to prevent memory issues
+      const MAX_DRAFT_SIZE = 1024 * 1024; // 1MB limit
+      const draftString = JSON.stringify(draft);
+      if (draftString.length > MAX_DRAFT_SIZE) {
+        console.warn('Draft too large, skipping save to prevent memory issues');
+        return;
+      }
 
       try {
         // Try to save the draft safely
@@ -354,24 +387,31 @@ export default function AdminBlogPostEditorPage() {
         
         // Only restore if draft is less than 24 hours old AND belongs to current post
         if (hoursAgo < 24 && (!savedDraft.postId || savedDraft.postId === id)) {
-          setFormData({
-            title: savedDraft.title || '',
-            content: savedDraft.content || '',
-            authorName: savedDraft.authorName || '',
-            authorEmail: savedDraft.authorEmail || '',
-            status: savedDraft.status || 'pending',
-            categories: savedDraft.categories || '',
-            tags: savedDraft.tags || '',
-            slug: savedDraft.slug || '',
-            excerpt: savedDraft.excerpt || '',
-            featuredImage: savedDraft.featuredImage || '',
-            metaDescription: savedDraft.metaDescription || '',
-            reviewNotes: savedDraft.reviewNotes || ''
-          });
+          // Comprehensive draft validation before restoring
+          if (validateDraftStructure(savedDraft)) {
+            setFormData({
+              title: sanitizeDraftField(savedDraft.title, 'text') || '',
+              content: sanitizeDraftField(savedDraft.content, 'text') || '',
+              authorName: sanitizeDraftField(savedDraft.authorName, 'text') || '',
+              authorEmail: sanitizeDraftField(savedDraft.authorEmail, 'email') || '',
+              status: validateDraftStatus(savedDraft.status) || 'pending',
+              categories: sanitizeDraftField(savedDraft.categories, 'text') || '',
+              tags: sanitizeDraftField(savedDraft.tags, 'text') || '',
+              slug: sanitizeDraftField(savedDraft.slug, 'text') || '',
+              excerpt: sanitizeDraftField(savedDraft.excerpt, 'text') || '',
+              featuredImage: sanitizeDraftField(savedDraft.featuredImage, 'url') || '',
+              featuredImageAlt: sanitizeDraftField(savedDraft.featuredImageAlt, 'text') || '',
+              metaDescription: sanitizeDraftField(savedDraft.metaDescription, 'text') || '',
+              reviewNotes: sanitizeDraftField(savedDraft.reviewNotes, 'text') || ''
+            });
 
-          setLastSaved(savedTime);
-          setShowDraftRestored(true);
-          setTimeout(() => setShowDraftRestored(false), 5000);
+            setLastSaved(savedTime);
+            setShowDraftRestored(true);
+            setTimeout(() => setShowDraftRestored(false), 5000);
+          } else {
+            console.warn('Invalid draft data structure, clearing corrupted draft');
+            await safeRemoveItem(`adminBlogPostDraft_${id}`);
+          }
         } else if (savedDraft.postId !== id) {
           // Clear draft if it belongs to a different post
           await safeRemoveItem(`adminBlogPostDraft_${id}`);
@@ -382,6 +422,98 @@ export default function AdminBlogPostEditorPage() {
       // Clear corrupted draft
       await safeRemoveItem(`adminBlogPostDraft_${id}`);
     }
+  }
+
+  // Draft validation helper functions
+  function validateDraftStructure(draft: any): boolean {
+    if (!draft || typeof draft !== 'object') return false;
+    
+    // Check for required fields with proper types
+    const requiredFields = ['title', 'content', 'authorName', 'status'];
+    for (const field of requiredFields) {
+      if (!(field in draft) || typeof draft[field] !== 'string') {
+        return false;
+      }
+    }
+    
+    // Validate status enum
+    const validStatuses = ['pending', 'approved', 'rejected', 'published'];
+    if (!validStatuses.includes(draft.status)) {
+      return false;
+    }
+    
+    // Check for suspicious or corrupted data
+    const suspiciousPatterns = [
+      /<script/i,
+      /javascript:/i,
+      /data:text\/html/i,
+      /on\w+\s*=/i,
+      /expression\s*\(/i
+    ];
+    
+    // Check all string fields for suspicious patterns
+    for (const [key, value] of Object.entries(draft)) {
+      if (typeof value === 'string' && suspiciousPatterns.some(pattern => pattern.test(value))) {
+        console.warn(`Suspicious content detected in draft field: ${key}`);
+        return false;
+      }
+    }
+    
+    return true;
+  }
+
+  function sanitizeDraftField(value: any, type: 'text' | 'email' | 'url'): string {
+    if (value === null || value === undefined) return '';
+    if (typeof value !== 'string') return String(value);
+    
+    // Basic sanitization
+    let sanitized = value.trim();
+    
+    // Remove potentially dangerous characters
+    sanitized = sanitized.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+    
+    // Type-specific validation
+    switch (type) {
+      case 'email':
+        // Basic email format validation
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(sanitized)) return '';
+        break;
+      case 'url':
+        // Basic URL validation - allow relative and absolute URLs
+        if (sanitized && !sanitized.startsWith('/') && !sanitized.startsWith('http')) {
+          return '';
+        }
+        break;
+    }
+    
+    // Length limits
+    const maxLengths = {
+      title: 200,
+      content: 10000,
+      authorName: 100,
+      authorEmail: 255,
+      categories: 500,
+      tags: 500,
+      slug: 200,
+      excerpt: 500,
+      featuredImage: 500,
+      featuredImageAlt: 200,
+      metaDescription: 160,
+      reviewNotes: 1000
+    };
+    
+    const fieldName = Object.keys(maxLengths).find(key => sanitized.includes(value));
+    if (fieldName && sanitized.length > maxLengths[fieldName as keyof typeof maxLengths]) {
+      return sanitized.substring(0, maxLengths[fieldName as keyof typeof maxLengths]);
+    }
+    
+    return sanitized;
+  }
+
+  function validateDraftStatus(status: any): 'pending' | 'approved' | 'rejected' | 'published' | null {
+    const validStatuses = ['pending', 'approved', 'rejected', 'published'];
+    return validStatuses.includes(status) ? status as any : null;
   }
 
 
@@ -649,7 +781,7 @@ export default function AdminBlogPostEditorPage() {
 
 
 
-  const previewHtml = marked(formData.content);
+  // Remove marked usage - use MarkdownProcessor component instead
 
 
 
@@ -1271,6 +1403,44 @@ export default function AdminBlogPostEditorPage() {
 
                 </label>
 
+                {/* Alt Text Input */}
+
+                {formData.featuredImage && (
+
+                  <div className="grid gap-1 mt-3">
+
+                    <label htmlFor="featuredImageAlt" className="text-sm font-semibold text-vanillaCustard">
+
+                      Image Alt Text <span className="text-vanillaCustard/60">(Accessibility)</span>
+
+                    </label>
+
+                    <input
+
+                      id="featuredImageAlt"
+
+                      value={formData.featuredImageAlt || ''}
+
+                      onChange={(e) => setFormData(prev => ({ ...prev, featuredImageAlt: e.target.value }))}
+
+                      placeholder="Describe the image for visually impaired readers"
+
+                      className="w-full rounded-xl border border-vanillaCustard/20 bg-graphite px-3 py-2 text-vanillaCustard focus:border-powderBlush focus:outline-none focus:ring-2 focus:ring-powderBlush/20 transition-colors"
+
+                      maxLength={200}
+
+                    />
+
+                    <p className="text-xs text-vanillaCustard/60">
+
+                      Help make your content accessible to everyone. Describe what's happening in the image.
+
+                    </p>
+
+                  </div>
+
+                )}
+
               </div>
 
             </div>
@@ -1390,12 +1560,18 @@ export default function AdminBlogPostEditorPage() {
             {/* Content */}
 
             <div 
+              id="article-content"
+              className="max-w-none"
+              style={{ color: '#D1DA9C' }}
+            >
 
-              className="prose prose-invert max-w-none text-vanillaCustard/90 [&_p]:leading-relaxed [&_p]:whitespace-pre-wrap [&_li]:whitespace-pre-wrap [&_*]:break-words [&_h1]:text-2xl [&_h2]:text-xl [&_h3]:text-lg [&_h1]:font-bold [&_h2]:font-bold [&_h3]:font-bold [&_h1]:text-vanillaCustard [&_h2]:text-vanillaCustard [&_h3]:text-vanillaCustard [&_h1]:mt-8 [&_h1]:mb-4 [&_h2]:mt-6 [&_h2]:mb-3 [&_h3]:mt-4 [&_h3]:mb-2 [&_ul]:list-disc [&_ol]:list-decimal [&_li]:ml-6 [&_blockquote]:border-l-4 [&_blockquote]:border-powderBlush [&_blockquote]:pl-6 [&_blockquote]:italic [&_a]:text-paleAmber [&_a]:underline [&_code]:bg-graphite [&_code]:px-2 [&_code]:py-1 [&_code]:rounded [&_code]:text-sm [&_pre]:bg-graphite [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_br]:my-2"
+              {formData.content ? (
+                <MarkdownProcessor content={formData.content} />
+              ) : (
+                <p className="text-vanillaCustard/50">Start typing to see your content preview here...</p>
+              )}
 
-              dangerouslySetInnerHTML={{ __html: previewHtml || '<p class="text-vanillaCustard/50">Start typing to see your content preview here...</p>' }}
-
-            />
+            </div>
 
           </div>
 

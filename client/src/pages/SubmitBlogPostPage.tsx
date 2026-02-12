@@ -42,6 +42,8 @@ export default function SubmitBlogPostPage() {
 
   const [featuredImage, setFeaturedImage] = useState('');
 
+  const [featuredImageAlt, setFeaturedImageAlt] = useState('');
+
   const [uploadingImage, setUploadingImage] = useState(false);
 
   const [uploadSuccess, setUploadSuccess] = useState(false);
@@ -78,66 +80,7 @@ export default function SubmitBlogPostPage() {
 
   const [historyIndex, setHistoryIndex] = useState(0);
 
-  // Memoize preview HTML to prevent excessive re-renders
-  const previewHtml = useMemo(() => {
-    // Process markdown content to HTML for preview
-    try {
-      // Basic markdown processing using imported marked and DOMPurify
-      let processed = content;
-      
-      // Convert horizontal rules
-      processed = processed.replace(/^---$/gm, '<hr>');
-      
-      // Convert headers
-      processed = processed.replace(/^### (.*$)/gim, '<h3>$1</h3>');
-      processed = processed.replace(/^## (.*$)/gim, '<h2>$1</h2>');
-      processed = processed.replace(/^# (.*$)/gim, '<h1>$1</h1>');
-      
-      // Convert links with comprehensive validation
-      processed = processed.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
-        // Use comprehensive URL validation for security
-        const urlValidation = validateUrl(url);
-        if (urlValidation.isValid) {
-          const sanitizedText = DOMPurify.sanitize(text, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
-          return `<a href="${urlValidation.sanitizedValue}" rel="noopener noreferrer">${sanitizedText}</a>`;
-        } else {
-          // If URL is invalid, return just the text without the link
-          const sanitizedText = DOMPurify.sanitize(text, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
-          return sanitizedText;
-        }
-      });
-      
-      // Convert bold and italic
-      processed = processed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-      processed = processed.replace(/\*(.*?)\*/g, '<em>$1</em>');
-      
-      // Convert line breaks
-      processed = processed.replace(/\n\n/g, '</p><p>');
-      processed = processed.replace(/\n/g, '<br>');
-      
-      // Wrap in paragraphs
-      processed = '<p>' + processed + '</p>';
-      
-      // Clean up double paragraphs
-      processed = processed.replace(/<p><\/p>/g, '');
-      processed = processed.replace(/<p>(<h[1-6]>)/g, '$1');
-      processed = processed.replace(/(<\/h[1-6]>)<\/p><p>/g, '$1<p>');
-      processed = processed.replace(/<p>(<hr>)/g, '$1<p>');
-      processed = processed.replace(/(<hr>)<\/p><p>/g, '$1<p>');
-      
-      // Sanitize the final HTML
-      return DOMPurify.sanitize(processed, {
-        ALLOWED_TAGS: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'strong', 'em', 'u', 's', 'del', 'ins', 'ul', 'ol', 'li', 'blockquote', 'pre', 'code', 'a', 'div', 'span', 'hr'],
-        ALLOWED_ATTR: ['href', 'title', 'alt', 'class', 'id'],
-        FORBID_TAGS: ['script', 'object', 'embed', 'iframe', 'form', 'input', 'button', 'style', 'link', 'meta', 'svg', 'math'],
-        FORBID_ATTR: ['onclick', 'onload', 'onerror', 'onmouseover', 'onfocus', 'onblur', 'onsubmit', 'onchange', 'style', 'src', 'data-', 'xlink:href', 'xmlns']
-      });
-    } catch (error) {
-      console.error('Error processing markdown for preview:', error);
-      // Fallback to basic paragraph wrapping if markdown processing fails
-      return `<p>${content.replace(/\n/g, '<br>')}</p>`;
-    }
-  }, [content]);
+  // Remove custom preview processing - use MarkdownProcessor component instead for consistency
 
 
 
@@ -336,6 +279,7 @@ export default function SubmitBlogPostPage() {
         tags,
         excerpt,
         featuredImage,
+        featuredImageAlt,
         imageRightsConfirmation,
         submissionConsent,
         privacyConsent,
@@ -350,7 +294,7 @@ export default function SubmitBlogPostPage() {
     } catch (error) {
       console.error('Error saving draft:', error);
     }
-  }, [title, content, authorName, authorEmail, categories, tags, excerpt, featuredImage, imageRightsConfirmation, submissionConsent, privacyConsent]);
+  }, [title, content, authorName, authorEmail, categories, tags, excerpt, featuredImage, featuredImageAlt, imageRightsConfirmation, submissionConsent, privacyConsent]);
 
   async function loadDraft() {
     try {
@@ -370,6 +314,7 @@ export default function SubmitBlogPostPage() {
           setTags(savedDraft.tags || '');
           setExcerpt(savedDraft.excerpt || '');
           setFeaturedImage(savedDraft.featuredImage || '');
+          setFeaturedImageAlt(savedDraft.featuredImageAlt || '');
           setImageRightsConfirmation(savedDraft.imageRightsConfirmation || false);
           setSubmissionConsent(savedDraft.submissionConsent || false);
           setPrivacyConsent(savedDraft.privacyConsent || false);
@@ -394,13 +339,20 @@ export default function SubmitBlogPostPage() {
 
 
 
-  // Undo/Redo functionality with circular buffer to prevent memory leaks
+  // Undo/Redo functionality with optimized circular buffer to prevent memory leaks
   const MAX_HISTORY_ENTRIES = 50;
   const historyBuffer = useRef<string[]>(new Array(MAX_HISTORY_ENTRIES).fill(''));
   const historyHead = useRef(0);
   const historySize = useRef(0);
+  
+  // Memory management: Track cleanup intervals
+  const cleanupIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const lastActivityTime = useRef<number>(Date.now());
 
   function addToHistory(newContent: string) {
+    // Update activity timestamp for cleanup
+    lastActivityTime.current = Date.now();
+    
     // Only add if content is different from current
     const currentIndex = (historyHead.current - historySize.current + MAX_HISTORY_ENTRIES) % MAX_HISTORY_ENTRIES;
     if (historyBuffer.current[currentIndex] === newContent) {
@@ -416,89 +368,96 @@ export default function SubmitBlogPostPage() {
       historySize.current++;
     }
     
-    // Update state for UI - build array from circular buffer efficiently
-    const newHistory: string[] = [];
-    const startIndex = (historyHead.current - historySize.current + MAX_HISTORY_ENTRIES) % MAX_HISTORY_ENTRIES;
+    // Optimize state update - only update if this would change the visible history
+    const newHistorySize = Math.min(historySize.current, MAX_HISTORY_ENTRIES);
+    const currentHistorySize = history.length;
     
-    for (let i = 0; i < historySize.current; i++) {
-      const index = (startIndex + i) % MAX_HISTORY_ENTRIES;
-      newHistory.push(historyBuffer.current[index]);
+    if (newHistorySize !== currentHistorySize) {
+      // Size changed, rebuild array efficiently
+      const newHistory: string[] = [];
+      const startIndex = (historyHead.current - historySize.current + MAX_HISTORY_ENTRIES) % MAX_HISTORY_ENTRIES;
+      
+      for (let i = 0; i < historySize.current; i++) {
+        const index = (startIndex + i) % MAX_HISTORY_ENTRIES;
+        newHistory.push(historyBuffer.current[index]);
+      }
+      
+      setHistory(newHistory);
+      setHistoryIndex(newHistory.length - 1);
+    } else {
+      // Same size, just update index
+      setHistoryIndex(newHistorySize - 1);
     }
     
-    setHistory(newHistory);
-    setHistoryIndex(newHistory.length - 1);
+    // Trigger cleanup if needed
+    scheduleCleanup();
+  }
+  
+  // Memory cleanup function
+  function scheduleCleanup() {
+    // Clear existing cleanup timeout
+    if (cleanupIntervalRef.current) {
+      clearTimeout(cleanupIntervalRef.current);
+    }
+    
+    // Schedule cleanup after 5 minutes of inactivity
+    cleanupIntervalRef.current = setTimeout(() => {
+      const timeSinceLastActivity = Date.now() - lastActivityTime.current;
+      if (timeSinceLastActivity > 5 * 60 * 1000) { // 5 minutes
+        // Clear history buffer to free memory
+        historyBuffer.current = new Array(MAX_HISTORY_ENTRIES).fill('');
+        historyHead.current = 0;
+        historySize.current = 0;
+        setHistory(['']);
+        setHistoryIndex(0);
+      }
+    }, 5 * 60 * 1000); // 5 minutes
   }
 
 
 
   function undo() {
+    // Update activity timestamp
+    lastActivityTime.current = Date.now();
 
     if (historyIndex > 0) {
-
       const newIndex = historyIndex - 1;
-
       setHistoryIndex(newIndex);
-
       setContent(history[newIndex]);
 
-      
-
       // Restore cursor position
-
       setTimeout(() => {
-
         const textarea = contentTextareaRef.current;
-
         if (textarea) {
-
           textarea.focus();
-
           const textLength = history[newIndex].length;
-
           textarea.setSelectionRange(textLength, textLength);
-
         }
-
       }, 0);
-
     }
-
   }
 
 
 
   function redo() {
+    // Update activity timestamp
+    lastActivityTime.current = Date.now();
 
     if (historyIndex < history.length - 1) {
-
       const newIndex = historyIndex + 1;
-
       setHistoryIndex(newIndex);
-
       setContent(history[newIndex]);
 
-      
-
       // Restore cursor position
-
       setTimeout(() => {
-
         const textarea = contentTextareaRef.current;
-
         if (textarea) {
-
           textarea.focus();
-
           const textLength = history[newIndex].length;
-
           textarea.setSelectionRange(textLength, textLength);
-
         }
-
       }, 0);
-
     }
-
   }
 
 
@@ -730,6 +689,7 @@ export default function SubmitBlogPostPage() {
       tags: sanitizeTags(tags),
       excerpt: excerpt.trim(),
       featuredImage: featuredImage.trim(),
+      featuredImageAlt: featuredImageAlt.trim(),
       submissionConsent,
       privacyConsent
     };
@@ -853,6 +813,8 @@ export default function SubmitBlogPostPage() {
 
       setFeaturedImage('');
 
+      setFeaturedImageAlt('');
+
       setImageRightsConfirmation(false);
 
       setSubmissionConsent(false);
@@ -891,12 +853,12 @@ export default function SubmitBlogPostPage() {
     // Only save if there's meaningful content and document is visible
     const hasContent = title.trim() || content.trim() || authorName.trim() || 
                      authorEmail.trim() || categories.trim() || tags.trim() || 
-                     excerpt.trim() || featuredImage.trim();
+                     excerpt.trim() || featuredImage.trim() || featuredImageAlt.trim();
     
     if (hasContent && document.visibilityState === 'visible') {
       debouncedSaveDraft();
     }
-  }, [title, content, authorName, authorEmail, categories, tags, excerpt, featuredImage, debouncedSaveDraft]);
+  }, [title, content, authorName, authorEmail, categories, tags, excerpt, featuredImage, featuredImageAlt, debouncedSaveDraft]);
 
   // Auto-save every 10 seconds with proper cleanup and debouncing
   useEffect(() => {
@@ -924,6 +886,21 @@ export default function SubmitBlogPostPage() {
     }
 
   }, [status]);
+
+  // Memory cleanup effect
+  useEffect(() => {
+    return () => {
+      // Clear cleanup timeout on unmount
+      if (cleanupIntervalRef.current) {
+        clearTimeout(cleanupIntervalRef.current);
+      }
+      
+      // Clear history buffer to free memory
+      historyBuffer.current = new Array(MAX_HISTORY_ENTRIES).fill('');
+      historyHead.current = 0;
+      historySize.current = 0;
+    };
+  }, []);
 
 
 
@@ -1321,24 +1298,33 @@ export default function SubmitBlogPostPage() {
 
                   )}
 
-                  
-
                   <input
-
                     value={featuredImage || ''}
-
                     onChange={(e) => setFeaturedImage(e.target.value)}
-
                     placeholder="Or enter image URL directly"
-
                     className="w-full rounded-2xl border border-vanillaCustard/20 bg-graphite px-4 py-3 text-lg font-semibold text-vanillaCustard"
-
                   />
 
+                  {/* Alt Text Input */}
+                  {featuredImage && (
+                    <div className="space-y-2">
+                      <label htmlFor="alt-text" className="block text-sm font-medium text-vanillaCustard/90">
+                        Image Alt Text <span className="text-vanillaCustard/60">(Accessibility)</span>
+                      </label>
+                      <input
+                        id="alt-text"
+                        value={featuredImageAlt}
+                        onChange={(e) => setFeaturedImageAlt(e.target.value)}
+                        placeholder="Describe the image for visually impaired readers (e.g., 'Rainbow flag waving at pride parade')"
+                        className="w-full rounded-2xl border border-vanillaCustard/20 bg-graphite px-4 py-3 text-lg font-semibold text-vanillaCustard placeholder-vanillaCustard/50"
+                        maxLength={200}
+                      />
+                      <p className="text-xs text-vanillaCustard/60">
+                        Help make your content accessible to everyone. Describe what's happening in the image.
+                      </p>
+                    </div>
+                  )}
                 </div>
-
-                
-
                 {/* Image Guidelines */}
 
                 <div className="rounded-xl bg-paleAmber/10 border border-paleAmber/20 p-4">
@@ -1923,7 +1909,11 @@ This is a paragraph with **bold** and *italic* text.
 
                     <Suspense fallback={<div className="text-vanillaCustard/60">Loading preview...</div>}>
 
-                      <div className="prose prose-invert max-w-none text-vanillaCustard/90 [&_p]:leading-relaxed [&_p]:whitespace-pre-wrap [&_li]:whitespace-pre-wrap [&_*]:break-words [&_h1]:text-2xl [&_h2]:text-xl [&_h3]:text-lg [&_h1]:font-bold [&_h2]:font-bold [&_h3]:font-bold [&_h1]:text-vanillaCustard [&_h2]:text-vanillaCustard [&_h3]:text-vanillaCustard [&_h1]:mt-8 [&_h1]:mb-4 [&_h2]:mt-6 [&_h2]:mb-3 [&_h3]:mt-4 [&_h3]:mb-2 [&_ul]:list-disc [&_ol]:list-decimal [&_li]:ml-6 [&_blockquote]:border-l-4 [&_blockquote]:border-powderBlush [&_blockquote]:pl-6 [&_blockquote]:italic [&_a]:text-paleAmber [&_a]:underline [&_code]:bg-graphite [&_code]:px-2 [&_code]:py-1 [&_code]:rounded [&_code]:text-sm [&_pre]:bg-graphite [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_br]:my-2">
+                      <div 
+                        id="article-content"
+                        className="max-w-none"
+                        style={{ color: '#D1DA9C' }}
+                      >
 
                         <MarkdownProcessor content={content} />
 
