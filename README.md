@@ -12,8 +12,10 @@ A community-maintained website connecting people with **LGBTQIA+ resources, even
 
 - **Find Resources** - Healthcare providers, legal services, support groups, and more
 - **Discover Events** - Community meetups, support groups, social gatherings  
+- **Read Blog Posts** - Community stories, experiences, and helpful information
 - **Submit Content** - Community members can add new resources on the Submit A Resource page, or submit blog posts for review and publishing through the Share Your Story button on the Blog page
-- **Admin Dashboard** - Manage and moderate all content
+- **Admin Dashboard** - Manage and moderate all content with dynamic taxonomy management
+- **Dynamic Categories** - Admins can add new resource types, audiences, and locations on the fly
 
 ---
 
@@ -153,11 +155,26 @@ npm run migrate:events --workspace server     # Import events
 - **Login:** `/admin/login`
 - **Resources:** `/admin/resources`
 - **Events:** `/admin/events`
+- **Blog Posts:** `/admin/blog-posts`
 - **Submissions:** `/admin/submissions`
+- **Taxonomy:** `/admin/taxonomy`
 
-### User Roles
-- **👑 Admin:** Full access (can archive/unarchive)
-- **✏️ Editor:** Basic access (cannot archive)
+### Admin Features
+- **📝 Resource Management:** Add, edit, archive/unarchive community resources
+- **📅 Event Management:** Create and manage community events
+- **📰 Blog Management:** Review, edit, and publish community blog posts
+- **🏷️ Taxonomy Management:** (NEW!) Dynamically manage categories, audiences, and locations
+- **📋 Submissions:** Review and approve community-submitted resources
+- **📧 Newsletter:** Manage subscriber lists and campaigns
+
+### Dynamic Taxonomy Management
+Admins can now dynamically manage:
+- **Resource Types:** Add categories like "Financial Aid", "Housing", "Education"
+- **Audiences:** Add target groups like "Veterans", "Students", "Immigrants"  
+- **Locations:** Add service areas like "Austin", "Dallas", "San Antonio"
+- **Validation:** All items follow strict validation rules for consistency
+- **Soft Delete:** Deactivate items instead of permanent deletion
+- **Integration:** Automatically updates all forms and filters
 
 ### Create Admin Account
 ```bash
@@ -233,7 +250,6 @@ The newsletter system uses **Brevo (Sendinblue)** for transactional emails:
 - **Fork the repository**
 - **Create a feature branch**
 - **Submit a pull request**
-- **Follow existing code style**
 
 ---
 
