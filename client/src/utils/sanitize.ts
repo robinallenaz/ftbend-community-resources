@@ -5,6 +5,8 @@
  * consider using a dedicated library like DOMPurify in production environments.
  */
 
+import { validateUrl } from './validationUtils';
+
 /**
  * Sanitize CSS content for style attributes
  * Provides basic CSS injection protection
@@ -38,6 +40,11 @@ export function sanitizeText(text: string): string {
   if (typeof text !== 'string') {
     return '';
   }
+  
+  // Add DoS protection
+  if (text.length > 10000) {
+    return '';
+  }
 
   return text
     .replace(/&/g, '&amp;')
@@ -66,134 +73,24 @@ export function sanitizeAttribute(text: string): string {
 }
 
 /**
- * Sanitize URL for safe display
- * Validates URL format and sanitizes for display
+ * Sanitize URL for safe display and validation
+ * Uses the consolidated validateUrl function for consistency
  */
 export function sanitizeUrl(url: string): string {
-  if (typeof url !== 'string') {
-    return '';
-  }
-
-  try {
-    // Validate URL format first
-    const parsedUrl = new URL(url);
-    
-    // Handle data URLs with strict validation
-    if (parsedUrl.protocol === 'data:') {
-      // Extract MIME type from data URL properly
-      const dataUrl = url.substring(5); // Remove 'data:'
-      const commaIndex = dataUrl.indexOf(',');
-      if (commaIndex === -1) {
-        return '#invalid-data-format';
-      }
-      
-      const mimeType = dataUrl.substring(0, commaIndex).split(';')[0].toLowerCase().trim();
-      const allowedDataTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/svg+xml', 'text/plain'];
-      
-      if (!allowedDataTypes.includes(mimeType)) {
-        return '#invalid-data-type';
-      }
-      
-      // Additional check for SVG data URLs to prevent script injection
-      if (mimeType === 'image/svg+xml') {
-        const dataContent = dataUrl.substring(commaIndex + 1);
-        
-        // Handle multiple encoding formats that could bypass validation
-        let decodedContent;
-        try {
-          // Try standard URI decoding first
-          decodedContent = decodeURIComponent(dataContent);
-        } catch {
-          try {
-            // Fallback to base64 decoding if it looks like base64
-            decodedContent = atob(dataContent);
-          } catch {
-            // If both fail, treat as invalid
-            return '#invalid-svg-encoding';
-          }
-        }
-        
-        // Block SVG content that contains event handlers or scripts
-        // More comprehensive patterns to catch various injection attempts
-        const dangerousPatterns = [
-          // Script and event handlers
-          /<script/i,
-          /on\w+\s*=/i,  // Matches onclick, onload, onerror, etc.
-          /javascript:/i,
-          /data:text\/html/i,
-          /vbscript:/i,
-          
-          // Dangerous elements and attributes
-          /<iframe/i,
-          /<object/i,
-          /<embed/i,
-          /<form/i,
-          /<input/i,
-          /<button/i,
-          /<link/i,
-          /<meta/i,
-          /<style/i,
-          /@import/i,
-          
-          // Expression and eval functions
-          /eval\s*\(/i,
-          /expression\s*\(/i,
-          /url\s*\(\s*['"]?\s*javascript:/i,
-          /fromCharCode/i,
-          /String\.fromCharCode/i,
-          
-          // XML-specific attacks
-          /<\?xml/i,
-          /<!DOCTYPE/i,
-          /<\!\[CDATA\[/i,
-          /xlink:href\s*=/i,
-          /href\s*=\s*["']?javascript:/i,
-          
-          // Common obfuscation patterns
-          /\\x[0-9a-f]{2}/i,
-          /\\u[0-9a-f]{4}/i,
-          /&#\d+;/,
-          /&#x[0-9a-f]+;/i,
-        ];
-        
-        for (const pattern of dangerousPatterns) {
-          if (pattern.test(decodedContent)) {
-            return '#invalid-svg-content';
-          }
-        }
-        
-        // Additional check: ensure SVG content doesn't contain executable code
-        // by looking for common JavaScript patterns in any encoding
-        const jsPatterns = [
-          /function\s*\(/i,
-          /var\s+\w+\s*=/,
-          /let\s+\w+\s*=/,
-          /const\s+\w+\s*=/,
-          /window\./i,
-          /document\./i,
-          /alert\s*\(/i,
-          /console\./i,
-        ];
-        
-        for (const pattern of jsPatterns) {
-          if (pattern.test(decodedContent)) {
-            return '#invalid-svg-content';
-          }
-        }
-      }
-    } else {
-      // Only allow safe protocols for non-data URLs
-      const allowedProtocols = ['http:', 'https:', 'mailto:', 'tel:'];
-      if (!allowedProtocols.includes(parsedUrl.protocol)) {
-        return '#invalid-protocol';
-      }
-    }
-    
-    return sanitizeText(url);
-  } catch {
-    // Invalid URL format
+  const validation = validateUrl(url);
+  
+  if (!validation.isValid) {
     return '#invalid-url';
   }
+  
+  // Additional sanitization for display
+  return validation.sanitizedValue!
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;');
 }
 
 /**
@@ -202,6 +99,11 @@ export function sanitizeUrl(url: string): string {
  */
 export function sanitizeUserInput(text: string): string {
   if (typeof text !== 'string') {
+    return '';
+  }
+  
+  // Add DoS protection
+  if (text.length > 10000) {
     return '';
   }
 

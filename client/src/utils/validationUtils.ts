@@ -9,6 +9,68 @@ export interface ValidationResult {
 }
 
 /**
+ * Common dangerous patterns for URL and content validation
+ */
+const DANGEROUS_PATTERNS = [
+  /javascript:/i,
+  /data:(?!(image\/(png|jpe?g|gif|webp|svg)|text\/markdown|text\/plain))/i,
+  /vbscript:/i,
+  /file:/i,
+  /ftp:/i,
+  /on\w+\s*=/i,
+  /<[^>]*(?:script|iframe|object|embed|form|input|meta|link)[^>]*>/i,
+  /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/i,
+  /expression\s*\(/i,
+  /@import/i,
+  /%6a%61%76%61%73%63%72%69%70%74/i,
+  /%64%61%74%61/i,
+  /%76%62%73%63%72%69%70%74/i,
+];
+
+/**
+ * Common HTML entity patterns
+ */
+const HTML_ENTITY_PATTERNS = [
+  /&#(\d+);/g,
+  /&#x([0-9a-fA-F]+);/g,
+  /\\u([0-9a-fA-F]{4})/g,
+];
+
+/**
+ * Decode URLs and HTML entities safely with iteration limits
+ */
+function safeDecodeUrl(url: string, maxIterations: number = 3): string {
+  let decoded = url;
+  let iteration = 0;
+  
+  while (iteration < maxIterations) {
+    const previous = decoded;
+    
+    // Decode URL components
+    try {
+      decoded = decodeURIComponent(decoded);
+    } catch {
+      break; // Stop if decoding fails
+    }
+    
+    // Decode HTML entities
+    decoded = decoded
+      .replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(parseInt(dec, 10)))
+      .replace(/&#x([0-9a-fA-F]+);/g, (match, hex) => String.fromCharCode(parseInt(hex, 16)))
+      .replace(/\\u([0-9a-fA-F]{4})/g, (match, code) => String.fromCharCode(parseInt(code, 16)));
+    
+    // Stop if no changes occurred
+    if (decoded === previous) {
+      break;
+    }
+    
+    iteration++;
+  }
+  
+  return decoded;
+}
+
+/**
  * Validates and sanitizes URLs to prevent XSS and security vulnerabilities
  */
 export function validateUrl(url: string): ValidationResult {
@@ -18,51 +80,21 @@ export function validateUrl(url: string): ValidationResult {
   
   const trimmedUrl = url.trim();
   
-  // Length validation
+  // Length validation with DoS protection
   if (trimmedUrl.length === 0 || trimmedUrl.length > 2048) {
     return { isValid: false, error: 'URL must be between 1 and 2048 characters' };
   }
   
-  // CRITICAL FIX: Decode URL first to prevent bypass through encoding
+  // CRITICAL FIX: Safe URL decoding with iteration limits
   let decodedUrl: string;
   try {
-    // Decode multiple times to handle nested encoding
-    decodedUrl = decodeURIComponent(trimmedUrl);
-    // Check if double-decoding reveals more content
-    const doubleDecoded = decodeURIComponent(decodedUrl);
-    if (doubleDecoded !== decodedUrl) {
-      decodedUrl = doubleDecoded;
-    }
+    decodedUrl = safeDecodeUrl(trimmedUrl);
   } catch (error) {
     return { isValid: false, error: 'URL contains invalid encoding' };
   }
   
-  // Additional decode for HTML entities and Unicode escapes
-  decodedUrl = decodedUrl
-    .replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(parseInt(dec, 10)))
-    .replace(/&#x([0-9a-fA-F]+);/g, (match, hex) => String.fromCharCode(parseInt(hex, 16)))
-    .replace(/\\u([0-9a-fA-F]{4})/g, (match, code) => String.fromCharCode(parseInt(code, 16)));
-  
   // Block dangerous patterns in both original and decoded URLs
-  const dangerousPatterns = [
-    /javascript:/i,
-    /data:(?!(image\/(png|jpe?g|gif|webp|svg)|text\/markdown|text\/plain))/i, // Allow specific data URLs
-    /vbscript:/i,
-    /file:/i,
-    /ftp:/i,
-    /on\w+\s*=/i,
-    /<[^>]*(?:script|iframe|object|embed|form|input|meta|link)[^>]*>/i, // More specific HTML tag detection
-    /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/i, // Control characters
-    /expression\s*\(/i,
-    /@import/i,
-    // Additional patterns for encoded attacks
-    /%6a%61%76%61%73%63%72%69%70%74/i, // URL encoded "javascript"
-    /%64%61%74%61/i, // URL encoded "data"
-    /%76%62%73%63%72%69%70%74/i, // URL encoded "vbscript"
-  ];
-  
-  // Check both original and decoded versions
-  if (dangerousPatterns.some(pattern => pattern.test(trimmedUrl) || pattern.test(decodedUrl))) {
+  if (DANGEROUS_PATTERNS.some(pattern => pattern.test(trimmedUrl) || pattern.test(decodedUrl))) {
     return { isValid: false, error: 'URL contains potentially dangerous content' };
   }
   
@@ -135,7 +167,7 @@ export function validateUrl(url: string): ValidationResult {
   
   // For absolute URLs, use strict whitelist approach with decoded URL validation
   const urlToCheck = decodedUrl; // Use decoded URL for absolute URL validation
-  const urlPattern = /^https:\/\/(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?::\d{1,5})?(?:\/[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*)?(?:\?[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*)?(?:#[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*)?$/;
+  const urlPattern = /^https:\/\/(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61})?\.)+[a-zA-Z]{2,}(?::\d{1,5})?(?:\/[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*)?(?:\?[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*)?(?:#[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*)?$/;
   
   if (!urlPattern.test(urlToCheck)) {
     return { isValid: false, error: 'URL format is invalid. Only HTTPS URLs are allowed' };
@@ -251,20 +283,7 @@ export function validateTextContent(content: string, options: {
   }
   
   // Block dangerous patterns - refined to reduce false positives
-  const dangerousPatterns = [
-    /<script[^>]*>.*?<\/script>/gis,
-    /javascript:/gi,
-    /vbscript:/gi,
-    /data:(?!text\/markdown|text\/plain)/gi, // Allow data URLs for markdown/plain text
-    /on\w+\s*=/gi,
-    /expression\s*\(/gi,
-    /@import/gi,
-    /&#(?:x[0-9a-fA-F]{1,6}|[0-9]{1,7});/gi, // HTML entities
-    /\\u[0-9a-fA-F]{4}/gi,
-    /<[^>]*(?:script|iframe|object|embed|form|input|meta|link|style)[^>]*>/gi, // Specific dangerous tags
-  ];
-  
-  if (dangerousPatterns.some(pattern => pattern.test(trimmedContent))) {
+  if (DANGEROUS_PATTERNS.some(pattern => pattern.test(trimmedContent))) {
     return { isValid: false, error: 'Content contains potentially dangerous elements' };
   }
   
@@ -325,17 +344,7 @@ export function validateCategory(name: string): ValidationResult {
   }
   
   // Prevent XSS and injection attempts
-  const dangerousPatterns = [
-    /<[^>]*>/,                    // HTML tags
-    /(?:javascript|data:text|vbscript):/i, // Dangerous protocols
-    /on\w+\s*=/i,                 // Event handlers
-    /expression\s*\(/i,           // CSS expressions
-    /@import/i,                   // CSS imports
-    /&#\d+;/,                     // HTML entities
-    /%[0-9a-fA-F]{2}/i,           // URL encoding
-  ];
-  
-  if (dangerousPatterns.some(pattern => pattern.test(trimmedName))) {
+  if (DANGEROUS_PATTERNS.some(pattern => pattern.test(trimmedName))) {
     return { isValid: false, error: 'Category contains potentially dangerous content' };
   }
   
@@ -366,17 +375,7 @@ export function validateTag(name: string): ValidationResult {
   // Tags can be single characters (like 'C' for 'Community')
   
   // Prevent XSS and injection attempts
-  const dangerousPatterns = [
-    /<[^>]*>/,                    // HTML tags
-    /(?:javascript|data:text|vbscript):/i, // Dangerous protocols
-    /on\w+\s*=/i,                 // Event handlers
-    /expression\s*\(/i,           // CSS expressions
-    /@import/i,                   // CSS imports
-    /&#\d+;/,                     // HTML entities
-    /%[0-9a-fA-F]{2}/i,           // URL encoding
-  ];
-  
-  if (dangerousPatterns.some(pattern => pattern.test(trimmedName))) {
+  if (DANGEROUS_PATTERNS.some(pattern => pattern.test(trimmedName))) {
     return { isValid: false, error: 'Tag contains potentially dangerous content' };
   }
   
