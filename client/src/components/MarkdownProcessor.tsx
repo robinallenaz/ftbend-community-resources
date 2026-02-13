@@ -97,7 +97,7 @@ export function processExtendedMarkdown(markdown: string) {
         const sanitizedText = DOMPurify.sanitize(text, { 
           ALLOWED_TAGS: [], 
           ALLOWED_ATTR: [],
-          KEEP_CONTENT: false,
+          KEEP_CONTENT: true,
           FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form', 'input', 'button', 'style', 'link', 'meta', 'svg', 'math'],
           FORBID_ATTR: ['onclick', 'onload', 'onerror', 'onmouseover', 'onfocus', 'onblur', 'onsubmit', 'onchange', 'style', 'src', 'data-', 'xlink:href', 'xmlns'],
           SANITIZE_NAMED_PROPS: true,
@@ -118,7 +118,7 @@ export function processExtendedMarkdown(markdown: string) {
         const sanitizedText = DOMPurify.sanitize(text, { 
           ALLOWED_TAGS: [], 
           ALLOWED_ATTR: [],
-          KEEP_CONTENT: false,
+          KEEP_CONTENT: true,
           FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form', 'input', 'button', 'style', 'link', 'meta', 'svg', 'math'],
           FORBID_ATTR: ['onclick', 'onload', 'onerror', 'onmouseover', 'onfocus', 'onblur', 'onsubmit', 'onchange', 'style', 'src', 'data-', 'xlink:href', 'xmlns'],
           SANITIZE_NAMED_PROPS: true,
