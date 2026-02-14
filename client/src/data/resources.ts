@@ -64,12 +64,12 @@ export const resources: Resource[] = [
   {
     id: 'transvoices',
     name: 'Trans Voices',
-    description: 'Trans community resources and support.',
+    description: 'Trans Voices exists to uplift, empower, and connect trans and nonbinary communities through storytelling, support, and collective action. We create spaces where trans people can share experiences, build relationships, access resources, and thrive authentically. Our vision is a world where trans voices are heard, celebrated, and protected. Through chapters, events, and mutual support, we\'re building a future where trans liberation is inevitable.',
     url: 'https://linktr.ee/transvoices.us?fbclid=PAZXh0bgNhZW0CMTEAAaexu9rMcpS3U-QAmqElpNc1X4Ig_TWfRdPaDDJVcUQqiICCLyrAhtAQtF0-6g_aem_zl8_b7WFDvQoRfqm51eu_g',
     locations: ['TX', 'Virtual'],
     types: ['Community'],
     audiences: ['Trans'],
-    tags: ['trans', 'support', 'community']
+    tags: ['trans voices', 'transgender', 'nonbinary', 'storytelling', 'support', 'collective action', 'advocacy', 'community', 'chapters', 'events', 'mutual support', 'trans liberation']
   },
   {
     id: 'parents-of-trans-youth',
