@@ -97,7 +97,7 @@ router.post('/', requireAuth, requireRole(['admin', 'editor']), async (req, res)
       label: sanitizeHtml(label.trim()),
       description: sanitizeHtml(description?.trim() || ''),
       sortOrder,
-      createdBy: req.auth.id,
+      createdBy: req.auth.sub, // Fix: use 'sub' instead of 'id'
     });
 
     await taxonomyItem.save();
