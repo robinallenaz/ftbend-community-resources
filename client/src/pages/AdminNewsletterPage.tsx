@@ -25,7 +25,7 @@ const newsletterSanitizeConfig = {
     'href', 'title', 'alt', 'class', 'id', 'src', 'width', 'height',
     'target', 'rel', 'style'
   ],
-  ALLOWED_URI_REGEXP: /^https:\/\/(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?::\d{1,5})?(?:\/[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*)?(?:\?[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*)?(?:#[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*)?$|^\/(?:[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*|\.\/[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*)*$/,
+  ALLOWED_URI_REGEXP: /^https:\/\/(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?::\d{1,5})?(?:\/[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*)?(?:\?[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*)?(?:#[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*)?$|^mailto:(?:[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,},)*[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\?[^#]*)?(?:#.*)?$|^\/(?:[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*|\.\/[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*)*$/,
   FORBID_TAGS: ['script', 'object', 'embed', 'iframe', 'form', 'input', 'button', 'style', 'link', 'meta', 'svg', 'math', 'video', 'audio', 'canvas'],
   FORBID_ATTR: ['onclick', 'onload', 'onerror', 'onmouseover', 'onfocus', 'onblur', 'onsubmit', 'onchange', 'data-', 'xlink:href', 'xmlns', 'javascript:', 'vbscript:', 'data:text/html'],
   SANITIZE_DOM: true,

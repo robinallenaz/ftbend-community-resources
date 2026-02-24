@@ -17,8 +17,8 @@ const purifyConfig = {
   ALLOWED_ATTR: [
     'href', 'title', 'alt', 'class', 'id'
   ],
-  // Strict URL validation - only allow HTTPS and safe relative URLs, no protocol bypass
-  ALLOWED_URI_REGEXP: /^https:\/\/(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?::\d{1,5})?(?:\/[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*)?(?:\?[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*)?(?:#[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*)?$|^\/(?:[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*|\.\/[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*)*$/,
+  // Strict URL validation - allow HTTPS, mailto, and safe relative URLs, no protocol bypass
+  ALLOWED_URI_REGEXP: /^https:\/\/(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?::\d{1,5})?(?:\/[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*)?(?:\?[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*)?(?:#[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*)?$|^mailto:(?:[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,},)*[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\?[^#]*)?(?:#.*)?$|^\/(?:[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*|\.\/[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*)*$/,
   FORBID_TAGS: ['script', 'object', 'embed', 'iframe', 'form', 'input', 'button', 'style', 'link', 'meta', 'svg', 'math'],
   FORBID_ATTR: ['onclick', 'onload', 'onerror', 'onmouseover', 'onfocus', 'onblur', 'onsubmit', 'onchange', 'style', 'src', 'data-', 'xlink:href', 'xmlns'],
   SANITIZE_DOM: true,
