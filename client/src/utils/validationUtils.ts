@@ -167,10 +167,16 @@ export function validateUrl(url: string): ValidationResult {
   
   // For absolute URLs, use strict whitelist approach with decoded URL validation
   const urlToCheck = decodedUrl; // Use decoded URL for absolute URL validation
+  
+  // Allow mailto links with basic validation
+  if (trimmedUrl.startsWith('mailto:')) {
+    return validateMailtoUrl(trimmedUrl, decodedUrl);
+  }
+  
   const urlPattern = /^https:\/\/(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61})?\.)+[a-zA-Z]{2,}(?::\d{1,5})?(?:\/[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*)?(?:\?[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*)?(?:#[a-zA-Z0-9\-._~!$&'()*+,;=:@%\/?]*)?$/;
   
   if (!urlPattern.test(urlToCheck)) {
-    return { isValid: false, error: 'URL format is invalid. Only HTTPS URLs are allowed' };
+    return { isValid: false, error: 'URL format is invalid. Only HTTPS URLs and mailto links are allowed' };
   }
   
   // Additional domain validation using decoded URL
@@ -409,6 +415,146 @@ export function validateTitle(title: string): ValidationResult {
   }
   
   return { isValid: true, sanitizedValue: trimmedTitle };
+}
+
+/**
+ * Validates mailto URLs with comprehensive security checks
+ */
+function validateMailtoUrl(originalUrl: string, decodedUrl: string): ValidationResult {
+  // Support multiple recipients: mailto:email1@example.com,email2@example.com
+  const mailtoPattern = /^mailto:(?:[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,},)*[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\?[^#]*)?(?:#.*)?$/;
+  
+  // Use decoded URL for validation but return original for consistency
+  if (!mailtoPattern.test(decodedUrl)) {
+    return { isValid: false, error: 'Mailto link format is invalid' };
+  }
+  
+  // Enhanced parameter validation
+  if (decodedUrl.includes('?')) {
+    const paramsPart = decodedUrl.split('?')[1];
+    
+    // Handle empty parameters case
+    if (!paramsPart || paramsPart.trim().length === 0) {
+      return { isValid: false, error: 'Mailto parameters cannot be empty' };
+    }
+    
+    // Expanded dangerous character pattern for security (allow template variables)
+    const dangerousChars = /[<>"'`&(){}[\];\\\x00-\x1f\x7f]/;
+    
+    // Allow template variables but check for other dangerous patterns
+    const templatePattern = /\{\{[^}]*\}\}|%[^%]*%/;
+    const hasTemplates = templatePattern.test(paramsPart);
+    
+    // If no templates, apply strict validation
+    if (!hasTemplates && dangerousChars.test(paramsPart)) {
+      return { isValid: false, error: 'Mailto parameters contain unsafe characters' };
+    }
+    
+    // Validate common mailto parameters separately
+    const urlParams = new URLSearchParams(paramsPart);
+    
+    // Validate subject parameter
+    const subject = urlParams.get('subject');
+    if (subject) {
+      const subjectValidation = validateMailtoContent(subject, 'subject', hasTemplates);
+      if (!subjectValidation.isValid) {
+        return { isValid: false, error: `Mailto subject is invalid: ${subjectValidation.error}` };
+      }
+    }
+    
+    // Validate body parameter
+    const body = urlParams.get('body');
+    if (body) {
+      const bodyValidation = validateMailtoContent(body, 'body', hasTemplates);
+      if (!bodyValidation.isValid) {
+        return { isValid: false, error: `Mailto body is invalid: ${bodyValidation.error}` };
+      }
+    }
+    
+    // Check for other potentially dangerous parameters
+    for (const [key, value] of urlParams.entries()) {
+      // Only allow known safe parameters
+      const allowedParams = ['subject', 'body', 'cc', 'bcc'];
+      if (!allowedParams.includes(key.toLowerCase())) {
+        return { isValid: false, error: `Mailto parameter '${key}' is not allowed` };
+      }
+      
+      // Validate parameter values for safety (allow templates in cc/bcc)
+      if (value && key.toLowerCase() !== 'cc' && key.toLowerCase() !== 'bcc') {
+        const valueValidation = validateMailtoContent(value, key, hasTemplates);
+        if (!valueValidation.isValid) {
+          return { isValid: false, error: `Mailto parameter '${key}' is invalid: ${valueValidation.error}` };
+        }
+      }
+    }
+  }
+  
+  return { isValid: true, sanitizedValue: originalUrl };
+}
+
+/**
+ * Validates mailto content with support for template variables
+ */
+function validateMailtoContent(content: string, type: string, allowTemplates: boolean): ValidationResult {
+  // Basic length validation
+  const maxLength = type === 'subject' ? 200 : type === 'body' ? 2000 : 100;
+  if (content.length > maxLength) {
+    return { isValid: false, error: `${type} exceeds maximum length of ${maxLength} characters` };
+  }
+  
+  // Remove template variables for validation
+  let contentToCheck = content;
+  if (allowTemplates) {
+    contentToCheck = content.replace(/\{\{[^}]*\}\}|%[^%]*%/g, '');
+  }
+  
+  // Check for dangerous patterns in non-template content
+  const dangerousPatterns = [
+    /javascript:/i,
+    /data:(?!image\/)/i,
+    /vbscript:/i,
+    /on\w+\s*=/i,
+    /<script[^>]*>/i,
+    /<iframe[^>]*>/i,
+    /<object[^>]*>/i,
+    /<embed[^>]*>/i,
+  ];
+  
+  if (dangerousPatterns.some(pattern => pattern.test(contentToCheck))) {
+    return { isValid: false, error: `${type} contains potentially dangerous content` };
+  }
+  
+  // For body content, allow markdown but validate links
+  if (type === 'body') {
+    const dangerousMarkdownPattern = /\[([^\]]+)\]\(([^)]+)\)/g;
+    const matches = contentToCheck.match(dangerousMarkdownPattern);
+    
+    if (matches) {
+      for (const match of matches) {
+        const urlMatch = match.match(/\(([^)]+)\)/);
+        if (urlMatch) {
+          const urlValidation = validateUrl(urlMatch[1]);
+          if (!urlValidation.isValid) {
+            return { isValid: false, error: `Body contains invalid URL: ${urlValidation.error}` };
+          }
+        }
+      }
+    }
+  }
+  
+  // Validate email addresses in cc/bcc parameters
+  if (type === 'cc' || type === 'bcc') {
+    const emails = content.split(',').map(email => email.trim());
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    
+    for (const email of emails) {
+      if (!emailPattern.test(email)) {
+        return { isValid: false, error: `Invalid email address in ${type}: ${email}` };
+      }
+    }
+  }
+  
+  return { isValid: true, sanitizedValue: content };
 }
 
 /**
