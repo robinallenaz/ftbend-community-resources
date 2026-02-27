@@ -78,6 +78,7 @@ export default function ResourceCard({
   const [isExpanded, setIsExpanded] = useState(false);
   const [isTruncated, setIsTruncated] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [isLargeCard, setIsLargeCard] = useState(false);
   const descriptionRef = useRef<HTMLParagraphElement>(null);
 
   // Calculate distance and accuracy if user location is available
@@ -87,9 +88,13 @@ export default function ResourceCard({
   useEffect(() => {
     const checkTruncation = () => {
       if (descriptionRef.current) {
-        // Check if the content height is greater than the line-clamp height
+        // Dynamic line count based on viewport size (more lines when cards are larger)
+        const isLargeCard = window.innerWidth >= 1024; // lg breakpoint
+        const lineCount = isLargeCard ? 5 : 3; // 5 lines on desktop, 3 on mobile
+        setIsLargeCard(isLargeCard);
+        
         const lineHeight = parseInt(window.getComputedStyle(descriptionRef.current).lineHeight);
-        const maxHeight = lineHeight * 3; // 3 lines
+        const maxHeight = lineHeight * lineCount;
         setIsTruncated(descriptionRef.current.scrollHeight > maxHeight);
       }
     };
@@ -171,7 +176,7 @@ export default function ResourceCard({
               ref={descriptionRef}
               id={`description-${resource.name.replace(/\s+/g, '-').toLowerCase()}`}
               className={`text-base text-vanillaCustard/90 whitespace-pre-wrap transition-all duration-700 ${
-                isExpanded ? '' : 'line-clamp-3'
+                isExpanded ? '' : isLargeCard ? 'line-clamp-5' : 'line-clamp-3'
               } ${isHovered ? 'text-vanillaCustard' : ''}`}
             >
               {parseLinks(resource.description)}
@@ -197,6 +202,14 @@ export default function ResourceCard({
         </div>
 
         <div className="flex flex-wrap gap-2" aria-label="Resource tags">
+          {/* Debug: Show all categories */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="text-xs text-vanillaCustard/50 w-full mb-2">
+              Debug: Locations: {JSON.stringify(resource.locations)} | 
+              Types: {JSON.stringify(resource.types)} | 
+              Audiences: {JSON.stringify(resource.audiences)}
+            </div>
+          )}
           {resource.locations.map((x) => (
             <Tag key={`loc-${x}`} tone={getTagColor(x, 'location')}>
               {x}
