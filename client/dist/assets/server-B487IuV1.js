@@ -1,4 +1,4 @@
-import"./marked.esm-XhJKQJCr.js";import{r as e}from"./vendor-DD48japz.js";var t={},n=e;
+import"./App-D_-gSg0H.js";import{r as e}from"./vendor-DD48japz.js";import"./router-Bvx3HBkG.js";var t={},n=e;
 /**
  * @license React
  * react-dom-server-legacy.browser.production.min.js

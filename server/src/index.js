@@ -5,7 +5,6 @@ const express = require('express');
 const path = require('path');
 
 // Load environment variables FIRST
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const { connectToDb } = require('./lib/db');

@@ -1,5 +1,6 @@
 const express = require('express');
 const { z } = require('zod');
+const rateLimit = require('express-rate-limit');
 
 const Resource = require('../models/Resource');
 const Event = require('../models/Event');
@@ -11,8 +12,46 @@ const { validate } = require('../lib/validate');
 const { sendEmail } = require('../lib/email');
 const { getOrCreateNotificationSettings } = require('../lib/notificationSettings');
 const emailService = require('../services/emailService');
+const ghl = require('../lib/ghl');
 
 const router = express.Router();
+
+// Rate limiting configuration
+const createRateLimit = (windowMs, max, message) => rateLimit({
+  windowMs,
+  max,
+  message: { error: message },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Strict rate limiting for submission endpoints
+const submissionRateLimit = createRateLimit(
+  15 * 60 * 1000, // 15 minutes
+  5, // 5 submissions per 15 minutes
+  'Too many submissions, please try again later'
+);
+
+// Moderate rate limiting for newsletter subscription
+const newsletterRateLimit = createRateLimit(
+  60 * 1000, // 1 minute
+  3, // 3 subscriptions per minute
+  'Too many subscription attempts, please try again later'
+);
+
+// Lenient rate limiting for blog interactions
+const blogInteractionLimit = createRateLimit(
+  60 * 1000, // 1 minute
+  10, // 10 interactions per minute
+  'Too many blog interactions, please slow down'
+);
+
+// Very lenient rate limiting for public data endpoints
+const publicDataLimit = createRateLimit(
+  60 * 1000, // 1 minute
+  100, // 100 requests per minute
+  'Too many requests, please slow down'
+);
 
 function normalizeList(value) {
   if (!value) return [];
@@ -47,7 +86,7 @@ const UrlSchema = z
     { message: 'Invalid url' }
   );
 
-router.get('/resources', async (req, res, next) => {
+router.get('/resources', publicDataLimit, async (req, res, next) => {
   try {
     // Add response caching for public API
     res.set('Cache-Control', 'public, max-age=300'); // 5 minutes cache
@@ -111,7 +150,7 @@ router.get('/resources', async (req, res, next) => {
   }
 });
 
-router.get('/events', async (req, res, next) => {
+router.get('/events', publicDataLimit, async (req, res, next) => {
   try {
     // Add response caching for public API
     res.set('Cache-Control', 'public, max-age=600'); // 10 minutes cache for events
@@ -138,7 +177,7 @@ router.get('/events', async (req, res, next) => {
   }
 });
 
-router.post('/submissions', async (req, res, next) => {
+router.post('/submissions', submissionRateLimit, async (req, res, next) => {
   try {
     const input = validate(
       z.object({
@@ -200,7 +239,7 @@ router.post('/submissions', async (req, res, next) => {
   }
 });
 
-router.post('/newsletter/subscribe', async (req, res, next) => {
+router.post('/newsletter/subscribe', newsletterRateLimit, async (req, res, next) => {
   try {
     const input = validate(
       z.object({
@@ -232,6 +271,18 @@ router.post('/newsletter/subscribe', async (req, res, next) => {
       // Don't fail the subscription if email fails
     }
 
+    // Push to GHL CRM (fire-and-forget — never block the response)
+    void (async () => {
+      try {
+        await ghl.upsertContact({
+          email: input.email.toLowerCase().trim(),
+          tags: ['requesting general info/newsletter/rss']
+        });
+      } catch (e) {
+        console.error('[GHL] Failed to push newsletter subscriber:', e.message);
+      }
+    })();
+
     res.status(201).json({ status: 'subscribed' });
   } catch (e) {
     next(e);
@@ -239,7 +290,7 @@ router.post('/newsletter/subscribe', async (req, res, next) => {
 });
 
 // Public gallery list
-router.get('/gallery', async (req, res, next) => {
+router.get('/gallery', publicDataLimit, async (req, res, next) => {
   try {
     const items = await GalleryImage.find({ status: 'active' }).sort({ order: 1 }).lean();
     res.json({ items });
@@ -249,7 +300,7 @@ router.get('/gallery', async (req, res, next) => {
 });
 
 // Blog post submission
-router.post('/blog-submissions', async (req, res, next) => {
+router.post('/blog-submissions', submissionRateLimit, async (req, res, next) => {
   try {
     console.log('Received blog submission request body:', req.body); // Debug log
     
@@ -389,7 +440,7 @@ router.post('/blog-submissions', async (req, res, next) => {
 });
 
 // Get published blog posts
-router.get('/blog-posts', async (req, res, next) => {
+router.get('/blog-posts', publicDataLimit, async (req, res, next) => {
   try {
     // Add response caching with shorter duration for dynamic content
     const cacheMaxAge = process.env.NODE_ENV === 'production' ? 60 : 30; // 1 minute prod, 30 seconds dev
@@ -443,7 +494,7 @@ router.get('/blog-posts', async (req, res, next) => {
 });
 
 // Get single blog post
-router.get('/blog-posts/:slug', async (req, res, next) => {
+router.get('/blog-posts/:slug', publicDataLimit, async (req, res, next) => {
   try {
     // Add shorter cache for individual posts to allow view count updates
     const cacheMaxAge = process.env.NODE_ENV === 'production' ? 120 : 60; // 2 minutes prod, 1 minute dev
@@ -458,17 +509,21 @@ router.get('/blog-posts/:slug', async (req, res, next) => {
       return res.status(404).json({ error: 'Blog post not found' });
     }
 
-    // Increment view count asynchronously (don't wait for it)
-    setImmediate(async () => {
+    // Increment view count using atomic operation to prevent race conditions
+    // Use a separate async operation to avoid blocking the response
+    (async () => {
       try {
-        await BlogPost.updateOne(
-          { _id: post._id },
-          { $inc: { viewCount: 1 } }
+        // Use findOneAndUpdate with atomic increment to prevent race conditions
+        await BlogPost.findOneAndUpdate(
+          { _id: post._id, status: 'published' },
+          { $inc: { viewCount: 1 }, $set: { lastViewedAt: new Date() } },
+          { new: false } // Don't need the updated document
         );
       } catch (error) {
+        // Log error but don't fail the request
         console.error('Failed to increment view count:', error);
       }
-    });
+    })();
 
     // Add cache headers with content hash
     const contentHash = require('crypto')
@@ -489,7 +544,7 @@ router.get('/blog-posts/:slug', async (req, res, next) => {
 });
 
 // Preview pending blog post (simplified - no email verification)
-router.get('/blog-posts/:slug/preview', async (req, res, next) => {
+router.get('/blog-posts/:slug/preview', publicDataLimit, async (req, res, next) => {
   try {
     const post = await BlogPost.findOne({ 
       slug: req.params.slug,
@@ -508,7 +563,7 @@ router.get('/blog-posts/:slug/preview', async (req, res, next) => {
 });
 
 // Like/unlike a blog post
-router.post('/blog-posts/:id/like', async (req, res, next) => {
+router.post('/blog-posts/:id/like', blogInteractionLimit, async (req, res, next) => {
   try {
     const post = await BlogPost.findById(req.params.id);
     

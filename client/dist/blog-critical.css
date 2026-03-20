@@ -1,0 +1,70 @@
+/* Critical CSS for Blog Page LCP Optimization */
+/* Load immediately for above-the-fold content */
+
+/* Base styles needed immediately */
+body {
+  margin: 0;
+  background: #343130;
+  color: #D1DA9C;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji';
+  line-height: 1.45;
+}
+
+/* Blog page header - critical for LCP */
+.blog-page-header {
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #343130 0%, #0C0805 100%);
+}
+
+/* Featured post container - largest element */
+.featured-post-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* Featured post image - likely LCP element */
+.featured-post-image {
+  width: 100%;
+  height: auto;
+  min-height: 400px;
+  object-fit: cover;
+  border-radius: 1rem;
+  background: #2a2a2a;
+}
+
+/* Loading skeleton to prevent layout shift */
+.image-skeleton {
+  background: linear-gradient(90deg, rgba(210, 220, 118, 0.1) 25%, rgba(210, 220, 118, 0.2) 50%, rgba(210, 220, 118, 0.1) 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 1rem;
+  min-height: 400px;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Blog post title - important for LCP */
+.blog-post-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #D1DA9C;
+  margin: 1rem 0;
+  line-height: 1.2;
+}
+
+/* Prevent flash of unstyled content */
+.blog-page-loading {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.blog-page-loaded {
+  opacity: 1;
+}
