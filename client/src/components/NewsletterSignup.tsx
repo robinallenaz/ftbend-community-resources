@@ -55,6 +55,7 @@ export default function NewsletterSignup() {
         <button
           type="submit"
           disabled={status === 'submitting'}
+          aria-describedby={message ? "newsletter-status" : undefined}
           className="rounded-xl bg-powderBlush px-4 py-2 text-base font-extrabold text-pitchBlack shadow-soft transition hover:brightness-95 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-2 focus:ring-offset-pitchBlack"
         >
           {status === 'submitting' ? 'Subscribing…' : 'Subscribe'}
@@ -64,7 +65,7 @@ export default function NewsletterSignup() {
         <div 
           id="newsletter-status"
           className={`mt-3 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-paleAmber focus:ring-offset-2 focus:ring-offset-pitchBlack ${
-            status === 'success' ? 'bg-graphite/70 text-vanillaCustard' : 'bg-graphite/70 text-vanillaCustard'
+            status === 'success' ? 'bg-graphite/70 text-vanillaCustard' : 'bg-red-900/40 text-red-300 border border-red-700/40'
           }`}
           role="alert"
           aria-live="polite"

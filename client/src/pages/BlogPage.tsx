@@ -185,13 +185,6 @@ export default function BlogPage() {
       link.href = '/blog-critical.css';
       document.head.appendChild(link);
       
-      // Preload font for blog titles
-      const fontLink = document.createElement('link');
-      fontLink.rel = 'preload';
-      fontLink.as = 'font';
-      fontLink.type = 'font/woff2';
-      fontLink.crossOrigin = 'anonymous';
-      document.head.appendChild(fontLink);
     }
   }, [isInitialLoad]);
   
@@ -721,24 +714,29 @@ export default function BlogPage() {
               <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-vanillaCustard/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
+              <label htmlFor="search" className="sr-only">Search blog posts</label>
               <input
                 id="search"
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search blog posts..."
+                aria-label="Search blog posts by title or content"
                 className="w-full rounded-xl border border-vanillaCustard/20 bg-graphite pl-10 pr-4 py-2 text-sm text-vanillaCustard placeholder-vanillaCustard/50 focus:border-paleAmber focus:outline-none focus:ring-1 focus:ring-paleAmber/50 transition-all"
               />
             </div>
 
             {/* Filters - Ultra Compact Single Row */}
             <div className="flex flex-wrap items-center gap-1 text-xs max-w-full overflow-hidden">
+              <label htmlFor="sort-select" className="sr-only">Sort blog posts</label>
               <select
+                id="sort-select"
                 value={sortBy}
                 onChange={(e) => {
                   setSortBy(e.target.value as 'recent' | 'popular' | 'trending');
                   setCurrentPage(1);
                 }}
+                aria-label="Sort blog posts by"
                 className="rounded-md border border-vanillaCustard/20 bg-graphite px-2 py-1 text-vanillaCustard focus:border-paleAmber focus:outline-none focus:ring-1 focus:ring-paleAmber/50 transition-all flex-shrink-0"
               >
                 <option value="recent">Recent</option>
@@ -746,12 +744,15 @@ export default function BlogPage() {
                 <option value="trending">Trending</option>
               </select>
 
+              <label htmlFor="category-select" className="sr-only">Filter by category</label>
               <select
+                id="category-select"
                 value={selectedCategory}
                 onChange={(e) => {
                   setSelectedCategory(e.target.value);
                   setCurrentPage(1);
                 }}
+                aria-label="Filter blog posts by category"
                 className="rounded-md border border-vanillaCustard/20 bg-graphite px-2 py-1 text-vanillaCustard focus:border-paleAmber focus:outline-none focus:ring-1 focus:ring-paleAmber/50 transition-all flex-shrink-0"
               >
                 <option value="">Categories</option>
@@ -762,12 +763,15 @@ export default function BlogPage() {
                 ))}
               </select>
 
+              <label htmlFor="tag-select" className="sr-only">Filter by tag</label>
               <select
+                id="tag-select"
                 value={selectedTag}
                 onChange={(e) => {
                   setSelectedTag(e.target.value);
                   setCurrentPage(1);
                 }}
+                aria-label="Filter blog posts by tag"
                 className="rounded-md border border-vanillaCustard/20 bg-graphite px-2 py-1 text-vanillaCustard focus:border-paleAmber focus:outline-none focus:ring-1 focus:ring-paleAmber/50 transition-all flex-shrink-0"
               >
                 <option value="">All Tags</option>
@@ -914,7 +918,7 @@ export default function BlogPage() {
                                 if (post.featuredImage && isMounted) {
                                   const timeoutId = setTimeout(() => {
                                     if (isMounted) {
-                                      img.src = `https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_400,h_225,c_fill/ftbend-community-gallery/${sanitizeImageFilename(post.featuredImage)}`;
+                                      img.src = `https://res.cloudinary.com/dpus8jzix/image/upload/q_auto,f_auto,w_400,h_225,c_fill/ftbend-community-gallery/${sanitizeImageFilename(post.featuredImage || '')}`;
                                     }
                                   }, 200);
                                   imageTimeoutRefs.current.set(`post-${post._id}`, timeoutId);

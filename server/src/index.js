@@ -39,7 +39,6 @@ app.use('/api/public', publicRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/taxonomy', taxonomyRoutes);
-app.use('/api/public/gallery', publicRoutes);
 
 app.use((err, _req, res, _next) => {
   const status = Number(err.status) || 500;

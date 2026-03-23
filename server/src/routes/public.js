@@ -476,9 +476,6 @@ router.get('/blog-posts', publicDataLimit, async (req, res, next) => {
 
     const total = await BlogPost.countDocuments(filter);
 
-    // Add cache invalidation headers for dynamic content
-    res.set('ETag', `"${JSON.stringify({ page, total, timestamp: Date.now() })}"`);
-    
     res.json({
       posts,
       pagination: {
@@ -514,11 +511,28 @@ router.get('/blog-posts/:slug', publicDataLimit, async (req, res, next) => {
     (async () => {
       try {
         // Use findOneAndUpdate with atomic increment to prevent race conditions
-        await BlogPost.findOneAndUpdate(
-          { _id: post._id, status: 'published' },
-          { $inc: { viewCount: 1 }, $set: { lastViewedAt: new Date() } },
-          { new: false } // Don't need the updated document
-        );
+        // Add retry logic for reliability
+        let retryCount = 0;
+        const maxRetries = 3;
+        
+        while (retryCount < maxRetries) {
+          try {
+            await BlogPost.findOneAndUpdate(
+              { _id: post._id, status: 'published' },
+              { $inc: { viewCount: 1 }, $set: { lastViewedAt: new Date() } },
+              { new: false } // Don't need the updated document
+            );
+            break; // Success, exit retry loop
+          } catch (retryError) {
+            retryCount++;
+            if (retryCount >= maxRetries) {
+              console.error('Failed to increment view count after retries:', retryError);
+              break;
+            }
+            // Wait a bit before retrying (exponential backoff)
+            await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 100));
+          }
+        }
       } catch (error) {
         // Log error but don't fail the request
         console.error('Failed to increment view count:', error);

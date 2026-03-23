@@ -1,5 +1,6 @@
 const express = require('express');
 const { z } = require('zod');
+const rateLimit = require('express-rate-limit');
 
 const { requireAuth, requireRole } = require('../lib/auth');
 const { validate } = require('../lib/validate');
@@ -10,6 +11,26 @@ const NewsletterSubscriber = require('../models/NewsletterSubscriber');
 const router = express.Router();
 
 const crypto = require('crypto');
+
+const webhookRateLimit = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 60,             // 60 requests per minute
+  message: { error: 'Too many webhook requests' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const WebhookContactSchema = z.object({
+  id: z.string().min(1).max(200),
+  firstName: z.string().max(100).optional().default(''),
+  lastName: z.string().max(100).optional().default(''),
+  email: z.string().email().max(254).optional().default(''),
+  phone: z.string().max(30).optional().default(''),
+  companyName: z.string().max(200).optional().default(''),
+  tags: z.array(z.string().max(100)).max(50).optional().default([]),
+  dateAdded: z.string().optional(),
+  lastActivity: z.string().optional(),
+});
 
 /**
  * Timing-safe comparison function to prevent timing attacks
@@ -27,23 +48,44 @@ function timingSafeEqual(a, b) {
  * Configure this URL in GHL Settings > Integrations > Webhooks.
  * No auth required — verified by GHL_WEBHOOK_SECRET header.
  */
-router.post('/webhook', async (req, res) => {
+router.post('/webhook', webhookRateLimit, async (req, res) => {
   const secret = process.env.GHL_WEBHOOK_SECRET;
+  const incoming = req.headers['x-ghl-signature'] || req.headers['x-webhook-secret'];
+  
+  // Always perform timing-safe comparison to prevent timing attacks
   if (secret) {
-    const incoming = req.headers['x-ghl-signature'] || req.headers['x-webhook-secret'];
     if (!incoming || !timingSafeEqual(incoming, secret)) {
       return res.status(401).json({ error: 'Invalid webhook secret' });
+    }
+  } else {
+    // If no secret is configured, still validate that incoming is empty
+    if (incoming) {
+      return res.status(401).json({ error: 'Webhook secret not configured but signature provided' });
     }
   }
 
   const event = req.body;
-  const type = event.type || event.event;
+
+  // Basic structure validation
+  if (!event || typeof event !== 'object' || Array.isArray(event)) {
+    return res.status(400).json({ error: 'Invalid webhook payload' });
+  }
+
+  const type = typeof event.type === 'string' ? event.type
+    : typeof event.event === 'string' ? event.event
+    : null;
 
   try {
     if (type === 'ContactCreate' || type === 'ContactUpdate') {
-      const c = event.contact || event.data;
-      if (c && c.id) {
-        await syncContactToDb(c);
+      const raw = event.contact || event.data;
+      if (raw && typeof raw === 'object' && raw.id) {
+        // Validate and sanitize contact fields before persisting
+        const parsed = WebhookContactSchema.safeParse(raw);
+        if (!parsed.success) {
+          console.warn('GHL webhook: invalid contact payload, skipping', parsed.error.flatten());
+          return res.json({ received: true });
+        }
+        await syncContactToDb(parsed.data);
       }
     }
     res.json({ received: true });
@@ -58,6 +100,13 @@ router.post('/webhook', async (req, res) => {
  */
 router.use(requireAuth);
 router.use(requireRole(['admin']));
+
+/**
+ * Escape special regex characters to prevent ReDoS attacks
+ */
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 /**
  * Validate and sanitize query parameters
@@ -83,15 +132,20 @@ router.get('/contacts', async (req, res, next) => {
 
     const filter = {};
     if (tag) {
-      // Additional validation for tag to prevent regex injection
-      const sanitizedTag = tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      filter.tags = sanitizedTag;
+      // Use MongoDB's built-in escaping for exact match
+      filter.tags = tag;
     }
     if (q) {
-      // Sanitize search query and use escaped regex
-      const sanitizedQuery = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const re = new RegExp(sanitizedQuery, 'i');
-      filter.$or = [{ firstName: re }, { lastName: re }, { email: re }, { businessName: re }];
+      const searchTerms = q.trim().split(/\s+/).filter(term => term.length > 0);
+      if (searchTerms.length > 0) {
+        const pattern = new RegExp(searchTerms.map(escapeRegex).join('|'), 'i');
+        filter.$or = [
+          { firstName: pattern },
+          { lastName: pattern },
+          { email: pattern },
+          { businessName: pattern }
+        ];
+      }
     }
 
     const [items, total] = await Promise.all([
@@ -148,7 +202,9 @@ router.post('/sync', async (req, res, next) => {
         { upsert: true, new: true, setDefaultsOnInsert: true }
       );
 
-      if (result && !result.createdAt) {
+      // Properly check if this was a new document by checking if createdAt was just set
+      const isNewDocument = result.createdAt && result.updatedAt && result.createdAt.getTime() === result.updatedAt.getTime();
+      if (isNewDocument) {
         created++;
       } else {
         updated++;

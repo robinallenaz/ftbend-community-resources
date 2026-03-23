@@ -3,6 +3,7 @@ const express = require('express');
 const { z } = require('zod');
 
 const User = require('../models/User');
+const NewsletterSubscriber = require('../models/NewsletterSubscriber');
 const { requireAuth, signToken } = require('../lib/auth');
 const { validate } = require('../lib/validate');
 
@@ -92,15 +93,17 @@ router.post('/logout', (req, res) => {
 router.post('/newsletter/unsubscribe', async (req, res, next) => {
   try {
     const { email } = req.body;
-    
-    if (!email) {
+
+    if (!email || typeof email !== 'string') {
       return res.status(400).json({ error: 'Email is required' });
     }
 
-    // TODO: Remove from Brevo list and mark as unsubscribed in database
-    console.log(`Unsubscribe request for: ${email}`);
-    
-    // For now, just return success
+    await NewsletterSubscriber.findOneAndUpdate(
+      { email: email.toLowerCase().trim() },
+      { status: 'unsubscribed' }
+    );
+
+    // Always return success to prevent email enumeration attacks
     res.json({ message: 'Successfully unsubscribed from newsletter' });
   } catch (e) {
     next(e);

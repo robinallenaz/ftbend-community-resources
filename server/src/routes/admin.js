@@ -688,7 +688,7 @@ router.post('/gallery/upload', requireRole(['admin']), upload.single('file'), as
     const newOrder = (maxOrder?.order ?? 0) + 1;
 
     const item = await GalleryImage.create({
-      filename: `https://res.cloudinary.com/dpus8jzix/image/upload/${req.file.filename}.jpg`,
+      filename: req.file.path || req.file.secure_url || req.file.url,
       originalName: req.file.originalname,
       caption: req.body.caption || '',
       order: newOrder,
@@ -845,8 +845,7 @@ router.post('/upload-image', requireAuth, upload.single('image'), async (req, re
     // Debug all available properties
     console.log('Complete file object:', JSON.stringify(req.file, null, 2));
 
-    // Use the same URL format as the gallery upload
-    const imageUrl = `https://res.cloudinary.com/dpus8jzix/image/upload/${req.file.filename}.jpg`;
+    const imageUrl = req.file.path || req.file.secure_url || req.file.url;
 
     console.log('Final image URL:', imageUrl);
     console.log('=== END BLOG POST UPLOAD ===');
@@ -944,6 +943,9 @@ router.patch('/blog-posts/:id', requireAuth, async (req, res, next) => {
       throw err;
     }
 
+    // Capture old status before updating fields
+    const previousStatus = post.status;
+
     // Update fields
     Object.keys(input).forEach(key => {
       if (input[key] !== undefined) {
@@ -952,7 +954,7 @@ router.patch('/blog-posts/:id', requireAuth, async (req, res, next) => {
     });
 
     // Set published date if status is being set to published
-    if (input.status === 'published' && post.status !== 'published') {
+    if (input.status === 'published' && previousStatus !== 'published') {
       post.publishedAt = new Date();
     }
 
