@@ -9,16 +9,16 @@ const MarkdownProcessor = lazy(() => import('../components/MarkdownProcessor'));
 
 // Debounce utility function
 function debounce<T extends (...args: any[]) => any>(func: T, wait: number): T {
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+
   return ((...args: Parameters<T>) => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
+    if (timeout) {
+      clearTimeout(timeout);
     }
-    
-    timeoutRef.current = setTimeout(() => {
+
+    timeout = setTimeout(() => {
       func(...args);
-      timeoutRef.current = null;
+      timeout = null;
     }, wait);
   }) as T;
 }
